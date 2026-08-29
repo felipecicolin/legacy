@@ -42,6 +42,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_29_214400) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "payment_transactions", force: :cascade do |t|
+    t.bigint "amount_cents", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", default: "BRL", null: false
+    t.string "failure_reason"
+    t.string "kind", null: false
+    t.datetime "processed_at"
+    t.string "provider_reference", null: false
+    t.string "reference", null: false
+    t.boolean "simulated", default: true, null: false
+    t.string "status", null: false
+    t.datetime "updated_at", null: false
+    t.index ["reference"], name: "index_payment_transactions_on_reference"
+  end
+
   create_table "profiles", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "display_name", null: false
