@@ -9,10 +9,12 @@ que entrar daqui para frente. Vale para pessoas e para agentes.
 Turbo + Stimulus · Tailwind v4 · ViewComponent · Solid Cache/Queue/Cable ·
 RSpec. Locale `pt-BR`, timezone Brasília.
 
-**Requisitos de sistema:** PostgreSQL e **libvips** (`brew install vips` /
-`apt install libvips`). A libvips não é opcional: o processador de variantes
-padrão do Active Storage é o vips, e sem a biblioteca a aplicação não sobe —
-nem para rodar os specs. O Dockerfile já a instala.
+**Requisitos de sistema:** PostgreSQL, **libvips** (`brew install vips` /
+`apt install libvips`) e **Google Chrome**. A libvips não é opcional: o
+processador de variantes padrão do Active Storage é o vips, e sem a biblioteca
+a aplicação não sobe — nem para rodar os specs. O Dockerfile já a instala. O
+Chrome é para os specs de sistema (`spec/system/`), que rodam headless; o
+driver o Selenium Manager resolve sozinho.
 
 ---
 
@@ -123,6 +125,10 @@ que ela cai é um projeto; mantê-la é um hábito.
   (`legacy_test`, `legacy_test2`). Spec que depende de estado global entre
   exemplos quebra de forma intermitente — não faça.
 - Nada de rede: o `webmock` bloqueia conexão externa.
+- **Spec de sistema roda em Chrome headless e exige o CSS compilado.** O
+  `bin/ci` e a CI rodam `bin/rails tailwindcss:build` antes da suíte; rodando
+  `rspec` na mão depois de mexer em `app/assets/tailwind/`, rode o build antes,
+  senão o spec mede o CSS antigo.
 
 ---
 
@@ -147,9 +153,13 @@ para a lista não crescer em silêncio.
 
 ## Design system — só tokens semânticos
 
+> Vocabulário completo, receitas e armadilhas:
+> [`docs/design-system/tokens.md`](docs/design-system/tokens.md).
+
 As cores, raios e superfícies vivem em `app/assets/tailwind/tokens.css`, em duas
-camadas: primitivas em `:root` (variáveis CSS puras) e apelidos semânticos em
-`@theme inline`, que é o que gera as utilities.
+camadas: primitivas em `:root` (variáveis CSS puras, que nomeiam o **matiz**) e
+apelidos semânticos em `@theme inline` (que nomeiam o **papel**), e é o
+`@theme inline` que gera as utilities.
 
 **Views e componentes usam só as semânticas** — `bg-primary`,
 `text-muted-foreground`, `border-destructive`, `rounded-lg`. Nunca a escala
@@ -161,9 +171,20 @@ A paleta atual é um ponto de partida neutro. Trocar os matizes pela identidade
 do produto é editar `tokens.css` e nada mais — nenhuma view muda.
 
 Se falta um token, **adicione o token**, não uma exceção. E mantenha os
-vocabulários separados: `success`/`warning`/`destructive` dizem *estado*. Cor
-categórica (dizer *qual* coisa um item é) merece um vocabulário próprio, senão
-o leitor precisa desambiguar "vermelho = erro" de "vermelho = categoria X".
+vocabulários separados: `success`/`warning`/`destructive` dizem *estado*;
+`category-1`…`category-4` dizem *qual coisa* um item é. Sem essa separação o
+leitor precisa desambiguar "vermelho = erro" de "vermelho = categoria X".
+
+`spec/system/design_tokens_spec.rb` é quem sustenta tudo isso: ele pergunta ao
+navegador que cor cada utility resolveu e reprova o que sair transparente —
+token renomeado ou removido não gera erro em lugar nenhum, só uma classe que o
+Tailwind deixa de emitir. O mesmo spec recalcula o contraste WCAG de cada par
+`X`/`X-foreground` a partir da cor resolvida, então **token novo entra com par
+de contraste que passa em AA** (4.5:1 para texto), e a tabela no fim do
+`tokens.css` não tem como envelhecer. Todo token declarado precisa aparecer na
+página de fumaça em `spec/components/previews/design_tokens_preview/` — com a
+utility escrita literalmente, porque o Tailwind v4 gera classe varrendo texto e
+um nome montado em laço não produz nada.
 
 ---
 
@@ -308,6 +329,18 @@ O padrão nos quatro casos é o mesmo: **ferramenta que falha em silêncio e sai
 zero**. Quando ligar um linter novo, confirme que ele reprova algo que deveria
 reprovar antes de confiar nele.
 
+**`stylesheet_link_tag :app` não carrega o Tailwind.** O `:app` resolve para
+`app/assets/stylesheets/application.css` — o manifesto vazio do generator. O
+build do Tailwind sai em `app/assets/builds/tailwind.css` e precisa do próprio
+`stylesheet_link_tag "tailwind"`. Os dois layouts subiam sem uma única utility
+e nada reclamava: o Propshaft serve o manifesto, o link tag não levanta erro, e
+até #6 nenhum spec renderizava layout. Foi o spec de tokens que descobriu.
+
+**O parser do herb lê marcação dentro de `<%# … %>`.** Comentário ERB não é zona
+neutra: um `<body>` ou um `<%= … %>` citado na explicação vira erro de
+`parser-no-errors`. Escreva o exemplo sem os sinais, ou não cite marcação no
+comentário.
+
 **`gh pr merge --auto` só espera pelos checks obrigatórios do branch.** Sem
 proteção de branch configurada, "obrigatório" é o conjunto vazio, e o auto-merge
 do dependabot merge na hora — sem olhar a CI. Já aconteceu aqui: o bump de
@@ -324,6 +357,37 @@ reescreve essa mensagem, então o rescue não pega. Duas mudanças pequenas em
 bibliotecas diferentes, e o resultado é a aplicação não subir.
 
 ---
+
+## Documentação — `docs/`
+
+**Todo trabalho que estabelece vocabulário, mecanismo ou decisão durável sai com
+documento em `docs/`.** Não é opcional e não é "quando sobrar tempo": é parte da
+entrega, no mesmo commit.
+
+O que conta como pertinente: um vocabulário que outras pessoas vão consumir
+(tokens, componentes, papéis), um mecanismo não óbvio (como um gate é cobrado,
+por que um teste existe), uma decisão de arquitetura com alternativa plausível,
+uma armadilha que custou investigação. O que **não** conta: o que o código já
+diz sozinho, e o que só vale para um PR.
+
+A divisão de trabalho entre os dois arquivos é rígida, porque é ela que mantém
+os dois legíveis:
+
+| Vai no `AGENTS.md` | Vai no `docs/` |
+| --- | --- |
+| O que a CI reprova | Por que ela reprova isso |
+| Limites numéricos | O raciocínio que fixou o número |
+| "Faça assim", em uma linha | O passo a passo, com exemplo |
+| A armadilha em uma frase | A investigação que a descobriu |
+
+Uma regra que chega ao `AGENTS.md` com três parágrafos de contexto deixa de ser
+lida — este arquivo só funciona enquanto for varrível. E um documento que apenas
+repete a regra não acrescenta nada: se o `docs/` não tem o porquê, ele não
+precisava existir.
+
+Regra nova entra nos dois: uma linha aqui, com link, e a explicação lá. Todo
+documento novo entra no índice de [`docs/README.md`](docs/README.md) — índice
+que mente é pior que índice que não existe.
 
 ## Documentação de biblioteca
 

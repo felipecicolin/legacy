@@ -118,6 +118,12 @@ group :test do
   # `have_link` são Capybara — sem a gem, specs de componente só têm o
   # `rendered_content` cru.
   gem "capybara"
+
+  # Navegador de verdade para os specs de sistema. O spec dos tokens pergunta
+  # ao `getComputedStyle` qual cor a utility resolveu: sem isso, um token
+  # renomeado vira classe inexistente e some em silêncio — nenhum linter deste
+  # repositório lê CSS. Chrome headless; o Selenium Manager resolve o driver.
+  gem "selenium-webdriver"
   gem "simplecov", require: false
   gem "simplecov_json_formatter", require: false
   gem "stackprof", require: false

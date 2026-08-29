@@ -208,9 +208,27 @@ jobs:
       # `app/assets/builds/` é gitignorado, então o CSS não existe num clone
       # limpo. Sem este passo, o primeiro spec que renderizar o layout morre
       # num Propshaft::MissingAssetError — e o erro apontaria para o spec, não
-      # para a causa.
+      # para a causa. O spec de tokens depende deste passo por inteiro: ele
+      # pergunta ao navegador que cor cada utility resolveu, e sem CSS
+      # compilado a resposta seria "transparente" para todas.
       - name: Build Tailwind CSS
         run: bin/rails tailwindcss:build
+
+      # O chromedriver já vem na imagem do runner, mas fora do PATH. Sem esta
+      # linha o Selenium Manager sai para a rede baixar um segundo, idêntico —
+      # que é lento e é mais uma dependência externa entre a CI e o verde.
+      #
+      # O `test -n` não é paranoia: `CHROMEWEBDRIVER` é variável da imagem, não
+      # do GitHub. Se a imagem parar de defini-la, um `echo ""` não falha, não
+      # acrescenta nada ao PATH, e a suíte volta a baixar driver pela rede em
+      # silêncio — o comentário acima viraria mentira sem nada ficar vermelho.
+      - name: Put the runner's chromedriver on PATH
+        run: |
+          test -n "$CHROMEWEBDRIVER" || {
+            echo "::error::CHROMEWEBDRIVER is unset — the runner image no longer ships chromedriver."
+            exit 1
+          }
+          echo "$CHROMEWEBDRIVER" >> "$GITHUB_PATH"
 
       # `-n 2` porque o runner padrão tem 2 cores (medido: `nproc=2`, 7,9 GB).
       # Quando a suíte crescer a ponto de um runner não dar conta, a volta para
