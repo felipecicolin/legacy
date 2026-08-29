@@ -1,0 +1,12 @@
+<%#
+  Um editor, sem rótulo e sem nó de texto: o herb roda sobre o repositório
+  inteiro e no-hardcoded-string cobraria t() em qualquer palavra visível aqui.
+
+  O par data-controller/data-action é o lado do navegador da política de anexo.
+  Todo campo de texto rico da aplicação vai precisar dos dois — o
+  trix-file-accept é por onde entram o botão de anexar, o arrastar-e-soltar e o
+  colar do clipboard, e cancelá-lo fecha os três.
+%>
+<div data-controller="rich-text" data-action="trix-file-accept->rich-text#rejectAttachment">
+  <%= rich_text_area_tag "body" %>
+</div>

@@ -47,6 +47,10 @@ acrescenta nada. Então:
   confidencial não *guarda* coordenada em vez de só não mostrá-la, como a
   promoção de nível é auditada, e o que sustenta o agregado anonimizado.
 
+- [Action Text](action-text.md) — por que texto rico nasce sem anexo embutido,
+  as duas camadas que cobram isso, a corrida que a barra do Trix perde se a
+  tradução chegar um tique atrasada, e por que o CSS do Trix fica verbatim.
+
 ### Deploy
 
 - [Deploy no Coolify](deploy/coolify.md) — por que Solid Cache, Queue e Cable

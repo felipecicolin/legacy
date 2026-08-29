@@ -394,6 +394,22 @@ frente:
   um `Visibility::Context` e devolvem relação. Nunca escreva um segundo caminho
   de SQL que decida visibilidade — é ele que vai divergir.
 
+## Action Text
+
+> As decisões, as medições e as armadilhas:
+> [`docs/action-text.md`](docs/action-text.md).
+
+Texto rico é `has_rich_text`, com Trix e Active Storage por trás. Três regras:
+
+- **Sem anexo embutido.** O upload do Trix não passa pelo processamento de foto
+  da plataforma, então o `config/initializers/action_text.rb` poda
+  `action-text-attachment` na renderização. Reabrir isso é decisão de produto,
+  não conveniência de tela.
+- **Listagem de texto rico usa `with_rich_text_<nome>_and_embeds`.** Sem o
+  preload, cada registro renderizado custa três queries a mais.
+- **Rótulo do Trix vive em `app/javascript/trix_locale.js`**, e a chamada é
+  síncrona no `application.js` — não em `connect()` de Stimulus. Ver armadilhas.
+
 ## Banco de dados
 
 - `bundle exec database_consistency` cobra FK sem índice, `NOT NULL` faltando,
@@ -491,6 +507,26 @@ build do Tailwind sai em `app/assets/builds/tailwind.css` e precisa do próprio
 `stylesheet_link_tag "tailwind"`. Os dois layouts subiam sem uma única utility
 e nada reclamava: o Propshaft serve o manifesto, o link tag não levanta erro, e
 até #6 nenhum spec renderizava layout. Foi o spec de tokens que descobriu.
+
+**Tirar `action-text-attachment` da lista de tags permitidas não remove o
+anexo.** O `PermitScrubber` DESEMBRULHA a tag não permitida: tira o elemento e
+mantém os filhos. E o Action Text renderiza o conteúdo do anexo — o `img` com a
+URL do blob — antes de sanitizar. Sem `prune: true` a imagem fica, com o
+elemento em volta removido, e parece que a política funcionou. Ver
+[`docs/action-text.md`](docs/action-text.md).
+
+**A `ActionText::Engine` atribui o sanitizador num `config.after_initialize` +
+`on_load(:action_view)`.** Configurar antes disso — num `to_prepare`, que é o
+reflexo — não levanta erro: é sobrescrito depois, e a política some pela metade.
+O `config/initializers/action_text.rb` usa o mesmo par de ganchos.
+
+**`Trix.config.lang` aplicado tarde demais devolve a barra em inglês, sem erro.**
+O `getDefaultHTML()` roda uma vez, quando o custom element sobe, e o Trix
+registra o `customElements.define` num `setTimeout` — então código síncrono do
+`application.js` chega a tempo e um `connect()` de Stimulus não. E é
+`Object.assign(Trix.config.lang, …)`: o gerador da barra fecha sobre o objeto,
+então substituí-lo deixa o gerador lendo o antigo. `spec/system/rich_text_editor_spec.rb`
+é quem cobra as duas coisas — nenhum linter aqui lê o Trix.
 
 **O parser do herb lê marcação dentro de `<%# … %>`.** Comentário ERB não é zona
 neutra: um `<body>` ou um `<%= … %>` citado na explicação vira erro de
