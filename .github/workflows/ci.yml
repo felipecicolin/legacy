@@ -2,66 +2,231 @@ name: CI
 
 on:
   pull_request:
-  push:
-    branches: [ main ]
+    # `ready_for_review` porque os jobs abaixo se pulam enquanto o PR é
+    # rascunho; sem esse tipo, tirar do rascunho não dispararia nada e o PR
+    # ficaria sem CI até o push seguinte.
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref != '' && github.ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
-  scan_ruby:
+  # `scan_ruby` e `scan_js` eram dois jobs no template do Rails. O scan_js
+  # gastava ~80s montando o Ruby para rodar 2s de `importmap audit`: um runner
+  # faturado por inteiro, e o trabalho de verdade cabia numa piscada do
+  # vizinho, que já tem o mesmo Ruby montado. Aqui dividem o runner.
+  scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event.pull_request.draft == false
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          bundler-cache: true
+      - name: Setup shared Ruby environment
+        uses: ./.github/actions/setup-ruby-environment
 
       - name: Scan for common Rails security vulnerabilities using static analysis
         run: bin/brakeman --no-pager
-      
+
+      # Daqui para baixo, todo passo roda mesmo se um anterior falhou, para que
+      # um commit resolva tudo o que os scanners têm a dizer em vez de um item
+      # por push.
       - name: Scan for known security vulnerabilities in gems used
+        if: ${{ !cancelled() }}
         run: bin/bundler-audit
-      
-  scan_js:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          bundler-cache: true
 
       - name: Scan for security vulnerabilities in JavaScript dependencies
+        if: ${{ !cancelled() }}
         run: bin/importmap audit
 
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event.pull_request.draft == false
     env:
       RUBOCOP_CACHE_ROOT: tmp/rubocop
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+      - name: Setup shared Ruby environment
+        uses: ./.github/actions/setup-ruby-environment
+
+      # O Node existe neste repo por um motivo só: as regras customizadas do
+      # herb são `.herb/rules/*.mjs`. Não há build de JS — o navegador é servido
+      # por importmap + propshaft, o CSS sai do binário do tailwindcss-rails, e
+      # o bin/stimulus_lint é Ruby puro.
+      - name: Set up Node
+        uses: actions/setup-node@v7
         with:
-          bundler-cache: true
+          node-version: 22
+          cache: npm
 
+      - name: Install Node deps (herb custom rules)
+        run: npm ci
+
+      # A chave termina em `run_id` no branch default e em `default` fora dele.
+      # Como este workflow só roda em `pull_request`, o primeiro ramo nunca
+      # acontece aqui — quem grava sob ele é o warm_gem_cache.yml, rodando no
+      # main, e é por isso que os `restore-keys` por prefixo abaixo têm o que
+      # encontrar.
       - name: Prepare RuboCop cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         env:
-          DEPENDENCIES_HASH: ${{ hashFiles('.ruby-version', '**/.rubocop.yml', '**/.rubocop_todo.yml', 'Gemfile.lock') }}
+          DEPENDENCIES_HASH: ${{ hashFiles('.ruby-version', '**/.rubocop.yml', 'Gemfile.lock') }}
         with:
           path: ${{ env.RUBOCOP_CACHE_ROOT }}
           key: rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-${{ github.ref_name == github.event.repository.default_branch && github.run_id || 'default' }}
           restore-keys: |
             rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-
 
-      - name: Lint code for consistent style
-        run: bin/rubocop -f github
+      # Todo passo daqui para baixo roda mesmo se um anterior falhou: um push
+      # passa a devolver tudo o que os linters têm a dizer, em vez de uma coisa
+      # de cada vez.
+      - name: Lint Ruby code for consistent style
+        run: bin/rubocop --parallel -f github
 
+      - name: Check for code smells
+        if: ${{ !cancelled() }}
+        run: bundle exec reek app/ lib/
+
+      # O repositório INTEIRO, não só os arquivos que o PR toca. Isso só é
+      # possível porque o projeto nasceu limpo — não há dívida herdada para
+      # reprovar o autor de um PR que não a criou.
+      - name: Lint HTML+ERB templates
+        if: ${{ !cancelled() }}
+        run: bundle exec herb lint
+
+      - name: Lint Stimulus controller files
+        if: ${{ !cancelled() }}
+        run: bin/stimulus_lint
+
+      - name: Check translation hygiene (missing/unused/normalized)
+        if: ${{ !cancelled() }}
+        run: bin/i18n-tasks health
+
+      - name: Enforce ViewComponent sidecar i18n structure
+        if: ${{ !cancelled() }}
+        run: bin/i18n_sidecar_lint
+
+      # Por último, porque é o que falha quando alguém silenciou qualquer um
+      # dos passos acima em vez de consertá-lo.
+      - name: Guard against new rubocop/reek directives
+        if: ${{ !cancelled() }}
+        run: bin/directive_guard
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.event.pull_request.draft == false
+
+    env:
+      RAILS_ENV: test
+      COVERAGE: "1"
+      CI: "true"
+      CI_NODE_INDEX: 1
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+
+    services:
+      postgres:
+        # Preso na major, não em `latest`: o clone por TEMPLATE abaixo depende
+        # do comportamento desta imagem, e uma tag móvel troca a camada de
+        # banco sem nenhum commit. É a 18 porque é o que o dev roda localmente.
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        # `--health-interval=10s` (o default) faz o runner esperar ~13s em
+        # "Waiting for all services to be ready": o Postgres aceita conexão em
+        # ~2s, mas o primeiro healthcheck só rodaria aos 10s. Com 2s o runner o
+        # encontra pronto no primeiro ou segundo poll.
+        options: --health-cmd="pg_isready" --health-interval=2s --health-timeout=5s --health-retries=15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup shared Ruby environment
+        uses: ./.github/actions/setup-ruby-environment
+        with:
+          system-dependencies: libpq-dev
+
+      # `app/assets/builds/` é gitignorado, então o CSS não existe num clone
+      # limpo. Sem este passo, o primeiro spec que renderizar o layout morre
+      # num Propshaft::MissingAssetError — e o erro apontaria para o spec, não
+      # para a causa.
+      - name: Build Tailwind CSS
+        run: bin/rails tailwindcss:build
+
+      # Uma carga de schema, e o Postgres clona o resto. Um segundo
+      # `db:test:prepare` subiria o Rails de novo só para reproduzir o mesmo
+      # schema no banco do segundo processo.
+      - name: Setup parallel test databases
+        run: |
+          bin/rails db:test:prepare
+          psql -q -c "CREATE DATABASE legacy_test2 TEMPLATE legacy_test"
+
+      - name: Verify schema.rb is in sync with migrations
+        run: |
+          bin/rails db:abort_if_pending_migrations
+          if ! git diff --exit-code db/schema.rb; then
+            echo "::error::db/schema.rb is out of sync with migrations. Run bin/rails db:migrate locally and commit the result."
+            exit 1
+          fi
+
+      - name: Check database consistency
+        run: bundle exec database_consistency
+
+      # `-n 2` porque o runner padrão tem 2 cores (medido: `nproc=2`, 7,9 GB).
+      # Quando a suíte crescer a ponto de um runner não dar conta, a volta para
+      # a matriz de shards do repositório de origem é um diff pequeno: um
+      # `strategy.matrix` com `node_index`/`groups` e `--only-group` aqui.
+      #
+      # `--format progress` porque o .rspec pede `documentation`, e dois
+      # processos escrevendo o nome de cada exemplo afogam a falha no meio do
+      # verde. A falha continua saindo inteira, com descrição e backtrace.
+      - name: Run tests
+        run: |
+          rm -rf coverage
+          bundle exec parallel_rspec spec/ -n 2 -o "--format progress"
+
+      - name: Upload coverage resultset
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-1
+          path: coverage/.resultset.json
+          if-no-files-found: error
+          include-hidden-files: true
+
+  coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [test]
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup shared Ruby environment
+        uses: ./.github/actions/setup-ruby-environment
+
+      - name: Download coverage resultsets
+        uses: actions/download-artifact@v8
+        with:
+          pattern: coverage-*
+          path: tmp/coverage
+
+      - name: Collate coverage and enforce 100/100
+        run: ruby script/verify_coverage.rb

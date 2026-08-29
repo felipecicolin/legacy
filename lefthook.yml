@@ -1,0 +1,35 @@
+# Hooks de git. Instale uma vez com `bundle exec lefthook install`
+# (o bin/setup já faz isso).
+#
+# A ideia é que o commit já reprove o que a CI reprovaria, sobre os arquivos em
+# stage — o pull request não deveria ser o lugar onde você descobre um erro de
+# estilo.
+pre-commit:
+  commands:
+    rubocop:
+      glob: "*.rb"
+      exclude:
+        - "db/**/*"
+      run: bundle exec rubocop --parallel --force-exclusion {staged_files}
+    reek:
+      glob: "{app,lib}/**/*.rb"
+      run: bundle exec reek {staged_files}
+    herb_format:
+      glob: "*.{erb,html.erb,html}"
+      run: bundle exec herb format {staged_files}
+      stage_fixed: true
+    herb_lint:
+      glob: "*.{erb,html.erb,html}"
+      run: bundle exec herb lint {staged_files}
+    stimulus_lint:
+      glob: "{app/javascript/controllers/**/*_controller.js,app/components/*_component/component_controller.js}"
+      run: bin/stimulus_lint {staged_files}
+    directive_guard:
+      glob: "{{app,lib,config,spec,db}/**/*.rb,bin/**/*,Rakefile,config.ru,Gemfile,.directive_allowlist}"
+      run: bin/directive_guard
+    i18n_sidecar_lint:
+      glob: "{config/locales/**/*.yml,app/components/*_component/*_component.*.yml}"
+      run: bin/i18n_sidecar_lint {staged_files}
+    i18n_health:
+      glob: "{app/**/*.{rb,erb,html.erb},config/locales/**/*.yml,app/components/*_component/*_component.*.yml}"
+      run: bin/i18n-tasks health

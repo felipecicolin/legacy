@@ -15,6 +15,14 @@ FileUtils.chdir APP_ROOT do
   puts "== Installing dependencies =="
   system("bundle check") || system!("bundle install")
 
+  # As regras customizadas do herb (.herb/rules/*.mjs) importam de
+  # @herb-tools/linter. Sem node_modules, o lefthook ainda roda o herb, mas as
+  # regras customizadas viram no-op em silêncio.
+  system! "npm ci" if File.exist?("package-lock.json")
+
+  # Instala os hooks de git descritos em lefthook.yml.
+  system! "bundle exec lefthook install"
+
   # puts "\n== Copying sample files =="
   # unless File.exist?("config/database.yml")
   #   FileUtils.cp "config/database.yml.sample", "config/database.yml"

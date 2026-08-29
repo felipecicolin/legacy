@@ -1,0 +1,74 @@
+# Herb linter config — ver https://herb-tools.dev/configuration
+#
+# Análise estática é a principal defesa contra alucinação de IA em views.
+# Roda localmente sobre os arquivos em stage via lefthook (ver lefthook.yml) e
+# sobre o repositório INTEIRO no job `lint` do .github/workflows/ci.yml.
+#
+# Cobrar o repositório inteiro só é possível porque o projeto nasceu limpo. Não
+# existe (nem deve passar a existir) um modo "só os arquivos novos": template
+# nasce limpo ou não nasce.
+#
+# As regras customizadas vivem em .herb/rules/*.mjs e cobram invariantes de
+# design system que o catálogo embutido do herb não cobre (<button> cru, valores
+# arbitrários de Tailwind, utilitários da escala de cor, hex, data-turbo="false",
+# handlers inline).
+
+version: 0.10.3
+
+linter:
+  enabled: true
+  failLevel: error
+
+  exclude:
+    - "node_modules/**/*"
+    - "tmp/**/*"
+    - "vendor/**/*"
+    - "public/**/*"
+    - "coverage/**/*"
+    # Arquivos de config templatizados com ERB (não são HTML).
+    - "config/**/*.erb"
+
+  rules:
+    # — Customizadas (.herb/rules/*.mjs) ——————————————————————
+    no-raw-button:
+      severity: error
+      exclude:
+        # O próprio design system renderiza as primitivas.
+        - "app/components/**/*"
+
+    no-arbitrary-tailwind:
+      severity: error
+    no-color-scale-utility:
+      severity: error
+    no-hex-code:
+      severity: error
+      exclude:
+        # Templates de e-mail são renderizados por clientes de terceiros que
+        # ignoram a folha de estilo da aplicação — token semântico não tem
+        # efeito lá. Hex inline é o padrão da indústria para e-mail
+        # transacional.
+        - "app/views/*_mailer/**/*"
+        - "app/views/layouts/mailer.html.erb"
+        # O manifest da PWA declara cores em hex por especificação.
+        - "app/views/pwa/**/*"
+    no-turbo-disable:
+      severity: error
+    no-inline-event-handler:
+      severity: error
+    no-hardcoded-string:
+      severity: error
+      exclude:
+        - "app/views/pwa/**/*"
+    icon-name-must-exist:
+      severity: error
+    no-inline-svg:
+      severity: error
+
+# O formatter ainda é experimental na v0.10 ("may potentially corrupt files in
+# edge cases", segundo a doc). Fica ligado no commit mesmo assim — se quebrar um
+# template de verdade, desliga aqui e reavalia na v1.0. O lefthook re-adiciona
+# ao stage o que ele reformatar (`stage_fixed: true`).
+formatter:
+  enabled: true
+  indentWidth: 2
+  maxLineLength: 120

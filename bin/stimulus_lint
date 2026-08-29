@@ -1,0 +1,605 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Custom Stimulus.js linter — pure Ruby, no Node required.
+#
+# Não existe mecanismo de supressão: nem arquivo de todo, nem diretiva inline.
+# Ofensa apontada aqui se conserta — ver AGENTS.md.
+#
+# Usage:
+#   bin/stimulus_lint                        # scan all controllers
+#   bin/stimulus_lint app/javascript/...js   # scan specific files (lefthook)
+#   bin/stimulus_lint --help
+
+METHOD_LENGTH_MAX       = 7
+CYCLOMATIC_COMPLEXITY_MAX = 5
+VALID_VALUE_TYPES       = %w[String Number Boolean Array Object].freeze
+
+# Whitelisted import path prefixes. Any other path (npm name, absolute
+# URL, etc.) is rejected — this project has no JS build pipeline so npm
+# packages can't actually load anyway.
+ALLOWED_IMPORT_PREFIXES = %w[@hotwired/ controllers/ components/ ./ ../].freeze
+
+class StimulusLint
+  RULES = %i[
+    no_console_log
+    unused_targets
+    unused_values
+    unused_classes
+    unused_outlets
+    invalid_value_type
+    kebab_case_identifier
+    orphaned_callback
+    method_length
+    cyclomatic_complexity
+    raw_event_listener
+    no_var
+    strict_equality
+    no_inner_html_assign
+    no_top_level_side_effects
+    import_whitelist
+    must_extend_controller
+    unpaired_timer
+  ].freeze
+
+  RESERVED_VALUE_KEYS = %w[type default].freeze
+
+  Offense = Struct.new(:path, :line, :rule, :identifier, :message)
+
+  # Targets/values/classes can be accessed externally via `this.controller.fooTarget`
+  # in helper modules (e.g. utils/). To avoid false positives, the unused-* rules
+  # check usage against the union of the controller and every file under app/javascript.
+  EXTERNAL_USAGE_GLOB = "app/javascript/**/*.js"
+
+  def initialize(files)
+    @files = files
+  end
+
+  def external_corpus
+    @external_corpus ||= Dir.glob(EXTERNAL_USAGE_GLOB).map { |p| File.read(p, encoding: "utf-8") }.join("\n")
+  end
+
+  def run
+    offenses = @files.flat_map { |path| lint(path) }
+
+    if offenses.empty?
+      puts "No offenses found."
+      return 0
+    end
+
+    offenses.each { |o| puts format_offense(o) }
+    puts "\n#{offenses.size} offense(s) found."
+    1
+  end
+
+  private
+
+  def format_offense(o)
+    "#{o.path}:#{o.line}: [#{o.rule}] #{o.message}"
+  end
+
+  def lint(path)
+    source     = File.readlines(path, encoding: "utf-8")
+    source_str = source.join
+    RULES.flat_map { |rule| send(rule, source, source_str, path) }
+  rescue => e
+    warn "stimulus_lint: error reading #{path}: #{e.message}"
+    []
+  end
+
+  # ── Rules ──────────────────────────────────────────────────────────────────
+
+  def no_console_log(source, _str, path)
+    source.each_with_index.filter_map do |line, idx|
+      stripped = line.strip
+      next if stripped.start_with?("//", "*", "/*")
+      next unless line.include?("console.log")
+
+      Offense.new(path, idx + 1, "NoConsoleLog", nil,
+        "remove console.log() — use console.warn() or console.error() instead")
+    end
+  end
+
+  def unused_targets(source, source_str, path)
+    extract_string_array(source_str, "targets").filter_map do |target|
+      next if target_used?(source_str, target)
+      next if target_used?(external_corpus, target)
+
+      Offense.new(path, declaration_line(source, target), "UnusedTarget", target,
+        "\"#{target}\" declared in static targets but never referenced " \
+        "(expected this.#{target}Target / this.#{target}Targets / this.has#{capitalize(target)}Target)")
+    end
+  end
+
+  def unused_values(source, source_str, path)
+    extract_value_keys(source_str).filter_map do |key|
+      next if value_used?(source_str, key)
+      next if value_used?(external_corpus, key)
+
+      Offense.new(path, declaration_line(source, key), "UnusedValue", key,
+        "\"#{key}\" declared in static values but never referenced " \
+        "(expected this.#{key}Value / this.has#{capitalize(key)}Value / #{key}ValueChanged)")
+    end
+  end
+
+  def unused_classes(source, source_str, path)
+    extract_string_array(source_str, "classes").filter_map do |klass|
+      next if class_used?(source_str, klass)
+      next if class_used?(external_corpus, klass)
+
+      Offense.new(path, declaration_line(source, klass), "UnusedClass", klass,
+        "\"#{klass}\" declared in static classes but never referenced " \
+        "(expected this.#{klass}Class / this.#{klass}Classes / this.has#{capitalize(klass)}Class)")
+    end
+  end
+
+  def unused_outlets(source, source_str, path)
+    extract_string_array(source_str, "outlets").filter_map do |outlet|
+      # outlet identifiers use kebab-case in static array → camelCase in JS API
+      camel = kebab_to_camel(outlet)
+      next if outlet_used?(source_str, camel)
+
+      Offense.new(path, declaration_line(source, outlet), "UnusedOutlet", outlet,
+        "\"#{outlet}\" declared in static outlets but never referenced " \
+        "(expected this.#{camel}Outlet / this.#{camel}Outlets / this.has#{capitalize(camel)}Outlet)")
+    end
+  end
+
+  def invalid_value_type(source, source_str, path)
+    m = strip_line_comments(source_str).match(/static\s+values\s*=\s*\{(.*?)\}/m)
+    return [] unless m
+
+    offenses = []
+    m[1].scan(/(\w+)\s*:\s*\{?([^,}\n]+)/) do |key, spec|
+      next if RESERVED_VALUE_KEYS.include?(key)
+
+      # Detect shorthand: `url: String` or `url: { type: String }`
+      type_name = spec.strip.match(/\btype\s*:\s*(\w+)/)&.[](1) ||
+                  spec.strip.match(/^(\w+)$/)&.[](1)
+      next if type_name.nil?
+      next if VALID_VALUE_TYPES.include?(type_name)
+
+      line = declaration_line(source, key)
+      offenses << Offense.new(path, line, "InvalidValueType", key,
+        "\"#{key}\" uses invalid value type \"#{type_name}\" — " \
+        "allowed: #{VALID_VALUE_TYPES.join(", ")}")
+    end
+    offenses
+  end
+
+  def kebab_case_identifier(source, source_str, path)
+    offenses = []
+    %w[targets values classes outlets].each do |prop|
+      next if prop == "outlets" # outlets intentionally use kebab-case strings
+
+      extract_string_array(source_str, prop).each do |name|
+        next unless name.include?("-")
+
+        offenses << Offense.new(path, declaration_line(source, name), "KebabCaseIdentifier", name,
+          "\"#{name}\" in static #{prop} must be camelCase, not kebab-case")
+      end
+
+      if prop == "values"
+        # Values use object keys — check for kebab in keys
+        extract_value_keys(source_str).each do |key|
+          next unless key.include?("-")
+
+          offenses << Offense.new(path, declaration_line(source, key), "KebabCaseIdentifier", key,
+            "\"#{key}\" in static values must be camelCase, not kebab-case")
+        end
+      end
+    end
+    offenses
+  end
+
+  def orphaned_callback(source, source_str, path)
+    offenses = []
+
+    declared_targets = extract_string_array(source_str, "targets")
+    declared_values  = extract_value_keys(source_str)
+    declared_outlets = extract_string_array(source_str, "outlets").map { |o| kebab_to_camel(o) }
+
+    # Match only METHOD DEFINITIONS (indented name followed by "("), not arbitrary calls.
+    # Pattern: line starts with whitespace, then the callback name, then "(" — e.g. "  fooTargetConnected() {"
+
+    # fooTargetConnected / fooTargetDisconnected — check target declared
+    source_str.scan(/^\s+(\w+)TargetConnected\s*\(/).map(&:first).each do |name|
+      next if declared_targets.include?(name)
+
+      line = method_declaration_line(source, "#{name}TargetConnected")
+      offenses << Offense.new(path, line, "OrphanedCallback", "#{name}TargetConnected",
+        "#{name}TargetConnected/Disconnected callback references undeclared target \"#{name}\"")
+    end
+
+    source_str.scan(/^\s+(\w+)TargetDisconnected\s*\(/).map(&:first).each do |name|
+      next if declared_targets.include?(name)
+      next if offenses.any? { |o| o.identifier == "#{name}TargetConnected" }  # already reported paired
+
+      line = method_declaration_line(source, "#{name}TargetDisconnected")
+      offenses << Offense.new(path, line, "OrphanedCallback", "#{name}TargetDisconnected",
+        "#{name}TargetDisconnected callback references undeclared target \"#{name}\"")
+    end
+
+    # fooValueChanged — check value declared
+    source_str.scan(/^\s+(\w+)ValueChanged\s*\(/).map(&:first).each do |name|
+      next if declared_values.include?(name)
+      next if VALID_VALUE_TYPES.include?(name)
+
+      line = method_declaration_line(source, "#{name}ValueChanged")
+      offenses << Offense.new(path, line, "OrphanedCallback", "#{name}ValueChanged",
+        "#{name}ValueChanged callback references undeclared value \"#{name}\"")
+    end
+
+    # fooOutletConnected / fooOutletDisconnected — check outlet declared
+    source_str.scan(/^\s+(\w+)OutletConnected\s*\(/).map(&:first).each do |name|
+      next if declared_outlets.include?(name)
+
+      line = method_declaration_line(source, "#{name}OutletConnected")
+      offenses << Offense.new(path, line, "OrphanedCallback", "#{name}OutletConnected",
+        "#{name}OutletConnected/Disconnected callback references undeclared outlet \"#{name}\"")
+    end
+
+    offenses
+  end
+
+  def method_length(source, _str, path)
+    offenses = []
+    extract_methods(source).each do |name, start_line, body_lines|
+      significant = body_lines.reject { |l| l.strip.empty? || l.strip.start_with?("//", "*", "/*") }
+      next unless significant.size > METHOD_LENGTH_MAX
+
+      offenses << Offense.new(path, start_line, "MethodLength", name,
+        "method \"#{name}\" has #{significant.size} significant lines " \
+        "(max #{METHOD_LENGTH_MAX}) — extract smaller helpers")
+    end
+    offenses
+  end
+
+  # `addEventListener` calls bypass Stimulus' data-action wiring — they tie
+  # behavior to specific DOM elements that Stimulus can't track. Force every
+  # listener to go through `data-action="event->controller#method"` instead.
+  #
+  # Allowed exceptions: window/document-level system events that Stimulus
+  # can't route via data-action (e.g. resize, beforeunload, online, offline,
+  # hashchange) — these are the rare cases where addEventListener is the
+  # only option, and they only make sense in `connect()` paired with a
+  # `disconnect()` cleanup.
+  ALLOWED_LISTENER_EVENTS = %w[
+    resize beforeunload online offline hashchange popstate
+    visibilitychange storage message
+  ].freeze
+
+  def raw_event_listener(source, _str, path)
+    source.each_with_index.filter_map do |line, idx|
+      stripped = line.strip
+      next if stripped.start_with?("//", "*", "/*")
+      next unless line.include?(".addEventListener(") || line.include?(".removeEventListener(")
+
+      event = line.match(/\.\w+EventListener\(\s*["']([^"']+)["']/)&.[](1)
+      next if event && ALLOWED_LISTENER_EVENTS.include?(event)
+
+      Offense.new(path, idx + 1, "RawEventListener", nil,
+        "use data-action=\"event->controller#method\" instead of addEventListener — " \
+        "Stimulus can't track listeners attached imperatively. " \
+        "Allowed only for window/document system events: #{ALLOWED_LISTENER_EVENTS.join(", ")}")
+    end
+  end
+
+  # `var` is the legacy declaration form — function-scoped, hoisted, can be
+  # silently redeclared. AI loves emitting `var` from training data. Force
+  # `let`/`const`.
+  def no_var(source, _str, path)
+    source.each_with_index.filter_map do |line, idx|
+      stripped = line.strip
+      next if stripped.start_with?("//", "*", "/*")
+      next unless line.match?(/(?:^|[^\w$])var\s+[\w$]/)
+
+      Offense.new(path, idx + 1, "NoVar", nil,
+        "use `let` or `const` — `var` is function-scoped and hoisted, never the right choice")
+    end
+  end
+
+  # `==` and `!=` apply implicit coercion (`"0" == false`, `null == undefined`).
+  # Always use `===` / `!==`.
+  def strict_equality(source, _str, path)
+    source.each_with_index.filter_map do |line, idx|
+      stripped = line.strip
+      next if stripped.start_with?("//", "*", "/*")
+      next unless line.match?(/[^=!<>]==[^=]|[^=!<>]!=[^=]/)
+
+      Offense.new(path, idx + 1, "StrictEquality", nil,
+        "use `===` / `!==` — `==` / `!=` apply implicit coercion")
+    end
+  end
+
+  # `el.innerHTML = ...` is an XSS vector and bypasses the Turbo / Stimulus
+  # rendering model. Use textContent (escaped) or render via Turbo Stream.
+  def no_inner_html_assign(source, _str, path)
+    source.each_with_index.filter_map do |line, idx|
+      stripped = line.strip
+      next if stripped.start_with?("//", "*", "/*")
+      next unless line.match?(/\.innerHTML\s*[+\-]?=[^=]/)
+
+      Offense.new(path, idx + 1, "NoInnerHtmlAssign", nil,
+        "do not assign to `.innerHTML` — XSS vector and bypasses Turbo. " \
+        "Use textContent, render via Turbo Stream, or update DOM via Stimulus targets")
+    end
+  end
+
+  # Stimulus controller files should be pure declarations (imports + class).
+  # Statements at the top level fire on every import and break expectations.
+  def no_top_level_side_effects(source, _str, path)
+    depth = 0
+    source.each_with_index.filter_map do |line, idx|
+      pre_depth = depth
+      depth += line.count("{") - line.count("}")
+      next unless pre_depth.zero?
+
+      stripped = line.strip
+      next if stripped.empty?
+      next if stripped.start_with?("//", "*", "/*", "}")
+      next if stripped.match?(/^(?:import|export|class|const|let|\}|\/\*)\b/)
+
+      Offense.new(path, idx + 1, "NoTopLevelSideEffects", nil,
+        "no top-level statements — controller files must contain only imports and the class declaration")
+    end
+  end
+
+  # No JS build pipeline → no npm packages. Imports must come from
+  # `@hotwired/*`, `controllers/`, `components/`, or relative paths.
+  def import_whitelist(source, _str, path)
+    source.each_with_index.filter_map do |line, idx|
+      m = line.match(/from\s+["']([^"']+)["']/)
+      next unless m
+
+      from = m[1]
+      next if ALLOWED_IMPORT_PREFIXES.any? { |prefix| from.start_with?(prefix) }
+
+      Offense.new(path, idx + 1, "ImportWhitelist", nil,
+        "import \"#{from}\" not allowed — only #{ALLOWED_IMPORT_PREFIXES.join(', ')} prefixes; " \
+        "no npm packages without an importmap pin")
+    end
+  end
+
+  # Every controller file must export a class extending `Controller`.
+  def must_extend_controller(source, source_str, path)
+    return [] unless path.end_with?("_controller.js")
+    return [] if source_str.match?(/export\s+default\s+class\b[^{]*\bextends\s+Controller\b/)
+
+    Offense.new(path, 1, "MustExtendController", nil,
+      "controller file must `export default class extends Controller { … }` " \
+      "(import Controller from \"@hotwired/stimulus\")")
+  end
+
+  # `setInterval`/`setTimeout` started without a matching `clear*` somewhere
+  # in the same file leaks across navigations.
+  def unpaired_timer(source, source_str, path)
+    offenses = []
+    %w[setInterval setTimeout].each do |fn|
+      starts = source_str.scan(/\b#{fn}\(/).size
+      clear  = source_str.scan(/\bclear#{fn[3..]}\b/).size
+      next if starts <= clear
+
+      line = source.index { |l| l.include?("#{fn}(") }
+      offenses << Offense.new(path, (line || 0) + 1, "UnpairedTimer", nil,
+        "`#{fn}` has no matching `clear#{fn[3..]}` in this file — pair them in connect/disconnect to avoid leaks")
+    end
+    offenses
+  end
+
+  def cyclomatic_complexity(source, _str, path)
+    offenses = []
+    extract_methods(source).each do |name, start_line, body_lines|
+      complexity = cyclomatic_score(body_lines.join)
+      next unless complexity > CYCLOMATIC_COMPLEXITY_MAX
+
+      offenses << Offense.new(path, start_line, "CyclomaticComplexity", name,
+        "method \"#{name}\" has cyclomatic complexity #{complexity} " \
+        "(max #{CYCLOMATIC_COMPLEXITY_MAX}) — simplify branching logic")
+    end
+    offenses
+  end
+
+  # ── Method extraction ──────────────────────────────────────────────────────
+
+  # Returns [[name, start_line, [body_line_strings]], ...]
+  #
+  # Depth tracking strategy:
+  #   - Record pre_depth (depth BEFORE counting current line's braces).
+  #   - A method declaration lives at the class-body level: pre_depth == 1.
+  #   - The method ends when depth drops back to 1 (pre_depth of the declaration).
+  def extract_methods(source)
+    methods      = []
+    depth        = 0
+    in_method    = false
+    method_name  = nil
+    method_start = nil
+    body_lines   = []
+
+    # Method pattern: optional async/get/set, then name(args) {.
+    # Captures private methods too — the `#` prefix is just a name modifier,
+    # not an excuse to skip length / complexity / orphaned-callback checks.
+    method_re  = /^\s+(?:async\s+|get\s+|set\s+)?(#?[a-zA-Z_$][a-zA-Z0-9_$]*)\s*\([^)]*\)\s*\{/
+    skip_names = %w[if else for while switch catch try finally do constructor].freeze
+
+    source.each_with_index do |raw_line, idx|
+      line      = raw_line
+      pre_depth = depth
+      depth    += line.count("{") - line.count("}")
+
+      if !in_method && pre_depth == 1 && (m = method_re.match(line))
+        candidate = m[1]
+        next if skip_names.include?(candidate)
+
+        if line.count("{") > line.count("}")
+          # Normal multi-line method — depth is now 2, ends when it returns to 1
+          in_method    = true
+          method_name  = candidate
+          method_start = idx + 1
+          body_lines   = []
+        else
+          # One-liner: already balanced, record as empty-body method
+          methods << [candidate, idx + 1, []]
+        end
+        next
+      end
+
+      next unless in_method
+
+      if depth <= 1
+        # Closing brace of the method — capture and reset
+        methods << [method_name, method_start, body_lines]
+        in_method   = false
+        method_name = nil
+        body_lines  = []
+      else
+        body_lines << line
+      end
+    end
+
+    methods
+  end
+
+  # ── Cyclomatic complexity ──────────────────────────────────────────────────
+
+  def cyclomatic_score(code)
+    score = 1
+    # Strip strings and template literals to avoid false positives
+    stripped = code
+      .gsub(/`[^`]*`/, '""')
+      .gsub(/"[^"\\]*(?:\\.[^"\\]*)*"/, '""')
+      .gsub(/'[^'\\]*(?:\\.[^'\\]*)*'/, '""')
+      .gsub(%r{//[^\n]*}, "")      # line comments
+      .gsub(%r{/\*.*?\*/}m, "")    # block comments
+
+    score += stripped.scan(/\bif\b/).size
+    score += stripped.scan(/\belse\s+if\b/).size
+    score += stripped.scan(/\bfor\b/).size
+    score += stripped.scan(/\bwhile\b/).size
+    score += stripped.scan(/\bcase\b/).size
+    score += stripped.scan(/\bcatch\b/).size
+    score += stripped.scan(/&&/).size
+    score += stripped.scan(/\|\|/).size
+    score += stripped.scan(/\?\?/).size
+    score += stripped.scan(/\?[^:?]/).size  # ternary ? (not ??)
+    score
+  end
+
+  # ── Extraction ─────────────────────────────────────────────────────────────
+
+  # Strip // line comments so that comment content doesn't confuse regexes.
+  # Block comments are left (rare in JS static declarations).
+  def strip_line_comments(str)
+    str.gsub(%r{//[^\n]*}, "")
+  end
+
+  def extract_string_array(source_str, property)
+    clean = strip_line_comments(source_str)
+    m = clean.match(/static\s+#{property}\s*=\s*\[(.*?)\]/m)
+    return [] unless m
+
+    m[1].scan(/"([^"]+)"|'([^']+)'/).map { |a, b| a || b }
+  end
+
+  def extract_value_keys(source_str)
+    clean = strip_line_comments(source_str)
+    m = clean.match(/static\s+values\s*=\s*\{(.*?)\}/m)
+    return [] unless m
+
+    m[1].scan(/(\w+)\s*:/).map(&:first).reject { |k| RESERVED_VALUE_KEYS.include?(k) }
+  end
+
+  # ── Usage detection ────────────────────────────────────────────────────────
+
+  # Usage detection accepts any object prefix (`this.fooTarget`, `controller.fooTarget`, etc.)
+  # so helper modules that receive the controller as a dependency are recognized.
+  # Also accepts `[data-<controller>-target="foo"]` CSS-selector strings used in querySelector calls.
+  def target_used?(source_str, name)
+    source_str.match?(/\.#{re(name)}Targets?\b/) ||
+      source_str.match?(/\.has#{re(capitalize(name))}Target\b/) ||
+      source_str.match?(/#{re(name)}TargetConnected\b/) ||
+      source_str.match?(/#{re(name)}TargetDisconnected\b/) ||
+      source_str.match?(/-target=["']#{re(name)}["']/)
+  end
+
+  def value_used?(source_str, key)
+    source_str.match?(/\.#{re(key)}Value\b/) ||
+      source_str.match?(/\.has#{re(capitalize(key))}Value\b/) ||
+      source_str.match?(/#{re(key)}ValueChanged\b/)
+  end
+
+  def class_used?(source_str, name)
+    source_str.match?(/\.#{re(name)}Classes?\b/) ||
+      source_str.match?(/\.has#{re(capitalize(name))}Class\b/)
+  end
+
+  def outlet_used?(source_str, camel_name)
+    source_str.match?(/this\.#{re(camel_name)}Outlets?\b/) ||
+      source_str.match?(/this\.has#{re(capitalize(camel_name))}Outlet\b/) ||
+      source_str.match?(/this\.#{re(camel_name)}OutletElements?\b/) ||
+      source_str.match?(/#{re(camel_name)}OutletConnected\b/) ||
+      source_str.match?(/#{re(camel_name)}OutletDisconnected\b/)
+  end
+
+  # ── Helpers ────────────────────────────────────────────────────────────────
+
+  def re(str) = Regexp.escape(str)
+  def capitalize(str) = str.empty? ? str : str[0].upcase + str[1..]
+
+  def kebab_to_camel(str)
+    str.split("-").map.with_index { |part, i| i.zero? ? part : capitalize(part) }.join
+  end
+
+  def declaration_line(source, identifier)
+    idx = source.index do |line|
+      line.include?("\"#{identifier}\"") ||
+        line.include?("'#{identifier}'") ||
+        line.match?(/\b#{Regexp.escape(identifier)}\s*:/)
+    end
+    idx ? idx + 1 : 1
+  end
+
+  def method_declaration_line(source, identifier)
+    idx = source.index { |line| line.include?(identifier) }
+    idx ? idx + 1 : 1
+  end
+end
+
+# ── Entry point ───────────────────────────────────────────────────────────────
+
+if ARGV.include?("--help") || ARGV.include?("-h")
+  puts <<~HELP
+    Usage: bin/stimulus_lint [files...]
+           bin/stimulus_lint              # scans all app/javascript/controllers/**/*_controller.js
+
+    Limits:
+      METHOD_LENGTH_MAX        = #{METHOD_LENGTH_MAX} significant lines
+      CYCLOMATIC_COMPLEXITY_MAX = #{CYCLOMATIC_COMPLEXITY_MAX}
+
+    Rules:
+      NoConsoleLog           console.log() calls left in code
+      UnusedTarget           static targets declared but never referenced
+      UnusedValue            static values declared but never referenced
+      UnusedClass            static classes declared but never referenced
+      UnusedOutlet           static outlets declared but never referenced
+      InvalidValueType       value type not in String/Number/Boolean/Array/Object
+      KebabCaseIdentifier    targets/values/classes names must be camelCase
+      OrphanedCallback       fooTargetConnected/ValueChanged references undeclared identifier
+      MethodLength           method body exceeds #{METHOD_LENGTH_MAX} significant lines
+      CyclomaticComplexity   method has too many branches (max #{CYCLOMATIC_COMPLEXITY_MAX})
+  HELP
+  exit 0
+end
+
+files = if ARGV.any?
+  ARGV.select { |f| f.end_with?("_controller.js") && File.exist?(f) }
+else
+  Dir.glob("{app/javascript/controllers/**/*_controller.js,app/components/*_component/component_controller.js}")
+end
+
+if files.empty?
+  puts "No Stimulus controller files found."
+  exit 0
+end
+
+exit StimulusLint.new(files).run

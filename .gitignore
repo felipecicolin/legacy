@@ -33,3 +33,14 @@
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
+
+/app/assets/builds/*
+!/app/assets/builds/.keep
+
+# Ignore coverage reports.
+/coverage
+
+# Node deps exist only for the herb custom rules (.herb/rules/*.mjs).
+/node_modules
+
+vendor/bundle

@@ -1,0 +1,13 @@
+{
+  "name": "legacy-tooling",
+  "private": true,
+  "type": "module",
+  "description": "Dev/CI tooling deps. Not shipped to the browser. Browser JS is served via importmap-rails (config/importmap.rb).",
+  "devDependencies": {
+    "@herb-tools/linter": "^0.10.3",
+    "@ruby/prism": "^1.9.0"
+  },
+  "scripts": {
+    "lint:erb": "herb-lint"
+  }
+}

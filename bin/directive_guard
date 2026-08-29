@@ -1,0 +1,256 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Forbid new linter-suppression directives anywhere under `app/`, `lib/`,
+# `config/`, `spec/`, `test/`, `db/`, `bin/`. Tracks:
+#
+#   * `# rubocop:disable | enable | todo <cop>`
+#   * `# :reek:<Smell>`
+#   * `# i18n-tasks-use t('key.path')`   (marks dynamic keys as used)
+#
+# Also scans the linter config files at the repo root (`.rubocop.yml`,
+# `.rubocop_todo.yml`, `.reek.yml`) for entries that EXPAND the suppression
+# surface — `enabled: false` and `Exclude:`/`exclude:` keys. New additions
+# in those files have the same effect as an inline disable, just hidden,
+# so they need the same maintainer review.
+#
+# And refuses outright to let a linter TODO file exist. A todo file turns
+# "fix this" into "catalogue this", and from then on the number only grows.
+# See AGENTS.md.
+#
+# Locks the current OCCURRENCE COUNT per (file, directive) tuple against an
+# allowlist so the codebase can't accumulate suppressions — every new
+# directive (or extra occurrence of an existing one) must be acknowledged
+# by the maintainer.
+#
+# Usage:
+#   bin/directive_guard            # fail on unexpected directives
+#   bin/directive_guard --update   # rewrite the allowlist (maintainer-only)
+
+require "pathname"
+require "yaml"
+
+ROOT = Pathname.new(__dir__).join("..").expand_path
+# Ruby-source dirs: scan `*.rb`. `db/` and `lib/` join here so migrations / tasks
+# can't sneak disables in either.
+SCAN_RB_DIRS = %w[app lib config spec test db].freeze
+# Scripts: scan EVERY file in `bin/` (most have no extension) but require a
+# Ruby shebang so we don't blow up on shell helpers.
+SCAN_BIN_DIRS = %w[bin].freeze
+# Repo-root single files written in Ruby.
+SCAN_ROOT_FILES = %w[Rakefile config.ru Gemfile].freeze
+# Linter config files — scanned for opt-out keys (`enabled: false`,
+# `Exclude:`/`exclude:`) so the suppression surface can't grow through
+# config either.
+SCAN_CONFIG_FILES = %w[.rubocop.yml .rubocop_todo.yml .reek.yml].freeze
+# (a) This script itself — its docstring describes the directive grammar and
+# would self-trip; (b) generated artifacts that can't carry meaningful
+# directives.
+SKIP_PATHS = %w[bin/directive_guard db/schema.rb].freeze
+ALLOWLIST_PATH = ROOT.join(".directive_allowlist")
+# Arquivos de dívida de linter. Não são permitidos — nem vazios. Ver AGENTS.md.
+FORBIDDEN_TODO_FILES = %w[.rubocop_todo.yml .stimulus_lint_todo.yml .reek_todo.yml].freeze
+DIRECTIVE = /#\s*(?:rubocop:(?:disable|enable|todo)\s+\S+|:reek:\S+|i18n-tasks-use\s+t\([^)]+\))/
+# Lines that grow the suppression surface inside a linter config:
+#   `enabled: false`                  — disables a cop or smell detector
+#   `Exclude:` / `exclude:`           — names a path/glob the linter ignores
+CONFIG_OPTOUT = /^\s*(?:enabled:\s*false|[Ee]xclude:)/
+
+def ruby_script?(path)
+  return false unless File.file?(path)
+
+  File.open(path, "rb") { |io| io.read(64).to_s.start_with?("#!") && io.rewind && io.gets.include?("ruby") }
+rescue StandardError
+  false
+end
+
+def candidate_paths
+  rb_files = SCAN_RB_DIRS.flat_map { |dir| Dir.glob(ROOT.join(dir, "**/*.rb")) }
+  bin_files = SCAN_BIN_DIRS.flat_map { |dir| Dir.glob(ROOT.join(dir, "**/*")) }.select { |p| ruby_script?(p) }
+  root_files = SCAN_ROOT_FILES.map { |name| ROOT.join(name).to_s }.select { |p| File.file?(p) }
+  (rb_files + bin_files + root_files).uniq
+end
+
+def config_paths
+  SCAN_CONFIG_FILES.map { |name| ROOT.join(name).to_s }.select { |p| File.file?(p) }
+end
+
+def scan
+  counts = Hash.new(0)
+  candidate_paths.sort.each do |path|
+    rel = Pathname.new(path).relative_path_from(ROOT).to_s
+    next if SKIP_PATHS.include?(rel)
+
+    File.foreach(path, encoding: "UTF-8") do |line|
+      line.scan(DIRECTIVE) { |hit| counts["#{rel}\t#{hit.strip}"] += 1 }
+    end
+  rescue ArgumentError
+    next # binary or non-UTF-8 file
+  end
+
+  # Linter configs: count each opt-out line as its own directive so adding
+  # `enabled: false` or a new `Exclude:` entry trips the same allowlist
+  # check as an inline `# rubocop:disable`.
+  #
+  # Counts the per-cop/per-detector exclusion ITEMS as well — the previous
+  # version only locked the section headers, so any maintainer could grow an
+  # existing `Exclude:` block silently. The total item count is exposed as
+  # the synthetic `exclude-items` key per config file.
+  config_paths.sort.each do |path|
+    rel = Pathname.new(path).relative_path_from(ROOT).to_s
+    File.foreach(path, encoding: "UTF-8") do |line|
+      next unless line =~ CONFIG_OPTOUT
+
+      counts["#{rel}\t#{line.strip}"] += 1
+    end
+
+    counts["#{rel}\texclude-items"] = count_yaml_excludes(path)
+  rescue ArgumentError
+    next
+  end
+
+  counts
+end
+
+# Walks the parsed YAML and returns the total number of items declared under
+# any `Exclude:` / `exclude:` block (including nested ones). Locked in the
+# allowlist so a maintainer can't grow an existing exclusion list silently.
+def count_yaml_excludes(path)
+  data = YAML.safe_load_file(path, aliases: true, permitted_classes: [Symbol, Regexp])
+  walk_excludes(data)
+rescue Psych::SyntaxError, Psych::DisallowedClass
+  0
+end
+
+def walk_excludes(node)
+  case node
+  when Hash
+    node.sum do |key, value|
+      if key.to_s.match?(/^[Ee]xclude$/) && value.is_a?(Array)
+        value.size + walk_excludes(value)
+      else
+        walk_excludes(value)
+      end
+    end
+  when Array
+    node.sum { |item| walk_excludes(item) }
+  else
+    0
+  end
+end
+
+def load_allowlist
+  return {} unless ALLOWLIST_PATH.exist?
+
+  ALLOWLIST_PATH.readlines.each_with_object({}) do |line, acc|
+    line = line.chomp
+    next if line.empty? || line.start_with?("#")
+
+    path, directive, count = line.split("\t", 3)
+    acc["#{path}\t#{directive}"] = (count || "1").to_i
+  end
+end
+
+def serialize(counts)
+  counts.sort.map { |key, count| count == 1 ? key : "#{key}\t#{count}" }.join("\n")
+end
+
+def forbidden_todo_files
+  FORBIDDEN_TODO_FILES.select { |name| ROOT.join(name).exist? }
+end
+
+todo_files = forbidden_todo_files
+if todo_files.any?
+  warn "Directive guard FAILED."
+  warn ""
+  warn "Linter todo file(s) present:"
+  todo_files.each { |name| warn "  + #{name}" }
+  warn ""
+  warn "Este repositório não tem dívida de linter e não vai passar a ter. Um"
+  warn "arquivo de todo troca \"conserte isto\" por \"catalogue isto\", e a partir"
+  warn "daí a lista só cresce. Conserte as ofensas e apague o arquivo."
+  exit 1
+end
+
+current = scan
+
+if ARGV.include?("--update")
+  ALLOWLIST_PATH.write(<<~HEADER + serialize(current) + "\n")
+    # Directive allowlist — `bin/directive_guard`.
+    #
+    # Every `# rubocop:disable`, `# rubocop:enable`, `# :reek:`, and
+    # `# i18n-tasks-use t('…')` directive under app/, lib/, config/, spec/,
+    # test/, db/, bin/ MUST appear here. New entries (and new occurrences of
+    # existing ones in the same file) require explicit maintainer review —
+    # most suppressions hide a refactor that would resolve the underlying
+    # smell or surface the missing translation.
+    #
+    # To regenerate after an approved exception: bin/directive_guard --update
+    #
+    # Format: <relative path>\\t<directive line>[\\t<count>]   (count defaults to 1)
+  HEADER
+  puts "Rewrote #{ALLOWLIST_PATH.relative_path_from(ROOT)} (#{current.values.sum} occurrence(s) across #{current.size} key(s))."
+  exit 0
+end
+
+allowed = load_allowlist
+keys = (current.keys + allowed.keys).uniq.sort
+new_keys = []
+extra_occurrences = []
+stale_keys = []
+
+keys.each do |key|
+  cur = current[key] || 0
+  allow = allowed[key] || 0
+
+  if allow.zero? && cur.positive?
+    new_keys << [key, cur]
+  elsif cur > allow
+    extra_occurrences << [key, allow, cur]
+  elsif cur < allow
+    stale_keys << [key, allow, cur]
+  end
+end
+
+if new_keys.any? || extra_occurrences.any? || stale_keys.any?
+  warn "Directive guard FAILED."
+  warn ""
+
+  if new_keys.any?
+    warn "New `# rubocop:disable` / `# :reek:` / `# i18n-tasks-use` directive(s):"
+    new_keys.each { |key, count| warn "  + #{key} (×#{count})" }
+    warn ""
+  end
+
+  if extra_occurrences.any?
+    warn "Additional occurrence(s) of an existing directive in the same file:"
+    extra_occurrences.each do |key, allow, cur|
+      warn "  + #{key} (allowed ×#{allow}, found ×#{cur})"
+    end
+    warn ""
+  end
+
+  if new_keys.any? || extra_occurrences.any?
+    warn "Adding suppressions is forbidden by policy. The cop / smell is usually right —"
+    warn "first try to refactor:"
+    warn "  • Long method / class → extract a service or split responsibilities."
+    warn "  • Long parameter list → introduce a value object or kwargs hash."
+    warn "  • Long line → shorten naming, break across lines (where the linter allows),"
+    warn "    or move data to a constant / YAML."
+    warn "  • Feature envy → move the method closer to the data."
+    warn ""
+    warn "If you confirmed with the maintainer that this disable is genuinely necessary,"
+    warn "run `bin/directive_guard --update` to append the entry to the allowlist."
+  end
+
+  if stale_keys.any?
+    warn "Allowlist entries no longer matched by source (run --update to prune):"
+    stale_keys.each do |key, allow, cur|
+      warn "  - #{key} (allowed ×#{allow}, found ×#{cur})"
+    end
+  end
+
+  exit 1
+end
+
+puts "Directive guard OK (#{current.values.sum} occurrence(s) across #{current.size} key(s) allowlisted)."

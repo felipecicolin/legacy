@@ -1,0 +1,39 @@
+name: Cancel PR runs
+
+# Um PR que acabou de ser mergeado ou fechado não muda mais por causa do que a
+# CI dele ainda está provando — daquele instante em diante o run é custo puro.
+# O bloco `concurrency` do ci.yml cobre só o outro caso: um push novo
+# superando o run anterior no mesmo ref.
+#
+# Vive em arquivo próprio porque o ci.yml não pode acordar em `closed`: a
+# alternativa seria adicionar o tipo lá e depois ensinar cada job a se pular.
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  actions: write
+
+jobs:
+  cancel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Cancel whatever is still running for this PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+          REPO: ${{ github.repository }}
+        run: |
+          for status in queued in_progress; do
+            gh api -X GET "repos/$REPO/actions/runs" \
+              -f branch="$BRANCH" -f status="$status" -f per_page=100 \
+              --jq ".workflow_runs[] | select(.id != $GITHUB_RUN_ID) | .id"
+          done | sort -u | while read -r run; do
+            echo "Cancelando run $run"
+            # Um run que cruzou a linha de chegada entre a listagem e aqui
+            # responde 409, o que é o desfecho bom e não uma falha.
+            gh api -X POST "repos/$REPO/actions/runs/$run/cancel" --silent ||
+              echo "  run $run já havia terminado"
+          done

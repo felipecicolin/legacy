@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Project wrapper for the i18n-tasks CLI.
+#
+# Pre-loads the SidecarAwareFileSystem adapter so that
+# `data.adapter: I18nTasks::SidecarAwareFileSystem` in `config/i18n-tasks.yml`
+# resolves to a real class. Without this wrapper, the gem's own binary
+# constantize-fails on the adapter name.
+#
+# Use this script everywhere you would have used `bundle exec i18n-tasks`.
+
+require "bundler/setup"
+
+require "i18n"
+i18n_gem_config = I18n.config
+if i18n_gem_config.respond_to?(:enforce_available_locales=) && i18n_gem_config.enforce_available_locales.nil?
+  i18n_gem_config.enforce_available_locales = true
+end
+
+require "i18n/tasks"
+require_relative "../lib/i18n_tasks/sidecar_aware_file_system"
+
+require "i18n/tasks/cli"
+
+I18n::Tasks::CLI.start(ARGV)

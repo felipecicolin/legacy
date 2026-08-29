@@ -1,0 +1,26 @@
+---
+# Detector de code smells.
+#
+# Só afinação de limites aqui. Nenhuma exceção por classe ou por método: uma
+# lista de `exclude:` é a mesma dívida de um `.rubocop_todo.yml`, só que com
+# outro nome. Smell apontado se refatora — ver AGENTS.md.
+exclude_paths:
+  - db
+  - spec
+  - vendor
+  - node_modules
+detectors:
+  # Exigir um comentário de documentação em cada módulo é ruído: o
+  # `Style/Documentation` do rubocop também está desligado.
+  IrresponsibleModule:
+    enabled: false
+  # Mesmo teto do `Metrics/MethodLength` do rubocop, para que os dois linters
+  # não discordem sobre o tamanho de um método.
+  TooManyStatements:
+    max_statements: 7
+  DuplicateMethodCall:
+    max_calls: 2
+  # Barulhento demais em Rails: acusa todo helper, componente e objeto de
+  # apresentação que legitimamente lê dados de um colaborador.
+  FeatureEnvy:
+    enabled: false

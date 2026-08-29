@@ -1,0 +1,99 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Enforces i18n sidecar STRUCTURE for ViewComponents.
+#
+# ViewComponent v4 owns each component's translations through a per-component
+# I18nBackend (see `ViewComponent::Translatable`). The backend auto-scopes
+# loaded data under the component's name, so the sidecar yml must be FLAT —
+# `pt-BR: { key: value }`, never `pt-BR: { my_component: { key: value } }`.
+# A wrapper would double-nest at runtime and break `t(".key")` lookups.
+#
+# Three invariants:
+#
+#   1. No top-level `<name>_component` key may live in `config/locales/**/*.yml`.
+#      Component translations belong in their sidecar file:
+#      `app/components/<name>_component.<locale>.yml`.
+#
+#   2. Each sidecar may only contain locale code keys at the top level
+#      (`pt-BR`, `en`, etc.). Component-name wrappers are forbidden because
+#      ViewComponent's I18nBackend already injects the scope.
+#
+#   3. Every key declared inside a sidecar locale tree must NOT be the
+#      component's own name (catches the most common wrapper-style mistake
+#      even when the locale key is missing).
+#
+# Dead-key detection lives in `i18n-tasks unused` (run via `bin/i18n-tasks`,
+# which loads our SidecarAwareFileSystem adapter).
+#
+# Usage:
+#   bin/i18n_sidecar_lint           # full scan (CI)
+#   bin/i18n_sidecar_lint <files>   # subset (lefthook passes staged files)
+
+require "yaml"
+
+GLOBAL_GLOB  = "config/locales/**/*.yml"
+SIDECAR_GLOB = "app/components/*_component/*_component.*.yml"
+SIDECAR_RE   = %r{\Aapp/components/([a-z0-9_]+_component)/\1\.[^.]+\.yml\z}
+LOCALE_KEY_RE = /\A[a-z]{2,3}(?:-[A-Z]{2})?\z/
+
+scanned = if ARGV.empty?
+            Dir.glob(GLOBAL_GLOB) + Dir.glob(SIDECAR_GLOB)
+          else
+            ARGV.select { |f| File.exist?(f) && f.end_with?(".yml") }
+          end
+
+offenses = []
+
+scanned.each do |path|
+  data = YAML.safe_load_file(path, aliases: true, permitted_classes: [Symbol, Date, Time])
+  next unless data.is_a?(Hash)
+
+  in_global  = path.start_with?("config/locales/")
+  sidecar_of = path.match(SIDECAR_RE)&.[](1)
+
+  if in_global
+    data.each_value do |tree|
+      next unless tree.is_a?(Hash)
+
+      tree.each_key do |key|
+        name = key.to_s
+        next unless name.end_with?("_component")
+
+        offenses << "#{path}: top-level `#{name}` belongs in `app/components/#{name}.<locale>.yml` — " \
+                    "never in global locales/"
+      end
+    end
+  end
+
+  next unless sidecar_of
+
+  data.each do |locale_key, tree|
+    locale_str = locale_key.to_s
+
+    unless locale_str.match?(LOCALE_KEY_RE)
+      offenses << "#{path}: top-level key `#{locale_str}` is not a locale code — sidecar must use " \
+                  "locale codes at the top (e.g. `pt-BR:`)"
+      next
+    end
+
+    next unless tree.is_a?(Hash)
+
+    tree.each_key do |key|
+      name = key.to_s
+      next unless name == sidecar_of
+
+      offenses << "#{path}: key `#{name}` is forbidden — ViewComponent already scopes the sidecar " \
+                  "under `#{sidecar_of}` automatically. Drop the wrapper and put keys at the locale level."
+    end
+  end
+end
+
+if offenses.empty?
+  puts "i18n sidecar discipline OK."
+  exit 0
+end
+
+offenses.uniq.each { |o| puts o }
+puts "\n#{offenses.uniq.size} offense(s)."
+exit 1

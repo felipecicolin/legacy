@@ -1,0 +1,85 @@
+# Grava o cache de gems no escopo que os PRs conseguem ler.
+#
+# O ci.yml roda só em `pull_request`, e cache escrito num run de PR fica no
+# escopo `refs/pull/N/merge` — invisível para qualquer outro PR. Só o cache do
+# branch default é legível por todos. Sem este workflow, cada PR reinstala as
+# mesmas gems do zero e paga ~60-90s por job no "Set up Ruby".
+#
+# Este workflow não roda spec nenhum: instala as gems e guarda.
+name: Warm gem cache
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - Gemfile
+      - Gemfile.lock
+      - .ruby-version
+      - .rubocop.yml
+      - .github/actions/setup-ruby-environment/action.yml
+      - .github/workflows/warm_gem_cache.yml
+
+  # O GitHub apaga cache não acessado há 7 dias. Enquanto houver PR rodando, a
+  # leitura renova o prazo sozinha; uma semana parada — recesso, fim de ano —
+  # mata o cache, e aí nenhum push no main mexe no Gemfile.lock para recriá-lo:
+  # o miss volta a ser permanente. Cinco dias justamente para nunca encostar
+  # nos sete.
+  schedule:
+    - cron: "0 6 */5 * *"
+
+  # E a entrada manual, para quando o cache é despejado por excesso de volume
+  # sem o Gemfile.lock ter mudado (o teto da conta é 10 GB).
+  workflow_dispatch:
+
+concurrency:
+  group: warm-gem-cache-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  warm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      RUBOCOP_CACHE_ROOT: tmp/rubocop
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      # O mesmo caminho que os jobs do ci.yml percorrem, para gravar exatamente
+      # a chave que eles procuram. `runner.os`/arquitetura entram na chave: se
+      # algum dia o ci.yml mudar de `ubuntu-latest` para um runner arm64, este
+      # job tem de mudar junto ou o cache volta a nunca ser encontrado.
+      #
+      # O libpq-dev é para o `bundle install` de um miss conseguir compilar a
+      # extensão nativa da pg — sem ele este job falharia justamente quando há
+      # algo a aquecer.
+      - name: Setup shared Ruby environment
+        uses: ./.github/actions/setup-ruby-environment
+        with:
+          system-dependencies: libpq-dev
+
+      # O cache do RuboCop tinha o mesmo problema de escopo, e ainda um ramo
+      # morto: a chave do ci.yml termina em `github.run_id` quando o ref é o
+      # branch default e em `default` caso contrário — e como o CI só roda em
+      # `pull_request`, o primeiro ramo nunca acontecia. Aqui, rodando no main,
+      # ele finalmente grava algo que os `restore-keys` dos PRs alcançam por
+      # prefixo.
+      - name: Prepare RuboCop cache
+        uses: actions/cache@v6
+        env:
+          DEPENDENCIES_HASH: ${{ hashFiles('.ruby-version', '**/.rubocop.yml', 'Gemfile.lock') }}
+        with:
+          path: ${{ env.RUBOCOP_CACHE_ROOT }}
+          key: rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-${{ github.run_id }}
+
+      # Só para encher o cache acima. O `|| true` é deliberado: um cop que
+      # falhe no main é problema do PR que o introduziu, não deste workflow — a
+      # análise já aconteceu e o cache já está escrito quando o rubocop sai com
+      # status 1.
+      - name: Warm the RuboCop cache
+        run: bin/rubocop --parallel --format quiet || true

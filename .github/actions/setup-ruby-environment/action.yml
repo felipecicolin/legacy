@@ -1,0 +1,42 @@
+name: Setup Ruby Environment
+description: "Instala as dependências de sistema pedidas e monta o Ruby com o cache de gems do ruby/setup-ruby."
+
+# Existe por uma razão só, e não é DRY: a chave do cache do `ruby/setup-ruby`
+# é derivada de plataforma + diretório de trabalho + versão do Ruby +
+# with/without/only do bundler + hash do Gemfile.lock. O warm_gem_cache.yml só
+# serve para gravar EXATAMENTE a chave que os jobs de PR procuram — se as duas
+# pontas divergirem num único desses campos, o cache é gravado e nunca lido, e
+# o sintoma é indistinguível de o workflow de warm não ter rodado.
+#
+# Uma definição, portanto, em vez de cinco lugares que podem se desencontrar.
+
+inputs:
+  bundler-cache:
+    description: Passa direto para o ruby/setup-ruby.
+    required: false
+    default: "true"
+  system-dependencies:
+    description: >-
+      Pacotes apt separados por espaço. Peça o mínimo: `apt-get update` sozinho
+      já custa alguns segundos, e num acerto de cache nada disso é usado —
+      só serve para compilar extensão nativa num miss. Hoje nenhum job pede
+      nada: a sqlite3 já vem no runner.
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Install system dependencies
+      if: ${{ inputs.system-dependencies != '' }}
+      shell: bash
+      run: |
+        sudo apt-get update
+        # shellcheck disable=SC2086
+        sudo apt-get install --no-install-recommends -y ${{ inputs.system-dependencies }}
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: .ruby-version
+        bundler-cache: ${{ inputs.bundler-cache }}
