@@ -49,6 +49,26 @@ assinatura das três operações é `(request)`.
 O ganho não é só calar o linter: um campo novo no pedido (a parcela, o
 compromisso recorrente) entra no `Data.define` e não em quatro assinaturas.
 
+### Por que o `Request` valida na construção
+
+Porque o `Gateway` chama o provedor **primeiro** e grava o rastro **depois**.
+Deixar a cobrança do valor só nas validações de `PaymentTransaction` inverte a
+ordem que interessa: o pedido atravessa o provedor, o provedor age, e só então
+o `create!` reprova. Com o simulador isso é um `RecordInvalid` estranho; com um
+gateway de verdade do outro lado é dinheiro movido sem linha no banco — o
+contrário exato do que esta fachada promete.
+
+```ruby
+Payments::Request.new(amount_cents: 0, currency: "brl", reference: "doacao-9")
+# => ArgumentError: amount_cents must be a positive Integer, got 0
+```
+
+`Integer` e não "numérico": centavo é contagem, e aceitar `Float` aqui seria a
+porta por onde o dinheiro em ponto flutuante entra no sistema. O formato da
+moeda sai de `PaymentProvider::CURRENCY_FORMAT`, o mesmo que a validação da
+coluna usa — duas cópias do regexp seriam a divergência que aparece tarde, com
+um pedido que a fachada aceita e a linha recusa.
+
 ## Por que o simulador é determinístico e configurável
 
 O desfecho vem de `outcome:`, e nunca de sorteio:
@@ -96,6 +116,37 @@ de execução, no lugar exato onde alguém tentou. O default da coluna é `true`
 pelo mesmo motivo — numa instalação de demonstração o silêncio tem de errar
 para o lado de marcar demais.
 
+### Até onde o `attr_readonly` vai, e por que não há trigger
+
+O alcance medido, porque metade dele é contraintuitivo:
+
+| Caminho | O que acontece |
+| --- | --- |
+| `update` / `update!` / `save` | `ActiveRecord::ReadonlyAttributeError` |
+| `update_column` | `ActiveRecord::ActiveRecordError` |
+| `update_all` | **passa em silêncio** |
+| SQL cru | **passa em silêncio** |
+
+`update_all` surpreende porque parece Active Record e não é: ele monta o UPDATE
+a partir da relação, sem instanciar registro, então não há atributo para o
+`attr_readonly` recusar. Um script de correção em massa — o lugar mais natural
+para escrever `update_all` — promoveria a coluna inteira sem levantar nada.
+
+A trava que pegaria isso não é `CHECK`: uma constraint enxerga o estado de uma
+linha, não a transição, e imutabilidade é uma afirmação sobre a transição. Seria
+trigger. E trigger **não cabe neste repositório hoje**, por um motivo mecânico:
+o `db/schema.rb` é o formato Ruby, e o dumper do Rails não escreve trigger nele.
+A trava existiria no banco criado por migration e não existiria no banco de
+teste, que a CI monta com `db:schema:load` — uma garantia que vale em produção e
+não vale onde ela é verificada é pior que garantia nenhuma, e é exatamente o
+padrão de "ferramenta que sai verde sem olhar" que o `AGENTS.md` cataloga. Tê-la
+custaria migrar o projeto para `schema_format = :sql`.
+
+Então o limite fica escrito onde se lê — no modelo, aqui, e no `AGENTS.md` — em
+vez de meio cobrado. Quem for escrever correção em massa em
+`payment_transactions` precisa saber que a coluna não se defende sozinha nesse
+caminho.
+
 **Nenhuma coluna guarda instrumento de pagamento.** Não há número, validade,
 código de segurança, titular nem IBAN. A demo não coleta o que a demo não usa,
 e o que não é coletado não vaza — nem em dump, nem em log, nem em backup
@@ -112,9 +163,16 @@ e as duas são sobre o repositório inteiro, não sobre uma classe:
    substituição em N arquivos e o `if demo?` volta pela porta dos fundos.
 2. **Nenhuma coluna de nenhuma tabela tem nome de dado de pagamento.** O spec
    percorre `connection.tables` e compara os nomes de coluna quebrados por `_`
-   contra uma lista de tokens (`card`, `cvv`, `pan`, `titular`, `iban`…) —
-   tokens inteiros, e não substring, porque `pan` casaria com metade do
-   dicionário.
+   contra uma lista de tokens (`card`, `cvv`, `pan`, `titular`, `iban`,
+   `validade`, `expiry`…) — tokens inteiros, e não substring, porque `pan`
+   casaria com metade do dicionário.
+
+   `validade`/`expiry`/`expiration` entraram depois: a validade do cartão é o
+   único dos cinco dados que o `AGENTS.md` promete barrar e que não carrega
+   nenhum outro token no nome, então `t.date :validade` e
+   `t.integer :expiry_month` atravessavam o gate inteiros. Achado plantando as
+   duas colunas — a lista de tokens é ela mesma um lugar onde a ferramenta sai
+   verde sem olhar.
 
 Cada uma vem com um exemplo irmão — "actually reads the domain files",
 "actually reads the schema" — que existe por causa da armadilha recorrente

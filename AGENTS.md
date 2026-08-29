@@ -342,12 +342,15 @@ webhook. Quatro regras valem daqui para frente:
   `app/components`.
 - **Nenhum dado de instrumento de pagamento em coluna nenhuma.** Sem número,
   validade, CVV, titular ou IBAN — um spec percorre o schema inteiro e reprova.
-- **Dinheiro é `bigint` de centavos mais coluna `currency`.** Nunca `float`.
+- **Dinheiro é `bigint` de centavos mais coluna `currency`.** Nunca `float`. O
+  `Payments::Request` recusa o que não for `Integer` positivo, na construção:
+  pedido inválido morre antes do provedor agir, não depois.
 - **Todo lançamento nasce com `simulated`**, e a marca é `attr_readonly`:
-  promover simulado a real levanta `ReadonlyAttributeError`, não passa por
-  update. Toda tela que mostra valor traz a marca visível — o
-  `SimulatedDataBannerComponent` está no layout justamente para nenhuma
-  precisar lembrar.
+  promover simulado a real levanta `ReadonlyAttributeError`. `update_all` e SQL
+  cru escapam — o alcance exato e por que não há trigger estão em
+  [`docs/payments.md`](docs/payments.md). Toda tela que mostra valor traz a
+  marca visível — o `SimulatedDataBannerComponent` está no layout justamente
+  para nenhuma precisar lembrar.
 
 ## Banco de dados
 

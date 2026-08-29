@@ -9,7 +9,13 @@ RSpec.describe Payments do
   # coleta o que a demo não usa, e o que não é coletado não vaza — nem em dump,
   # nem em log, nem em backup esquecido. Tokens inteiros, e não substring:
   # `pan` casaria com metade do dicionário.
-  let(:forbidden_column_tokens) { %w[card cartao cvv cvc pan holder titular iban] }
+  # `validade`, `expiry` e `expiration` estão aqui porque a validade do cartão
+  # é o único dos cinco dados que o `AGENTS.md` promete barrar e que não carrega
+  # nenhum dos outros tokens no nome: `validade` e `expiry_month` passavam
+  # inteiros por este gate — verificado plantando as duas colunas.
+  let(:forbidden_column_tokens) do
+    %w[card cartao cvv cvc pan holder titular iban validade expiry expiration]
+  end
   let(:domain_dirs) { %w[app/models app/controllers app/views app/components] }
 
   let(:domain_files) do

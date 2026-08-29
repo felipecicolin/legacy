@@ -26,6 +26,12 @@ module Payments
     # resposta que ninguém desenhou.
     STATUSES = %i[succeeded pending failed refused].freeze
 
+    # ISO 4217, no contrato pelo mesmo motivo dos dois acima: o `Request` cobra
+    # o formato na fronteira e a coluna `currency` do rastro cobra de novo no
+    # banco. Duas cópias do mesmo regexp é a divergência que aparece tarde, com
+    # um pedido que a fachada aceita e a linha recusa.
+    CURRENCY_FORMAT = /\A[A-Z]{3}\z/
+
     # Sem padrão de propósito. O padrão errado tem dois lados ruins: `false`
     # esconde a marca de simulação numa demo, `true` marca dinheiro real como
     # de mentira. Quem implementa responde — e o `NotImplementedError` cobra.

@@ -13,6 +13,13 @@ class PaymentTransaction < ApplicationRecord
   # atribuição em registro já persistido — então promover um lançamento
   # simulado a real não é um update a ser revisado em code review: é uma
   # exceção, em tempo de execução, no lugar onde alguém tentou.
+  #
+  # O alcance exato, porque metade dele é contraintuitivo: `update`, `update!`,
+  # `save` e `update_column` levantam. `update_all` e SQL cru **não** — os dois
+  # montam o UPDATE sem passar pelo registro, e nenhum callback ou validação
+  # roda no caminho. Um script de correção em massa escrito com `update_all`
+  # promove a coluna inteira em silêncio. A trava no banco que pegaria isso é
+  # trigger, não `CHECK`, e ela não caberia aqui — ver `docs/payments.md`.
   attr_readonly :simulated
 
   # Os dois vocabulários vêm do contrato, não de uma segunda lista aqui: o
@@ -25,8 +32,9 @@ class PaymentTransaction < ApplicationRecord
   validates :amount_cents, presence: true, numericality: { only_integer: true, greater_than: 0 }
 
   # ISO 4217 e nada mais. A coluna existe para que a soma de valores em moedas
-  # diferentes seja impossível de fazer por acidente.
-  validates :currency, format: { with: /\A[A-Z]{3}\z/ }
+  # diferentes seja impossível de fazer por acidente. O formato vem do contrato,
+  # que é quem o `Payments::Request` também consulta.
+  validates :currency, format: { with: Payments::PaymentProvider::CURRENCY_FORMAT }
 
   # `presence` reprovaria `false`, que é um valor legítimo. O que se cobra aqui
   # é que a coluna esteja decidida — nunca `nil`.
