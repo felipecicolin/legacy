@@ -205,8 +205,29 @@ direto.
 Depois: rode o spec. Ele vai reprovar todo par que a paleta nova tiver deixado
 abaixo de AA — que é exatamente o momento de descobrir isso.
 
+## Tipografia
+
+As fontes ficam em `app/assets/fonts/` e são servidas pelo Propshaft. A
+aplicação não depende do Google Fonts nem de outro CDN para renderizar.
+
+| Papel | Token | Uso |
+| --- | --- | --- |
+| Display | `text-display` | Títulos de destaque, de 28 a 44px com `clamp()` |
+| Section | `text-section` | Título de cartão, 18px semibold |
+| Body | `text-body` | Corpo, listas e formulários, 15px |
+| Label | `text-label` | Rótulos em caixa alta, 12px mono |
+
+`font-sans` usa Instrument Sans com fallback para `system-ui`, `-apple-system`,
+`Segoe UI` e `sans-serif`. `font-mono` usa JetBrains Mono com fallback para
+`ui-monospace`, `SFMono-Regular`, `Menlo` e `monospace`. Views e componentes
+consomem esses papéis, nunca `font-family` diretamente.
+
+O `@font-face` usa URLs lógicas `/fonts/...`; no `assets:precompile`, o
+Propshaft as converte para arquivos com digest. Se uma URL permanecer sem
+digest ou apontar para fora do catálogo local, a verificação de assets deve
+falhar.
+
 ## Ainda não existe
 
 - **Tema escuro.** A estrutura o comporta — seria um segundo bloco reapontando
   os apelidos para outras primitivas — mas implementá-lo ficou fora de #6.
-- **Tokens de tipografia.** São de #7.
