@@ -28,6 +28,12 @@ acrescenta nada. Então:
 - [Autenticação](authentication.md) — para quem ela é, por que o app nasce
   fechado, por que sessão é linha no banco, e as duas decisões de segurança
   (não vazar quem tem conta, derrubar sessões na troca de senha).
+- [i18n](i18n.md) — o que a `rails-i18n` traduz e o que sobrou para nós, os
+  formatos pt-BR e o raciocínio por trás de cada um, onde cada chave mora, a
+  convenção de rótulo de enum e o guarda que a cobra.
+- [Identidade — `Profile`](identity.md) — por que uma pessoa e muitos papéis em
+  vez de uma tabela por papel, por que o nome público é armazenado e não
+  derivado, e como o nome legal é impedido de sair por serialização.
 
 ### Deploy
 

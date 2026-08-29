@@ -27,14 +27,13 @@ pt-BR:
       title: Esqueceu a senha?
     rate_limited: Muitos pedidos de recuperação. Tente de novo em alguns minutos.
     update:
+      invalid: Não foi possível salvar essa senha. Ela não pode ficar em branco nem passar de 72 caracteres.
       mismatch: As senhas não conferem.
       updated: Senha alterada. Entre com a nova senha.
   passwords_mailer:
     reset:
       cta: Definir uma nova senha
-      expires:
-        one: O link vale por 1 minuto.
-        other: O link vale por %{count} minutos.
+      expires: O link vale por %{duration}.
       intro: Recebemos um pedido para redefinir a senha da sua conta.
       subject: Redefinir sua senha
   sessions:

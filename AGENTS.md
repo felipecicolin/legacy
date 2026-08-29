@@ -134,6 +134,9 @@ que ela cai é um projeto; mantê-la é um hábito.
 
 ## i18n — todo texto visível passa por `t()`
 
+> Formatos pt-BR, convenção de nomes de chave e rótulo de enum:
+> [`docs/i18n.md`](docs/i18n.md).
+
 Locale base e único hoje: `pt-BR`. Três linters cobram isso de ângulos
 diferentes:
 
@@ -148,6 +151,13 @@ scanner e aparece como órfã. Marque com um comentário
 `# i18n-tasks-use t('status.*')` ao lado da chamada — nunca com uma entrada
 genérica em `ignore_unused`. O `directive_guard` rastreia esses comentários,
 para a lista não crescer em silêncio.
+
+A `rails-i18n` cobre o miolo do framework (validação, mês, moeda, "3 meses");
+os formatos que ela não acerta ficam em `config/locales/rails.pt-BR.yml`
+e são cobrados por `spec/i18n_spec.rb`, porque linter nenhum lê texto de gem.
+Nome de campo vai em `activerecord.attributes.*`; **valor de enum nunca vai cru
+para a tela** — o rótulo é `<enum no plural>.<valor>` no topo do locale, e
+`spec/models/enum_translation_audit_spec.rb` reprova quem esquecer.
 
 ---
 
@@ -301,10 +311,29 @@ Autenticação nativa do Rails 8.1, sem gem. Três regras valem daqui para frent
   rota, mesmo status para senha errada e e-mail inexistente. Use
   `User.authenticate_by` — é ele que iguala também o tempo de resposta.
 
+## Identidade
+
+> Por que uma pessoa e muitos papéis, e as armadilhas:
+> [`docs/identity.md`](docs/identity.md).
+
+A pessoa é o `Profile`. Três regras:
+
+- **Uma pessoa, muitos papéis.** Nenhuma tabela por papel — papel é contexto
+  (#20, #21, #31), e "visão do investidor" é projeção autorizada sobre os mesmos
+  dados.
+- **`legal_name` nunca sai sozinho.** `to_s` devolve `display_name`, e
+  `Profile#serializable_hash` remove `legal_name` depois do `super` — não como
+  `except:` padrão, que o `only:` do Active Model atropelaria.
+- **`display_name` é armazenado, não derivado.** Corrigir o nome legal não pode
+  reescrever o histórico já exibido.
+
 ## Banco de dados
 
 - `bundle exec database_consistency` cobra FK sem índice, `NOT NULL` faltando,
   validação que o schema não sustenta. Ele roda na CI.
+- **Coluna `NOT NULL` com default é ponto cego dele**: não cobra validador de
+  presença, e `nil` explícito vira `NotNullViolation` em vez de erro de
+  formulário. Valide na mão — ver [`docs/identity.md`](docs/identity.md).
 - `db/schema.rb` é commitado, e a CI reprova se estiver fora de sincronia com as
   migrations.
 - Bancos de teste são um por processo do `parallel_tests`, via sufixo

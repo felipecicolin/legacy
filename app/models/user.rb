@@ -4,6 +4,11 @@ class User < ApplicationRecord
   has_secure_password
   has_many :sessions, dependent: :destroy
 
+  # `dependent: :destroy` e não `:nullify`: `profiles.user_id` é NOT NULL, e a
+  # FK do banco recusaria a linha órfã de qualquer forma — melhor a cascata
+  # acontecer no lugar em que dá para explicá-la.
+  has_one :profile, dependent: :destroy
+
   # `normalizes` em vez de callback à mão: é o que faz a unicidade do índice e
   # a da validação concordarem. Um callback rodaria depois da validação, então
   # "  Fulano@Ex.COM " passaria pelo `validates uniqueness` como string
