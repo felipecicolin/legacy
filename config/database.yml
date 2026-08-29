@@ -46,20 +46,12 @@ test:
 # variable, Rails will automatically merge its configuration values on top of
 # the values provided in this file.
 production:
-  primary: &primary_production
-    <<: *default
-    database: legacy_production
-    username: legacy
-    password: <%= ENV["LEGACY_DATABASE_PASSWORD"] %>
-  cache:
-    <<: *primary_production
-    database: legacy_production_cache
-    migrations_paths: db/cache_migrate
-  queue:
-    <<: *primary_production
-    database: legacy_production_queue
-    migrations_paths: db/queue_migrate
-  cable:
-    <<: *primary_production
-    database: legacy_production_cable
-    migrations_paths: db/cable_migrate
+  <<: *default
+  # Sem `database`, `username` ou `host` aqui: em produção quem configura a
+  # conexão é a DATABASE_URL, injetada pelo Coolify a partir do serviço
+  # Postgres. Config escrita aqui venceria silenciosamente parte da URL.
+  #
+  # Solid Cache, Queue e Cable moram neste mesmo banco (ver
+  # docs/deploy/coolify.md), então o pool precisa de folga além das threads do
+  # Puma — senão o supervisor do Solid Queue disputa conexão com as requisições.
+  max_connections: <%= ENV.fetch("RAILS_DB_POOL") { ENV.fetch("RAILS_MAX_THREADS", 5).to_i + 4 } %>

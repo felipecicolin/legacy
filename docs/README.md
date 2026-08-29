@@ -22,3 +22,9 @@ acrescenta nada. Então:
 - [Tokens de cor, superfície e raio](design-system/tokens.md) — o vocabulário
   semântico, como adicionar um token, como trocar a identidade visual do
   produto, e o que sustenta que nada disso quebre em silêncio.
+
+### Deploy
+
+- [Deploy no Coolify](deploy/coolify.md) — por que Solid Cache, Queue e Cable
+  moram num banco só, o que a `DATABASE_URL` alcança e o que não alcança, e a
+  configuração que o Coolify precisa do outro lado.
