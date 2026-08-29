@@ -57,6 +57,11 @@ O desfecho vem de `outcome:`, e nunca de sorteio:
 PAYMENT_OUTCOME=refused bin/rails server
 ```
 
+Valor desconhecido **não sobe**: o construtor levanta `ArgumentError` no boot,
+com o valor na mensagem. É deliberado — um `PAYMENT_OUTCOME=refuse` digitado
+errado que subisse em silêncio viraria uma demo que produz sucesso enquanto
+quem a configurou acha que está mostrando recusa.
+
 **Determinístico** porque uma demo que falha uma vez a cada dez não dá para
 apresentar, e um spec sobre ela seria intermitente — o tipo de teste que reprova
 na CI de outra pessoa, em outro arquivo.
