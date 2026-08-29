@@ -7,3 +7,7 @@ pt-BR:
         password: Senha
         password_confirmation: Confirmação de senha
         password_digest: Senha
+    errors:
+      messages:
+        confidential_precise_location: Registro confidencial não guarda coordenada nem endereço.
+        promotion_requires_justification: Reduzir a restrição exige autor e justificativa registrados.

@@ -1,0 +1,34 @@
+<%# Partial que o `bin/rails action_text:install` deposita, reescrito para o
+    padrão do repositório. O herb roda sobre TODO ERB daqui, e a versão do
+    generator sai com três avisos:
+
+      1. `erb-no-interpolated-class-names` — o `class` original monta o nome da
+         classe interpolando ERB no meio do atributo. Aqui as classes saem de
+         `class_names`, num nó ERB só.
+      2. `html-img-require-alt` — a imagem não tinha `alt`. O nome do arquivo é
+         a única descrição que existe para um anexo genérico.
+      3. O mesmo `class` aparece duas vezes na contagem de ofensas.
+
+    O vocabulário `attachment*` continua: quem estiliza esses nomes é o
+    `actiontext.css` do próprio Rails, e renomeá-los desliga o CSS do Trix.
+    Token semântico entra onde é cor da aplicação, não chrome do editor.
+
+    Na política atual este partial não é alcançado de dentro de texto rico: o
+    `config/initializers/action_text.rb` poda o elemento de anexo antes de
+    renderizar. Ver docs/action-text.md. %>
+<% preview = blob.representable? ? "preview" : "file" %>
+<figure class="<%= class_names("attachment", "attachment--#{preview}", "attachment--#{blob.filename.extension}") %>">
+  <% if blob.representable? %>
+    <%= image_tag blob.representation(resize_to_limit: local_assigns[:in_gallery] ? [800, 600] : [1024, 768]),
+                  alt: blob.filename.to_s %>
+  <% end %>
+
+  <figcaption class="attachment__caption text-muted-foreground">
+    <% if (caption = blob.try(:caption)) %>
+      <%= caption %>
+    <% else %>
+      <span class="attachment__name"><%= blob.filename %></span>
+      <span class="attachment__size"><%= number_to_human_size blob.byte_size %></span>
+    <% end %>
+  </figcaption>
+</figure>

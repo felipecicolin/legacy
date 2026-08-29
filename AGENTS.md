@@ -146,11 +146,18 @@ diferentes:
 
 Depois de mexer em locale, rode `bin/i18n-tasks normalize`.
 
-Chave resolvida dinamicamente (`t("status.#{value}")`) é invisível para o
-scanner e aparece como órfã. Marque com um comentário
-`# i18n-tasks-use t('status.*')` ao lado da chamada — nunca com uma entrada
-genérica em `ignore_unused`. O `directive_guard` rastreia esses comentários,
-para a lista não crescer em silêncio.
+Chave resolvida dinamicamente (`I18n.t(status, scope: :statuses)`) é invisível
+para o scanner e apareceria como órfã. **Escreva com `scope:`, nunca com
+interpolação** — o cop `DecorateStringFormattingUsingInterpolation` reprova
+`t("statuses.#{value}")`.
+
+O comentário `# i18n-tasks-use` **não funciona neste repositório**: medido, o
+scanner desta versão não o lê em arquivo `.rb`. O vocabulário de enum vai em
+`ignore_unused` no `config/i18n-tasks.yml.erb`, com o motivo ao lado — e o que
+torna isso seguro é `spec/models/enum_translation_audit_spec.rb`, que percorre
+os enums de todos os modelos e reprova qualquer valor sem rótulo. A checagem de
+"não usada" foi trocada por uma mais forte, não removida. Detalhes em
+[`docs/i18n.md`](docs/i18n.md).
 
 A `rails-i18n` cobre o miolo do framework (validação, mês, moeda, "3 meses");
 os formatos que ela não acerta ficam em `config/locales/rails.pt-BR.yml`
@@ -179,6 +186,11 @@ semântico para usar no lugar.
 
 A paleta atual é um ponto de partida neutro. Trocar os matizes pela identidade
 do produto é editar `tokens.css` e nada mais — nenhuma view muda.
+
+Proporção também é token — `aspect-wide`, `aspect-photo`, `aspect-tile` —, e a
+`ImageFrameComponent` a reserva antes de a imagem existir; quem cobra é
+`spec/system/image_frame_spec.rb`. Ver
+[`docs/design-system/image-frame.md`](docs/design-system/image-frame.md).
 
 Se falta um token, **adicione o token**, não uma exceção. E mantenha os
 vocabulários separados: `success`/`warning`/`destructive` dizem *estado*;
@@ -327,6 +339,81 @@ A pessoa é o `Profile`. Três regras:
 - **`display_name` é armazenado, não derivado.** Corrigir o nome legal não pode
   reescrever o histórico já exibido.
 
+## Pagamentos
+
+> A fronteira, o simulador determinístico e a marca de dado simulado:
+> [`docs/payments.md`](docs/payments.md).
+
+Demonstração, sem integração financeira: nenhum gateway, nenhuma chave, nenhum
+webhook. Quatro regras valem daqui para frente:
+
+- **Ninguém fala com o provedor.** Modelo, controller, view e componente
+  chamam `Payments::Gateway`; o provedor concreto é resolvido uma vez em
+  `config.x.payment_provider`. Um spec de fronteira reprova o nome
+  `SimulatedProvider` em `app/models`, `app/controllers`, `app/views` e
+  `app/components`.
+- **Nenhum dado de instrumento de pagamento em coluna nenhuma.** Sem número,
+  validade, CVV, titular ou IBAN — um spec percorre o schema inteiro e reprova.
+- **Dinheiro é `bigint` de centavos mais coluna `currency`.** Nunca `float`. O
+  `Payments::Request` recusa o que não for `Integer` positivo, na construção:
+  pedido inválido morre antes do provedor agir, não depois.
+- **Todo lançamento nasce com `simulated`**, e a marca é `attr_readonly`:
+  promover simulado a real levanta `ReadonlyAttributeError`. `update_all` e SQL
+  cru escapam — o alcance exato e por que não há trigger estão em
+  [`docs/payments.md`](docs/payments.md). Toda tela que mostra valor traz a
+  marca visível — o `SimulatedDataBannerComponent` está no layout justamente
+  para nenhuma precisar lembrar.
+
+## Visibilidade
+
+> Os três níveis, o que não se persiste e a auditoria:
+> [`docs/visibility.md`](docs/visibility.md).
+
+O concern `Sensitive` dá a todo registro de obra um `sensitivity_level`
+(`public` · `restricted` · `confidential`). Seis regras valem daqui para
+frente:
+
+- **Obra nasce `restricted`.** Inclusive na criação: `create!` com nível menos
+  restritivo que o default reprova, do mesmo jeito que um `update` reprovaria.
+- **Registro `confidential` não guarda coordenada nem endereço.** Não é filtro
+  de exibição — é o que se persiste. Gravar reprova na validação, levanta
+  `Sensitive::PreciseLocationForbidden` com validação pulada e reprova na CHECK
+  constraint quando o caminho pula callback (`update_column`, `insert_all`).
+- **Migration de modelo com o concern leva a constraint e o `null: false`.**
+  `t.check_constraint Sensitive::PRECISE_LOCATION_CHECK` mais
+  `sensitivity_level` NOT NULL com o default do enum — sem os dois, o concern
+  protege menos do que parece. A receita está em
+  [`docs/visibility.md`](docs/visibility.md).
+- **Afrouxar restrição só por `promote_visibility!`**, com autor e
+  justificativa. `update` direto reprova na validação e
+  `update_attribute`/`save(validate: false)` levantam
+  `Sensitive::UnauditedDisclosure`. Restringir mais não pede cerimônia.
+- **Linha de `sensitivity_changes` não se edita.** Qualquer `update` levanta
+  `SensitivityChange::Immutable`: reescrever a auditoria é pior que apagá-la.
+- **Consulta de visibilidade sai de `visible_to` / `hidden_from`**, que recebem
+  um `Visibility::Context` e devolvem relação. Nunca escreva um segundo caminho
+  de SQL que decida visibilidade — é ele que vai divergir.
+
+## Action Text
+
+> As decisões, as medições e as armadilhas:
+> [`docs/action-text.md`](docs/action-text.md).
+
+Texto rico é `has_rich_text`, com Trix e Active Storage por trás. Quatro regras:
+
+- **Sem anexo embutido.** O upload do Trix não passa pelo processamento de foto
+  da plataforma, então o `config/initializers/action_text.rb` poda
+  `action-text-attachment` na renderização. Reabrir isso é decisão de produto,
+  não conveniência de tela.
+- **Listagem de texto rico usa `with_rich_text_<nome>_and_embeds`.** Sem o
+  preload, cada registro renderizado custa três queries a mais.
+- **Rótulo do Trix vive em `app/javascript/trix_locale.js`**, e a chamada é
+  síncrona no `application.js` — não em `connect()` de Stimulus. Ver armadilhas.
+- **O Trix vem da gem `action_text-trix`, não de uma cópia em
+  `vendor/javascript/`.** Ela já serve do próprio domínio e é travada pela
+  `actiontext`. A cópia é UMD: `import "trix"`, nunca
+  `import Trix from "trix"`.
+
 ## Banco de dados
 
 - `bundle exec database_consistency` cobra FK sem índice, `NOT NULL` faltando,
@@ -336,6 +423,10 @@ A pessoa é o `Profile`. Três regras:
   formulário. Valide na mão — ver [`docs/identity.md`](docs/identity.md).
 - `db/schema.rb` é commitado, e a CI reprova se estiver fora de sincronia com as
   migrations.
+- **Toda tabela do `db/schema.rb` tem uma migration neste repositório que a
+  cria.** Se dois branches precisam da mesma migration copiada de engine, os
+  dois trazem o **mesmo arquivo**, byte a byte, com o timestamp combinado — ver
+  [`docs/action-text.md`](docs/action-text.md).
 - Bancos de teste são um por processo do `parallel_tests`, via sufixo
   `TEST_ENV_NUMBER` no `database.yml`.
 - Na CI, o segundo banco sai de `CREATE DATABASE … TEMPLATE`, e não de uma
@@ -403,12 +494,74 @@ teste. Localmente o `config/ci.rb` não passava env e o passo reprovava com
 das migrations — um erro sobre o banco errado. O passo agora leva
 `RAILS_ENV=test`, como a CI.
 
+**O `Sensitive` só protege coluna que ele sabe nomear.**
+`precise_location_attributes` intersecta `PRECISE_LOCATION_ATTRIBUTES` com o
+`column_names` da tabela. Uma tabela que chame suas colunas de `street`, `lat`
+ou `geom` sai inteira do alcance: as três camadas passam a proteger um conjunto
+vazio, e nada reprova — nem linter, nem spec, nem constraint. Coluna de
+localização usa os nomes da constante, ou a constante cresce junto.
+
+**Coordenada vaza por dois logs, não um.** A lista default do
+`filter_parameters` tem `passw`, `token`, `secret` — nada de localização, e o
+Rails é ela que usa para alimentar o `filter_attributes` do Active Record. São
+duas superfícies: o `inspect` do modelo (linha de log de exceção, rastreador de
+erros) e o `Parameters: {…}` da requisição, que não passa por modelo nenhum. Por
+isso os nomes de `PRECISE_LOCATION_ATTRIBUTES` entram nos dois lugares — no
+`filter_parameter_logging.rb` e, por modelo, no próprio concern.
+
 **`stylesheet_link_tag :app` não carrega o Tailwind.** O `:app` resolve para
 `app/assets/stylesheets/application.css` — o manifesto vazio do generator. O
 build do Tailwind sai em `app/assets/builds/tailwind.css` e precisa do próprio
 `stylesheet_link_tag "tailwind"`. Os dois layouts subiam sem uma única utility
 e nada reclamava: o Propshaft serve o manifesto, o link tag não levanta erro, e
 até #6 nenhum spec renderizava layout. Foi o spec de tokens que descobriu.
+
+**`db:migrate` num banco VAZIO carrega o `db/schema.rb` em vez de rodar as
+migrations** — sem imprimir uma linha de `== migrating`. Isso esconde tabela
+declarada no schema que nenhuma migration cria: a CI (`db:schema:load`) e o
+clone limpo passam os dois. Quem paga é o `db:migrate` **incremental**, o do
+banco de desenvolvimento e o do deploy: ele roda só o que falta, não cria a
+tabela órfã e, no dump que escreve em seguida, **apaga** a tabela do
+`db/schema.rb` commitado. Para verificar de verdade, migre a partir do schema
+da `main`, não de um banco vazio. Ver [`docs/action-text.md`](docs/action-text.md).
+
+**Tirar `action-text-attachment` da lista de tags permitidas não remove o
+anexo.** O `PermitScrubber` DESEMBRULHA a tag não permitida: tira o elemento e
+mantém os filhos. E o Action Text renderiza o conteúdo do anexo — o `img` com a
+URL do blob — antes de sanitizar. Sem `prune: true` a imagem fica, com o
+elemento em volta removido, e parece que a política funcionou. Ver
+[`docs/action-text.md`](docs/action-text.md).
+
+**A `ActionText::Engine` atribui o sanitizador num `config.after_initialize` +
+`on_load(:action_view)`.** Configurar antes disso — num `to_prepare`, que é o
+reflexo — não levanta erro: é sobrescrito depois, e a política some pela metade.
+O `config/initializers/action_text.rb` usa o mesmo par de ganchos.
+
+**`Trix.config.lang` aplicado tarde demais devolve a barra em inglês, sem erro.**
+O `getDefaultHTML()` roda uma vez, quando o custom element sobe, e o Trix
+registra o `customElements.define` num `setTimeout` — então código síncrono do
+`application.js` chega a tempo e um `connect()` de Stimulus não. E é
+`Object.assign(Trix.config.lang, …)`: o gerador da barra fecha sobre o objeto,
+então substituí-lo deixa o gerador lendo o antigo. `spec/system/rich_text_editor_spec.rb`
+é quem cobra as duas coisas — nenhum linter aqui lê o Trix.
+
+**Dois arquivos com o mesmo caminho lógico de asset: quem vence muda de
+máquina.** O `Propshaft::LoadPath` monta o mapa com `mapped[nome] ||= …`, então
+decide a ordem do `config.assets.paths` — e ela não é a mesma em todo lugar.
+Medido: com `vendor/javascript/trix.js` e o `trix.js` da gem `action_text-trix`
+disputando `trix.js`, o vendor ganhava na máquina de quem escreveu e a gem
+ganhava no runner do GitHub. Nada reclama: os dois arquivos existem, os dois são
+servidos com 200, e nem `assets:precompile` nem `importmap audit` olham nome
+duplicado. `spec/propshaft/load_path_spec.rb` cobra. Ver
+[`docs/action-text.md`](docs/action-text.md).
+
+**Erro de ligação num módulo derruba o grafo INTEIRO, em silêncio.** Foi o custo
+da armadilha acima: a cópia da gem é UMD, sem `export default`, então o
+`import Trix from "trix"` não resolvia — e o navegador rejeita o grafo antes de
+avaliar qualquer módulo. Sintoma: todo `/assets/*.js` com 200 no painel de rede
+e `window.Turbo`, `window.Stimulus` e `window.Trix` os três `undefined`. Um
+`import` que erra sozinho leva junto Turbo, Stimulus e tudo mais que o
+`application.js` alcança.
 
 **O parser do herb lê marcação dentro de `<%# … %>`.** Comentário ERB não é zona
 neutra: um `<body>` ou um `<%= … %>` citado na explicação vira erro de
@@ -484,6 +637,37 @@ e nome de opção de config mudam entre versões, e as três armadilhas de
 mudou e um call site que continuou compilando.
 
 ---
+
+## Issues e PRs
+
+**Todo PR que entrega uma issue fecha a issue sozinho, com palavra-chave em
+inglês:**
+
+```
+Closes #9
+```
+
+O GitHub só reconhece `close`/`closes`/`closed`, `fix`/`fixes`/`fixed` e
+`resolve`/`resolves`/`resolved`. Este repositório escreve o corpo do PR em
+português, e é exatamente aí que a pegadinha mora: **`Fecha #9` não fecha nada.**
+Não é erro, não é aviso — o GitHub trata como texto comum e o
+`closingIssuesReferences` do PR volta vazio.
+
+Já aconteceu aqui: #6 e #9 foram entregues e mergeadas com "Fecha #N" no corpo,
+e as duas ficaram abertas. O board mentiu por dois dias, e a descoberta veio de
+uma consulta que por acaso listou as issues antigas.
+
+A linha `Closes #N` é a única em inglês num corpo em português. É feio e é
+proposital: ela é sintaxe de ferramenta, não texto para pessoa.
+
+Junto com isso:
+
+- **Quando a entrega fecha uma issue de rastreamento parcial** (a #56 é o
+  índice do milestone), marque a caixa correspondente no mesmo dia. Índice que
+  mente é pior que índice que não existe — a mesma regra do `docs/README.md`.
+- **Issue substituída não é deletada.** Feche como *not planned*, explique no
+  comentário o que a substituiu e mova o que sobrou para a issue nova. Deletar
+  no GitHub é irreversível, e o que se perde junto é o registro da decisão.
 
 ## Convenções de escrita
 

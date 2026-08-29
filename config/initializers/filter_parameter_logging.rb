@@ -8,3 +8,13 @@
 Rails.application.config.filter_parameters += %i[
   passw email secret token _key crypt salt certificate otp ssn cvv cvc
 ]
+
+# Localização precisa de obra em campo: `Parameters: {…}` é o outro caminho pelo
+# qual a coordenada de uma base vai para o log, e ele não passa por modelo
+# nenhum. O concern `Sensitive` fixa os mesmos nomes por modelo, para a garantia
+# viajar com ele — aqui é o formulário que entra. Ver docs/visibility.md.
+#
+# A lista vai literal, e não como `Sensitive::PRECISE_LOCATION_ATTRIBUTES`:
+# initializer roda antes do autoload, e referenciar a constante aqui derruba o
+# boot com `uninitialized constant`. Mexeu numa lista, mexa na outra.
+Rails.application.config.filter_parameters += %i[address latitude longitude]
