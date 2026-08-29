@@ -41,10 +41,11 @@ Passos avulsos:
 | --- | --- |
 | `bin/rubocop --parallel` | estilo Ruby (rails/performance/rspec/factory_bot/thread_safety/view_component/i18n) |
 | `bundle exec reek app/ lib/` | code smells |
-| `bundle exec herb lint` | templates HTML+ERB, incluindo as regras customizadas |
+| `bin/herb_lint` | templates HTML+ERB, incluindo as regras customizadas |
 | `bin/stimulus_lint` | controllers Stimulus |
 | `bin/i18n-tasks health` | traduções faltando, sobrando ou não normalizadas |
 | `bin/i18n_sidecar_lint` | estrutura dos sidecars de i18n de ViewComponent |
+| `bin/components_registry --check` | `registry.json` e `public/llms.txt` em dia |
 | `bin/directive_guard` | nenhuma supressão nova |
 | `bin/brakeman` / `bin/bundler-audit` / `bin/importmap audit` | segurança |
 | `bundle exec database_consistency` | FKs, índices e NOT NULL versus os modelos |
@@ -79,15 +80,46 @@ matizes pela identidade do produto; a estrutura em camadas
 (primitivas em `:root` → semânticas em `@theme inline`) é o que faz as regras
 serem cobráveis.
 
-Quatro regras estão **dormentes** até o projeto ganhar as peças que elas
-pressupõem, e passam sem ruído enquanto isso:
+Todas estão ativas. `no-raw-button` tem para onde apontar (`ButtonComponent`)
+e `icon-name-must-exist` lê o catálogo real em `app/assets/images/icons/` — o
+mesmo diretório que `IconComponent::ICONS_DIR`, para linter e runtime nunca
+discordarem.
 
-- `no-raw-button` e `icon-name-must-exist` esperam `app/components/` (ViewComponent)
-  e `app/assets/icons/`.
-- `bin/i18n_sidecar_lint` e as rotas de sidecar em `config/i18n-tasks.yml.erb`
-  esperam `app/components/*_component/`.
+**Rode `bin/herb_lint`, não `bundle exec herb lint`.** Quando um arquivo de
+regra não carrega — um import que a versão do `@herb-tools/linter` não exporta
+mais, um erro de sintaxe — o herb imprime o erro, segue com as regras restantes
+e **sai com status 0**. O resultado é um "✓ All files are clean" com parte do
+enforcement desligada. O `bin/herb_lint` compara a contagem de regras
+carregadas com os arquivos em `.herb/rules/` e reprova se faltar alguma.
 
-Quando o primeiro componente chegar, elas passam a cobrar sozinhas.
+## ViewComponent
+
+Todo componente herda de `ApplicationComponent`, que dá três coisas:
+`class_merge` (compõe classes Tailwind resolvendo conflitos, a última vence),
+`validate_inclusion!` (falha no construtor, não na renderização) e
+`stimulus_controller` (o identificador do controller sidecar).
+
+Convenções que a CI cobra:
+
+- **Todo componente precisa de preview.** `ViewComponent/MissingPreview` está
+  ligado. Previews vivem em `spec/components/previews/` e são navegáveis em
+  `/rails/view_components` em desenvolvimento — os previews nativos do
+  ViewComponent, sem explorador de terceiros.
+- **Teste a saída renderizada**, não os métodos. `ViewComponent/TestRenderedOutput`
+  cobra `render_inline`/`render_preview` nos specs de componentes concretos.
+- **Cobertura 100%** vale para `app/components/` como para o resto.
+- **`bin/components_registry`** regenera `app/components/registry.json` e
+  `public/llms.txt` a partir das classes. A CI reprova se estiverem
+  desatualizados — um llms.txt que descreve uma API que não existe mais é pior
+  do que nenhum. Nunca edite os dois à mão.
+- **i18n de componente vai em sidecar**, `app/components/<nome>/<nome>.<locale>.yml`,
+  plano (sem envelopar sob o nome do componente — o ViewComponent já escopa).
+  O `bin/i18n_sidecar_lint` cobra isso.
+
+Dois cops do `rubocop-view_component` estão ajustados em `.rubocop.yml`, com o
+motivo escrito lá: `PreferComposition` desligado (acusa todo componente que
+herda de `ApplicationComponent`, ou seja, todos) e `TestRenderedOutput`
+dispensado no spec da base abstrata, que não renderiza nada.
 
 ## Hooks de git
 

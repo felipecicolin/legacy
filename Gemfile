@@ -20,6 +20,13 @@ gem "turbo-rails"
 gem "stimulus-rails"
 # Use Tailwind CSS [https://github.com/rails/tailwindcss-rails]
 gem "tailwindcss-rails"
+# Resolve conflitos entre classes do Tailwind na hora de compor (ApplicationComponent#class_merge)
+gem "tailwind_merge"
+
+# Componentes de view testáveis [https://viewcomponent.org]
+gem "view_component"
+# Renderiza SVG inline a partir do asset pipeline (IconComponent)
+gem "inline_svg"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
@@ -96,6 +103,10 @@ group :development do
 end
 
 group :test do
+  # O `page` do ViewComponent::TestHelpers e os matchers `have_button`/
+  # `have_link` são Capybara — sem a gem, specs de componente só têm o
+  # `rendered_content` cru.
+  gem "capybara"
   gem "simplecov", require: false
   gem "simplecov_json_formatter", require: false
   gem "stackprof", require: false

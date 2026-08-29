@@ -20,9 +20,12 @@ pre-commit:
       stage_fixed: true
     herb_lint:
       glob: "*.{erb,html.erb,html}"
-      run: bundle exec herb lint {staged_files}
+      run: bin/herb_lint {staged_files}
+    components_registry:
+      glob: "{app/components/**/*.{rb,html.erb},spec/components/previews/**/*.rb}"
+      run: bin/components_registry --check
     stimulus_lint:
-      glob: "{app/javascript/controllers/**/*_controller.js,app/components/*_component/component_controller.js}"
+      glob: "app/javascript/controllers/**/*_controller.js"
       run: bin/stimulus_lint {staged_files}
     directive_guard:
       glob: "{{app,lib,config,spec,db}/**/*.rb,bin/**/*,Rakefile,config.ru,Gemfile,.directive_allowlist}"

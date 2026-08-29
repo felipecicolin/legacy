@@ -28,8 +28,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
+      # O libpq-dev é para o caso de MISS no cache de gems: sem ele o
+      # `bundle install` não compila a extensão nativa da pg e o job morre no
+      # setup. E o miss não é hipotético — todo PR do dependabot muda o
+      # Gemfile.lock, que entra na chave do cache. O job de origem não passava
+      # nada aqui e dependia de o warm_gem_cache já ter rodado.
       - name: Setup shared Ruby environment
         uses: ./.github/actions/setup-ruby-environment
+        with:
+          system-dependencies: libpq-dev
 
       - name: Scan for common Rails security vulnerabilities using static analysis
         run: bin/brakeman --no-pager
@@ -51,6 +58,11 @@ jobs:
     if: github.event.pull_request.draft == false
     env:
       RUBOCOP_CACHE_ROOT: tmp/rubocop
+      # O `bin/components_registry --check` sobe o Rails para introspectar as
+      # classes de componente. Não toca no banco — só o eager_load — então
+      # este job não precisa do serviço Postgres. `test` e não `development`
+      # para não carregar Lookbook e Bullet à toa.
+      RAILS_ENV: test
 
     steps:
       - name: Checkout code
@@ -58,6 +70,8 @@ jobs:
 
       - name: Setup shared Ruby environment
         uses: ./.github/actions/setup-ruby-environment
+        with:
+          system-dependencies: libpq-dev
 
       # O Node existe neste repo por um motivo só: as regras customizadas do
       # herb são `.herb/rules/*.mjs`. Não há build de JS — o navegador é servido
@@ -102,7 +116,7 @@ jobs:
       # reprovar o autor de um PR que não a criou.
       - name: Lint HTML+ERB templates
         if: ${{ !cancelled() }}
-        run: bundle exec herb lint
+        run: bin/herb_lint
 
       - name: Lint Stimulus controller files
         if: ${{ !cancelled() }}
@@ -115,6 +129,14 @@ jobs:
       - name: Enforce ViewComponent sidecar i18n structure
         if: ${{ !cancelled() }}
         run: bin/i18n_sidecar_lint
+
+      # O registry e o public/llms.txt são gerados a partir das classes de
+      # componente. Se saírem de sincronia, um agente que leia o llms.txt
+      # recebe uma API que não existe mais — é o tipo de arquivo que só vale
+      # se for verdade.
+      - name: Verify component registry is up to date
+        if: ${{ !cancelled() }}
+        run: bin/components_registry --check
 
       # Por último, porque é o que falha quando alguém silenciou qualquer um
       # dos passos acima em vez de consertá-lo.

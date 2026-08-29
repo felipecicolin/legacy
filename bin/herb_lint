@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Roda o `herb lint` e reprova se alguma regra customizada não tiver carregado.
+#
+# Existe por causa de um modo de falha silencioso: quando um arquivo de
+# `.herb/rules/*.mjs` não carrega — um import que a versão do @herb-tools/linter
+# não exporta mais, um erro de sintaxe — o herb IMPRIME o erro, segue com as
+# regras restantes e sai com status 0. O resultado é "✓ All files are clean"
+# com metade do enforcement desligado, que é pior do que uma falha.
+#
+# Aqui a contagem de regras carregadas é comparada com a quantidade de arquivos
+# em .herb/rules/, e qualquer "Error loading rule file" reprova.
+#
+# Uso:
+#   bin/herb_lint [arquivos...]   # sem argumentos, linta o repositório inteiro
+
+require "open3"
+
+RULES_DIR = File.expand_path("../.herb/rules", __dir__)
+expected = Dir.glob(File.join(RULES_DIR, "*.mjs")).size
+
+output, status = Open3.capture2e("bundle", "exec", "herb", "lint", *ARGV)
+print output
+
+# `capture2e` devolve ASCII-8BIT; sem forçar UTF-8 o gsub abaixo estoura em
+# qualquer saída acentuada — que é justamente a saída de erro que interessa.
+plain = output.dup.force_encoding("UTF-8").scrub.gsub(/\e\[[0-9;]*m/, "")
+loaded = plain[/Loaded (\d+) custom rules/, 1]&.to_i || 0
+load_errors = plain.scan(/Error loading rule file[^\n]*/)
+
+if load_errors.any? || loaded != expected
+  warn ""
+  warn "[ bin/herb_lint ] As regras customizadas não carregaram por inteiro."
+  warn "  esperadas: #{expected} (arquivos em .herb/rules/*.mjs)"
+  warn "  carregadas: #{loaded}"
+  load_errors.each { |line| warn "  #{line.strip}" }
+  warn ""
+  warn "Uma regra que não carrega não reprova nada — e o herb sai 0 do mesmo"
+  warn "jeito. Conserte o arquivo da regra antes de confiar neste passo."
+  exit 1
+end
+
+exit status.exitstatus

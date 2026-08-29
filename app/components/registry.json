@@ -1,0 +1,133 @@
+{
+  "components": [
+    {
+      "name": "ButtonComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "label",
+          "kind": "key"
+        },
+        {
+          "name": "variant",
+          "kind": "key"
+        },
+        {
+          "name": "size",
+          "kind": "key"
+        },
+        {
+          "name": "type",
+          "kind": "key"
+        },
+        {
+          "name": "disabled",
+          "kind": "key"
+        },
+        {
+          "name": "href",
+          "kind": "key"
+        },
+        {
+          "name": "classes",
+          "kind": "key"
+        },
+        {
+          "name": "data",
+          "kind": "key"
+        }
+      ],
+      "constants": {
+        "SIZES": [
+          "sm",
+          "md",
+          "lg",
+          "icon"
+        ],
+        "TYPES": [
+          "button",
+          "submit",
+          "reset"
+        ],
+        "VARIANTS": [
+          "default",
+          "outline",
+          "ghost",
+          "destructive",
+          "soft",
+          "link"
+        ]
+      },
+      "slots": [
+        "leading_icon",
+        "trailing_icon"
+      ],
+      "stimulus_controller": "button-component",
+      "template": "app/components/button_component/button_component.html.erb",
+      "preview": "spec/components/previews/button_component_preview.rb",
+      "examples": [
+        {
+          "name": "as_link",
+          "source": "  def as_link\n    render(ButtonComponent.new(label: \"Voltar ao painel\", variant: :outline, href: \"#\"))\n  end"
+        },
+        {
+          "name": "disabled_state",
+          "source": "  def disabled_state\n    render(ButtonComponent.new(label: \"Aguardando…\", disabled: true))\n  end"
+        },
+        {
+          "name": "playground",
+          "source": "  def playground(variant: :default, size: :md, disabled: false, label: \"Salvar alterações\")\n    render(ButtonComponent.new(label: label, variant: variant, size: size, disabled: disabled))\n  end"
+        },
+        {
+          "name": "with_leading_icon",
+          "source": "  def with_leading_icon\n    render(ButtonComponent.new(label: \"Adicionar\")) do |button|\n      button.with_leading_icon(name: \"plus\", size: :sm)\n    end"
+        }
+      ]
+    },
+    {
+      "name": "IconComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "name",
+          "kind": "keyreq"
+        },
+        {
+          "name": "size",
+          "kind": "key"
+        },
+        {
+          "name": "classes",
+          "kind": "key"
+        },
+        {
+          "name": "label",
+          "kind": "key"
+        }
+      ],
+      "constants": {
+        "SIZES": [
+          "xs",
+          "sm",
+          "md",
+          "lg",
+          "xl"
+        ]
+      },
+      "slots": [],
+      "stimulus_controller": "icon-component",
+      "template": "app/components/icon_component/icon_component.html.erb",
+      "preview": "spec/components/previews/icon_component_preview.rb",
+      "examples": [
+        {
+          "name": "labelled",
+          "source": "  def labelled\n    render(IconComponent.new(name: \"alert-triangle\", size: :lg, label: \"Atenção\"))\n  end"
+        },
+        {
+          "name": "playground",
+          "source": "  def playground(name: \"check\", size: :md)\n    render(IconComponent.new(name: name, size: size))\n  end"
+        }
+      ]
+    }
+  ]
+}

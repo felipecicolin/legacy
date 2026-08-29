@@ -1,0 +1,13 @@
+<% if link? %>
+  <%= link_to href, class: computed_classes, data: data do %>
+    <%= leading_icon if leading_icon? %>
+    <%= label || content %>
+    <%= trailing_icon if trailing_icon? %>
+  <% end %>
+<% else %>
+  <%= tag.button type: type, disabled: disabled, class: computed_classes, data: data do %>
+    <%= leading_icon if leading_icon? %>
+    <%= label || content %>
+    <%= trailing_icon if trailing_icon? %>
+  <% end %>
+<% end %>

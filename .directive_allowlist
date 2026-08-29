@@ -10,7 +10,7 @@
 # To regenerate after an approved exception: bin/directive_guard --update
 #
 # Format: <relative path>\t<directive line>[\t<count>]   (count defaults to 1)
-.reek.yml	enabled: false	2
+.reek.yml	enabled: false	6
 .reek.yml	exclude-items	0
-.rubocop.yml	Exclude:	5
-.rubocop.yml	exclude-items	17
+.rubocop.yml	Exclude:	7
+.rubocop.yml	exclude-items	19

@@ -594,7 +594,7 @@ end
 files = if ARGV.any?
   ARGV.select { |f| f.end_with?("_controller.js") && File.exist?(f) }
 else
-  Dir.glob("{app/javascript/controllers/**/*_controller.js,app/components/*_component/component_controller.js}")
+  Dir.glob("app/javascript/controllers/**/*_controller.js")
 end
 
 if files.empty?

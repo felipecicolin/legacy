@@ -3,20 +3,22 @@
 // hallucination — AI inventing icon names ("trash", "settings", "user")
 // that the catalog doesn't ship.
 //
-// Catalog is read once per process from app/assets/icons/*.svg at the
-// time the rule first runs. Only string and symbol literal names are
-// checked; dynamic names (variables, interpolations) are skipped.
+// Catalog is read once per process from app/assets/images/icons/*.svg at
+// the time the rule first runs — the same directory IconComponent::ICONS_DIR
+// reads, so the linter and the runtime can never disagree. Only string and
+// symbol literal names are checked; dynamic names (variables,
+// interpolations) are skipped.
 import { readdirSync, existsSync } from "node:fs"
 import { join } from "node:path"
 
 import {
   BaseSourceRuleVisitor,
   SourceRule,
-  positionFromOffset,
+  locationFromContentOffset,
 } from "@herb-tools/linter"
 import { Location } from "@herb-tools/core"
 
-const ICONS_DIR = "app/assets/icons"
+const ICONS_DIR = "app/assets/images/icons"
 const CALL = /IconComponent\.new\(\s*name:\s*["':]([\w-]+)["']?/g
 
 let cachedCatalog = null
@@ -46,9 +48,13 @@ class IconNameVisitor extends BaseSourceRuleVisitor {
       if (catalog.has(name)) continue
 
       // Locate the name token within the matched call (skip past `name:`).
+      // `locationFromContentOffset` resolves an offset into the file to a
+      // line/column pair; the source of a SourceRule starts at line 1,
+      // column 0. Two calls because it returns a one-character span — the
+      // offense should underline the whole icon name.
       const offset = match.index + match[0].lastIndexOf(name)
-      const start = positionFromOffset(source, offset)
-      const end = positionFromOffset(source, offset + name.length)
+      const start = locationFromContentOffset(1, 0, source, offset).start
+      const end = locationFromContentOffset(1, 0, source, offset + name.length).start
       const location = new Location(start, end)
 
       const known = [...catalog].sort().join(", ")

@@ -50,6 +50,7 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 return unless Rails.env.test?
 
 require "rspec/rails"
+require "view_component/test_helpers"
 require "webmock/rspec"
 
 Rails.root.glob("spec/support/**/*.rb").sort_by(&:to_s).each { |f| require f }
@@ -72,6 +73,7 @@ RSpec.configure do |config|
   config.filter_rails_from_backtrace!
   config.include ActiveJob::TestHelper
   config.include ActiveSupport::Testing::TimeHelpers
+  config.include ViewComponent::TestHelpers, type: :component
 end
 
 Shoulda::Matchers.configure do |config|

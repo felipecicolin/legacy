@@ -9,6 +9,7 @@ inherit_mode:
     - Exclude
 
 plugins:
+  - rubocop-capybara
   - rubocop-rails
   - rubocop-performance
   - rubocop-rspec
@@ -50,6 +51,11 @@ Metrics/PerceivedComplexity:
 Metrics/ParameterLists:
   Max: 4
   CountKeywordArgs: true
+  Exclude:
+    # A lista de kwargs de um ViewComponent É a API pública dele (variant,
+    # size, type, disabled, href, classes, data). Espremê-la num objeto de
+    # valor só empurraria a mesma lista para o call site, com ergonomia pior.
+    - "app/components/**/*"
 
 Metrics/ClassLength:
   Max: 120
@@ -484,8 +490,21 @@ FactoryBot/SyntaxMethods:
 
 # — ViewComponent ————————————————————————————————————————
 #
-# O plugin fica ligado desde agora para que o primeiro componente do projeto
-# nasça sob as mesmas regras. Sem `app/components/`, nenhum destes cops tem o
-# que inspecionar — todos vêm ligados por padrão e a detecção da classe sai da
-# ancestralidade (`AllCops/UseProjectIndex` acima), então não há nada a
-# configurar aqui até o primeiro componente existir.
+# Todos os cops vêm ligados por padrão e a detecção da classe sai da
+# ancestralidade (`AllCops/UseProjectIndex` acima). Duas exceções:
+
+# Este cop acusa QUALQUER componente que herde de outro componente — e
+# `ApplicationComponent` é um componente. Como todo componente do projeto herda
+# dela (é o padrão da própria gem, o mesmo `ApplicationRecord` de sempre), o
+# cop dispara em 100% dos arquivos e não distingue "herda a base abstrata do
+# app" de "herda outro componente concreto", que é o que ele quer coibir.
+ViewComponent/PreferComposition:
+  Enabled: false
+
+ViewComponent/TestRenderedOutput:
+  Exclude:
+    # ApplicationComponent é abstrata: não tem template e não renderiza nada.
+    # O que ela tem são os helpers (class_merge, validate_inclusion!,
+    # stimulus_controller), e é isso que o spec dela testa. Para os
+    # componentes concretos o cop continua valendo.
+    - "spec/components/application_component_spec.rb"
