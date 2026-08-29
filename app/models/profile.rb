@@ -13,6 +13,16 @@ class Profile < ApplicationRecord
   belongs_to :user
   has_one_attached :avatar
 
+  # Papel é contexto, e o contexto mora do outro lado: nenhuma coluna aqui diz
+  # "esta pessoa é dona de alguma coisa". Ver docs/organizations.md.
+  #
+  # `dependent: :destroy` apaga os vínculos junto com a pessoa — menos quando um
+  # deles é a última posse de uma organização que continua existindo. Aí o
+  # `Membership` recusa, e apagar a pessoa reprova em vez de deixar uma
+  # organização sem dono.
+  has_many :memberships, dependent: :destroy
+  has_many :organizations, through: :memberships
+
   validates :legal_name, :display_name, presence: true
 
   # As duas colunas são NOT NULL com default, e é justamente o default que faz

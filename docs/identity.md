@@ -129,10 +129,15 @@ migration desta issue existe para garantir.
 | `bio` (`has_rich_text`) | Action Text ainda não instalado | #32 |
 | `country` | a tabela `countries` não existe; coluna sem FK contradiz o gate de consistência | #25 |
 | `skills` / `profile_skills` | taxonomia curada, escopo próprio | #19 |
-| `memberships` / `organizations` | escopo próprio | #20 |
-| papéis e autorização | papel é contexto | #20, #21, #31 |
+| papéis e autorização | papel é contexto | #21, #31 |
 | qual nome aparece em qual contexto | é policy, não modelo | #23, #24 |
 
 As associações voltam ao `Profile` junto com a issue que cria o outro lado —
 declarar `belongs_to :country` antes de existir `Country` não é adiantar
 trabalho, é deixar o modelo quebrado esperando alguém consertar.
+
+Foi o que aconteceu com `memberships` / `organizations`: elas chegaram com a
+#20, junto com o `Membership` do outro lado. Ver
+[Organizações e vínculos](organizations.md) — inclusive para o que a cascata
+`dependent: :destroy` daqui faz quando a pessoa é a última dona de uma
+organização.

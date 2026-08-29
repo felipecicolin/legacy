@@ -18,6 +18,15 @@ pt-BR:
   layouts:
     application:
       sign_out: Sair
+  organization_kinds:
+    church: Igreja
+    company: Empresa
+    mission_agency: Agência missionária
+    ngo: ONG
+  organization_statuses:
+    approved: Aprovada
+    pending: Pendente
+    suspended: Suspensa
   passwords:
     create:
       sent: Se houver conta com esse e-mail, as instruções de recuperação foram enviadas.
@@ -44,6 +53,11 @@ pt-BR:
       expires: O link vale por %{duration}.
       intro: Recebemos um pedido para redefinir a senha da sua conta.
       subject: Redefinir sua senha
+  roles:
+    admin: Administrador
+    member: Membro
+    owner: Proprietário
+    representative: Representante
   sensitivity_levels:
     confidential: Confidencial
     public: Pública

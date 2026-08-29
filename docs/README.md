@@ -38,6 +38,11 @@ acrescenta nada. Então:
   vez de uma tabela por papel, por que o nome público é armazenado e não
   derivado, e como o nome legal é impedido de sair por serialização.
 
+- [Organizações e vínculos](organizations.md) — por que dois enums fogem do
+  nome que a issue pedia, por que o slug é imutável e ganha sufixo de
+  desempate, as três camadas que garantem que toda organização tenha um dono, e
+  o que a remoção em massa ainda alcança.
+
 - [Pagamentos](payments.md) — a fronteira que isola o provedor, por que o
   simulador é determinístico e configurável, por que a marca de origem é
   `attr_readonly`, e as duas invariantes que a CI cobra sobre o repositório

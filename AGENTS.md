@@ -339,6 +339,28 @@ A pessoa é o `Profile`. Três regras:
 - **`display_name` é armazenado, não derivado.** Corrigir o nome legal não pode
   reescrever o histórico já exibido.
 
+## Organizações e vínculos
+
+> Os nomes dos enums, as três camadas da regra do owner e o que `delete_all`
+> não alcança: [`docs/organizations.md`](docs/organizations.md).
+
+A instituição é a `Organization`; o vínculo com uma pessoa é o `Membership`.
+Quatro regras:
+
+- **Papel é contexto.** Ele mora no `Membership`, nunca numa coluna em
+  `profiles`.
+- **Organização nasce `pending`, e quem lista é `Organization.visible`.** Não
+  aprovada não aparece em busca e não recebe doação.
+- **`slug` nasce do nome e é imutável** (`attr_readonly`) — URL pública que
+  quebra é dívida permanente.
+- **Toda organização tem pelo menos um `owner`.** Remover *ou rebaixar* o
+  último reprova; a cascata da própria organização é a única isenta.
+
+E uma regra de vocabulário que vale para qualquer enum novo: **se o namespace
+de rótulo (`<enum no plural>.*`) já existe com outro sentido, o enum ganha nome
+próprio** — foi por isso que as colunas aqui são `organization_kind` e
+`organization_status`, e não `kind` e `status`.
+
 ## Pagamentos
 
 > A fronteira, o simulador determinístico e a marca de dado simulado:
