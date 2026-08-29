@@ -39,6 +39,11 @@ module Legacy
 
     config.i18n.load_path += Rails.root.glob("config/locales/**.{yml}")
     config.i18n.default_locale = "pt-BR"
+
+    # A rails-i18n traz ~140 locales. Declarar o único que o produto fala faz o
+    # backend descartar os outros já na carga, e faz `I18n.locale = :fr`
+    # levantar em vez de trocar o idioma da tela em silêncio.
+    config.i18n.available_locales = ["pt-BR"]
     config.time_zone = "Brasilia"
 
     # A aplicação é uma demo fechada e não deve ser indexada, mesmo que um
