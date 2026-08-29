@@ -49,7 +49,9 @@ acrescenta nada. Então:
 
 - [Action Text](action-text.md) — por que texto rico nasce sem anexo embutido,
   as duas camadas que cobram isso, a corrida que a barra do Trix perde se a
-  tradução chegar um tique atrasada, e por que o CSS do Trix fica verbatim.
+  tradução chegar um tique atrasada, por que o CSS do Trix fica verbatim, e o
+  `trix.js` disputado por dois arquivos que matou o grafo de módulos inteiro em
+  silêncio — em uma máquina só.
 
 ### Deploy
 

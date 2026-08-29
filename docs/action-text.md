@@ -22,7 +22,13 @@ Este documento é o **porquê**. As regras em uma linha estão no
 | `config/initializers/action_text.rb` | A política de anexo |
 | `app/javascript/trix_locale.js` | A barra de ferramentas em pt-BR |
 | `app/javascript/controllers/rich_text_controller.js` | Recusa de anexo no navegador |
-| `vendor/javascript/trix.js` | O Trix baixado, não apontado para CDN |
+| `spec/propshaft/load_path_spec.rb` | Nenhum asset com nome disputado |
+
+O JavaScript do Trix **não** está aqui: ele vem da gem `action_text-trix`, que a
+`actiontext` já puxa e trava (`~> 2.1.15`). Ela o serve pelo asset path como
+qualquer engine — do próprio domínio, sem CDN — e é isso que torna uma cópia em
+`vendor/javascript/` desnecessária. Custou uma CI vermelha descobrir; a seção
+seguinte conta.
 
 ## As duas migrations, e o timestamp compartilhado
 
@@ -135,11 +141,17 @@ Os rótulos do Trix não passam pelo `t()` do Rails: a barra é montada em
 JavaScript, a partir de `Trix.config.lang`. Nenhum dos três linters de i18n do
 repositório enxerga esses textos.
 
-Duas coisas quebram em silêncio aqui.
+Três coisas quebram em silêncio aqui.
 
 **`Object.assign`, não atribuição.** O gerador do HTML padrão da barra fecha
 sobre o *objeto* de lang, não sobre `config.lang`. Trocar o objeto
-(`Trix.config.lang = {...}`) deixa o gerador lendo o antigo, em inglês.
+(`Trix.config.lang = {...}`) deixa o gerador lendo o antigo, em inglês. No
+bundle da gem há um segundo motivo: o `Trix.config` de lá é um namespace
+`Object.freeze`, e a atribuição falharia calada.
+
+**`import "trix"`, não `import Trix from "trix"`.** O bundle que este projeto
+serve é UMD — publica `window.Trix` e não exporta nada. A ligação do módulo é o
+que quebra, não a execução; ver a seção seguinte.
 
 **A ordem.** `Trix.config.lang` precisa estar traduzido antes de o custom
 element `trix-editor` ser definido — o `getDefaultHTML()` só é chamado uma vez
@@ -154,6 +166,70 @@ Isso foi medido, não deduzido: trocar `localizeTrix()` por
 nenhum. Por isso as duas decisões de navegador têm spec de sistema: são
 invisíveis para o `bin/stimulus_lint`, que não lê o Trix, e para o
 `bin/herb_lint`, que não lê CSS compilado.
+
+## O `trix.js` disputado, e o grafo de módulos que morreu inteiro
+
+Esta seção existe porque a primeira versão desta entrega passou na máquina de
+quem a escreveu e reprovou na CI, com três exemplos de
+`spec/system/rich_text_editor_spec.rb`. A causa não é nenhuma das duas coisas
+acima — vale escrever, porque o palpite natural era a corrida.
+
+Aquela versão **baixava** o Trix (o build ESM, do jspm) para
+`vendor/javascript/trix.js`, com a intenção correta de não depender de CDN. Só
+que a gem `action_text-trix` — dependência transitiva da `actiontext`, e já
+instalada — serve um `trix.js` pelo próprio asset path. Dois arquivos, um nome:
+
+```
+trix.js
+  <app>/vendor/javascript/trix.js                                  (ESM, jspm)
+  <gems>/action_text-trix-2.1.19/app/assets/javascripts/trix.js    (UMD, gem)
+```
+
+O `Propshaft::LoadPath` resolve com `mapped[nome] ||= …`: **o primeiro caminho
+do `config.assets.paths` vence**. E essa ordem não é a mesma em toda máquina —
+medido pelo dígito do asset servido, que é função do conteúdo:
+
+| Onde | `/assets/trix-*.js` | Qual arquivo |
+| --- | --- | --- |
+| Máquina local | `trix-c03e5b6b.js` | o ESM do `vendor/` |
+| Runner do GitHub | `trix-4bf79781.js` | o UMD da gem |
+
+O UMD não tem `export default`. Então lá `import Trix from "trix"`, no
+`trix_locale.js`, falhava na **ligação** do módulo — a etapa em que o navegador
+casa os `import` com os `export`, antes de avaliar qualquer coisa. Ligação que
+falha rejeita o **grafo inteiro**: nada do `application.js` roda.
+
+O sintoma é cruel de ler porque não parece um erro de rede nem de asset. Medido
+no runner, com o editor na tela:
+
+```
+resources : todo /assets/*.js com status 200
+window.Turbo     : undefined
+window.Stimulus  : undefined
+window.Trix      : undefined
+```
+
+Todo módulo baixado, nenhum avaliado. O `<trix-editor>` aparecia (é HTML do
+servidor), a barra não existia (é JavaScript), e o controller Stimulus da
+política de anexo nunca conectava — os três exemplos que reprovavam.
+
+**A correção é apagar a cópia baixada.** A razão para baixar era "servir do
+próprio domínio", e a gem já faz isso: é um asset de engine, servido pelo
+Propshaft, sem CDN nenhum. A cópia não acrescentava nada e cobrava dois preços —
+o nome disputado, e uma segunda versão do Trix livre para divergir da que a
+`actiontext` trava. Com ela fora, `import "trix"` carrega o UMD, que publica
+`window.Trix`, e o `localizeTrix()` mexe em `window.Trix.config.lang`.
+
+**E entra um gate, porque a lição é maior que o Trix.**
+`spec/propshaft/load_path_spec.rb` percorre o `config.assets.paths`
+inteiro e reprova qualquer caminho lógico reivindicado por dois arquivos. Ele
+reprova com a cópia presente e passa sem ela — na máquina local, onde a
+ambiguidade sempre existiu mesmo com a CI verde. Era esse o buraco: a colisão
+era local desde o primeiro commit, e só o *vencedor* mudava de máquina.
+
+É a mesma família que o `AGENTS.md` cataloga em "ferramenta que falha em
+silêncio": nem `assets:precompile`, nem `bin/importmap audit`, nem
+`bin/stimulus_lint` têm uma palavra a dizer sobre dois assets com o mesmo nome.
 
 ## Os partials reescritos
 

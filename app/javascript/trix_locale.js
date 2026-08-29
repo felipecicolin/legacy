@@ -17,7 +17,14 @@
 // qualquer código síncrono do `application.js` chega primeiro; um `connect()`
 // de Stimulus, que espera o DOM, chegaria tarde demais e a barra sairia em
 // inglês — sem falhar em lugar nenhum.
-import Trix from "trix"
+//
+// Por que `import "trix"` sem ligação, e `window.Trix` na hora de usar: o
+// `trix.js` que este projeto serve é o da gem `action_text-trix`, um bundle UMD
+// — ele publica `window.Trix` e não exporta nada. `import Trix from "trix"`
+// falharia na LIGAÇÃO do módulo, que rejeita o grafo inteiro: nada do
+// `application.js` avaliaria, nem o Turbo, nem o Stimulus. Ver
+// docs/action-text.md.
+import "trix"
 
 const PT_BR = {
   attachFiles: "Anexar arquivos",
@@ -49,5 +56,5 @@ const PT_BR = {
 }
 
 export function localizeTrix() {
-  Object.assign(Trix.config.lang, PT_BR)
+  Object.assign(window.Trix.config.lang, PT_BR)
 }

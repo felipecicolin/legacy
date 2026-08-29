@@ -399,7 +399,7 @@ frente:
 > As decisões, as medições e as armadilhas:
 > [`docs/action-text.md`](docs/action-text.md).
 
-Texto rico é `has_rich_text`, com Trix e Active Storage por trás. Três regras:
+Texto rico é `has_rich_text`, com Trix e Active Storage por trás. Quatro regras:
 
 - **Sem anexo embutido.** O upload do Trix não passa pelo processamento de foto
   da plataforma, então o `config/initializers/action_text.rb` poda
@@ -409,6 +409,10 @@ Texto rico é `has_rich_text`, com Trix e Active Storage por trás. Três regras
   preload, cada registro renderizado custa três queries a mais.
 - **Rótulo do Trix vive em `app/javascript/trix_locale.js`**, e a chamada é
   síncrona no `application.js` — não em `connect()` de Stimulus. Ver armadilhas.
+- **O Trix vem da gem `action_text-trix`, não de uma cópia em
+  `vendor/javascript/`.** Ela já serve do próprio domínio e é travada pela
+  `actiontext`. A cópia é UMD: `import "trix"`, nunca
+  `import Trix from "trix"`.
 
 ## Banco de dados
 
@@ -540,6 +544,24 @@ registra o `customElements.define` num `setTimeout` — então código síncrono
 `Object.assign(Trix.config.lang, …)`: o gerador da barra fecha sobre o objeto,
 então substituí-lo deixa o gerador lendo o antigo. `spec/system/rich_text_editor_spec.rb`
 é quem cobra as duas coisas — nenhum linter aqui lê o Trix.
+
+**Dois arquivos com o mesmo caminho lógico de asset: quem vence muda de
+máquina.** O `Propshaft::LoadPath` monta o mapa com `mapped[nome] ||= …`, então
+decide a ordem do `config.assets.paths` — e ela não é a mesma em todo lugar.
+Medido: com `vendor/javascript/trix.js` e o `trix.js` da gem `action_text-trix`
+disputando `trix.js`, o vendor ganhava na máquina de quem escreveu e a gem
+ganhava no runner do GitHub. Nada reclama: os dois arquivos existem, os dois são
+servidos com 200, e nem `assets:precompile` nem `importmap audit` olham nome
+duplicado. `spec/propshaft/load_path_spec.rb` cobra. Ver
+[`docs/action-text.md`](docs/action-text.md).
+
+**Erro de ligação num módulo derruba o grafo INTEIRO, em silêncio.** Foi o custo
+da armadilha acima: a cópia da gem é UMD, sem `export default`, então o
+`import Trix from "trix"` não resolvia — e o navegador rejeita o grafo antes de
+avaliar qualquer módulo. Sintoma: todo `/assets/*.js` com 200 no painel de rede
+e `window.Turbo`, `window.Stimulus` e `window.Trix` os três `undefined`. Um
+`import` que erra sozinho leva junto Turbo, Stimulus e tudo mais que o
+`application.js` alcança.
 
 **O parser do herb lê marcação dentro de `<%# … %>`.** Comentário ERB não é zona
 neutra: um `<body>` ou um `<%= … %>` citado na explicação vira erro de
