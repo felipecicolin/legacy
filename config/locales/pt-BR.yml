@@ -7,6 +7,10 @@ pt-BR:
     show:
       signed_in_as: Você entrou como %{email}.
       title: Você está autenticado
+  kinds:
+    charge: Cobrança
+    refund: Estorno
+    schedule_recurring: Agendamento recorrente
   layouts:
     application:
       sign_out: Sair
@@ -46,3 +50,8 @@ pt-BR:
       submit: Entrar
       title: Acessar a plataforma
     rate_limited: Muitas tentativas de acesso. Tente de novo em alguns minutos.
+  statuses:
+    failed: Falhou
+    pending: Pendente
+    refused: Recusado
+    succeeded: Aprovado

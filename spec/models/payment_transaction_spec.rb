@@ -51,4 +51,25 @@ RSpec.describe PaymentTransaction do
       expect { build(:payment_transaction, status: :approved) }.to raise_error(ArgumentError)
     end
   end
+
+  # A convenção de #59: nenhum valor de enum vai cru para a tela. O spec existe
+  # porque a chave é montada em tempo de execução — sem ele, um valor novo no
+  # contrato passaria a renderizar "Translation missing" e nada reprovaria.
+  describe "enum labels" do
+    it "translates every operation the contract declares" do
+      labels = Payments::PaymentProvider::OPERATIONS.map do |kind|
+        build(:payment_transaction, kind: kind).kind_label
+      end
+
+      expect(labels).to all(satisfy { |label| label.present? && label.exclude?("translation missing") })
+    end
+
+    it "translates every status the contract declares" do
+      labels = Payments::PaymentProvider::STATUSES.map do |status|
+        build(:payment_transaction, status: status).status_label
+      end
+
+      expect(labels).to all(satisfy { |label| label.present? && label.exclude?("translation missing") })
+    end
+  end
 end

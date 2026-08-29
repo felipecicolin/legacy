@@ -146,11 +146,18 @@ diferentes:
 
 Depois de mexer em locale, rode `bin/i18n-tasks normalize`.
 
-Chave resolvida dinamicamente (`t("status.#{value}")`) é invisível para o
-scanner e aparece como órfã. Marque com um comentário
-`# i18n-tasks-use t('status.*')` ao lado da chamada — nunca com uma entrada
-genérica em `ignore_unused`. O `directive_guard` rastreia esses comentários,
-para a lista não crescer em silêncio.
+Chave resolvida dinamicamente (`I18n.t(status, scope: :statuses)`) é invisível
+para o scanner e apareceria como órfã. **Escreva com `scope:`, nunca com
+interpolação** — o cop `DecorateStringFormattingUsingInterpolation` reprova
+`t("statuses.#{value}")`.
+
+O comentário `# i18n-tasks-use` **não funciona neste repositório**: medido, o
+scanner desta versão não o lê em arquivo `.rb`. O vocabulário de enum vai em
+`ignore_unused` no `config/i18n-tasks.yml.erb`, com o motivo ao lado — e o que
+torna isso seguro é `spec/models/enum_translation_audit_spec.rb`, que percorre
+os enums de todos os modelos e reprova qualquer valor sem rótulo. A checagem de
+"não usada" foi trocada por uma mais forte, não removida. Detalhes em
+[`docs/i18n.md`](docs/i18n.md).
 
 A `rails-i18n` cobre o miolo do framework (validação, mês, moeda, "3 meses");
 os formatos que ela não acerta ficam em `config/locales/rails.pt-BR.yml`

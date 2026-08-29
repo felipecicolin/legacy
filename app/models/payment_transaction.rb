@@ -28,6 +28,25 @@ class PaymentTransaction < ApplicationRecord
   enum :kind, Payments::PaymentProvider::OPERATIONS.index_with(&:to_s)
   enum :status, Payments::PaymentProvider::STATUSES.index_with(&:to_s)
 
+  # Nenhum valor de enum vai cru para a tela — a convenção é `<enum no
+  # plural>.<valor>` no topo do locale, e está em `docs/i18n.md`.
+  #
+  # `scope:` com o valor em variável, e não `t("kinds.#{...}")`: o cop
+  # `I18n/RailsI18n/DecorateStringFormattingUsingInterpolation` proíbe
+  # interpolação dentro da chave.
+  #
+  # O scanner do i18n-tasks não resolve chave montada assim e acusaria os sete
+  # rótulos como órfãos. Quem responde por eles é o
+  # `spec/models/enum_translation_audit_spec.rb` — ver a nota em
+  # `config/i18n-tasks.yml.erb`.
+  def kind_label
+    I18n.t(kind, scope: :kinds)
+  end
+
+  def status_label
+    I18n.t(status, scope: :statuses)
+  end
+
   validates :kind, :status, :reference, :provider_reference, :currency, presence: true
   validates :amount_cents, presence: true, numericality: { only_integer: true, greater_than: 0 }
 
