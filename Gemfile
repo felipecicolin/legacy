@@ -47,6 +47,17 @@ gem "thruster", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 2.0"
+# O `image_processing` 2.0 largou a dependência de ruby-vips e mandou o
+# consumidor declará-la. Como o processador de variantes padrão do Active
+# Storage é o vips, sem esta linha o `active_storage/transformers/vips` não
+# carrega e a aplicação não sobe.
+#
+# Exige a libvips instalada na máquina (`brew install vips`, `apt install
+# libvips`; o Dockerfile já a instala). O Active Storage tem um `rescue
+# LoadError` que degradaria para um aviso, mas ele só reconhece a mensagem do
+# dlopen — e o image_processing 2.0 a reescreve, então o rescue não pega e o
+# boot morre. Sem rede de proteção: a libvips é requisito.
+gem "ruby-vips", require: false
 
 group :development, :test do
   # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
