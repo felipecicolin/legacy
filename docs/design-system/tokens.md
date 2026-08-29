@@ -85,7 +85,7 @@ cor.
 | --- | --- | --- |
 | `border` | `sand-200` | Divisória **decorativa**. Fica abaixo de 3:1 de propósito — a WCAG 1.4.11 não alcança divisória |
 | `input` | `sand-500` | Fronteira de **campo**. A 1.4.11 alcança, então é um passo mais escuro |
-| `ring` | `clay-500` | Anel de foco |
+| `ring` | `clay-500` | Anel de foco. Também alcançado pela 1.4.11 — 3:1, verificado |
 
 `border` e `input` não são o mesmo token porque não têm a mesma obrigação.
 
@@ -114,8 +114,19 @@ tabela no fim do `tokens.css` é conveniência de leitura — a verificação é
 spec, e por isso ela não envelhece.
 
 Os pares são **derivados**, não listados à mão: todo `X` que tenha um
-`X-foreground` vira par, e todo `X` que tenha um `X-soft` também. Um par novo
-entra coberto sem ninguém lembrar de atualizar o spec.
+`X-foreground` vira par, todo `X` que tenha um `X-soft` também, e toda
+`category-N` é conferida contra o fundo da página. Um par novo entra coberto
+sem ninguém lembrar de atualizar o spec.
+
+Duas exceções à derivação estão escritas em `EXTRA_TEXT_PAIRS`, porque não
+seguem convenção nenhuma: `foreground` e `muted-foreground` sobre `background`.
+
+O comparador só aceita o `rgb()` que o `getComputedStyle` devolve para cor
+declarada em hexadecimal, e **levanta** em qualquer outro formato. Não é
+preciosismo: `oklch()` — o formato que este arquivo usava antes de #6 — seria
+lido como três canais de 0 a 255 e devolveria uma razão inventada, que cai dos
+dois lados do limiar. Trocar a paleta para outro espaço de cor exige ensinar o
+comparador a lê-lo, e o erro diz isso.
 
 > A paleta original da issue #6 trazia `--amber-600: #B07A18`, que dava 3.09:1
 > sobre `--amber-100` — reprovado. Âmbar de meio-tom sobre âmbar pálido é a

@@ -112,8 +112,9 @@
 
   /* — Estrutura —————————————————————————————————————————————————
    * `border` é divisória decorativa e fica de propósito abaixo de 3:1 — a
-   * WCAG 1.4.11 não a alcança. `input` é a fronteira de um campo, que ela
-   * alcança, e por isso é um passo mais escuro. Não são o mesmo token. */
+   * WCAG 1.4.11 não a alcança. `input` é a fronteira de um campo e `ring` é o
+   * indicador de foco: a regra alcança os dois, e por isso o `input` é um
+   * passo mais escuro que o `border`. Não são o mesmo token. */
   --color-border: var(--sand-200);
   --color-input: var(--sand-500);
   --color-ring: var(--clay-500);
@@ -155,6 +156,7 @@
  *   category-3 / background ............... 5.11  AA
  *   category-4 / background ............... 5.23  AA
  *   input / background .................... 3.45  AA (fronteira de UI, 3:1)
+ *   ring / background ..................... 5.35  AA (fronteira de UI, 3:1)
  *
  * O `--amber-600` da proposta original era `#B07A18` e dava 3.09 sobre
  * `--amber-100` — reprovado. Âmbar de meio-tom sobre âmbar pálido é a falha

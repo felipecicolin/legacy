@@ -11,20 +11,29 @@ module DesignTokenManifest
 
   THEME_BLOCK = /@theme inline \{(.+?)\n\}/m
 
-  # Pares que não seguem a convenção `X` / `X-foreground`. `foreground` sobre
-  # `background` é o texto corrido da aplicação, e as categóricas são lidas
-  # como texto sobre o fundo da página.
+  # Pares de texto que não seguem a convenção `X` / `X-foreground`:
+  # `foreground` é o texto corrido sobre o fundo da página, e
+  # `muted-foreground` sobre o mesmo fundo é o uso real do texto de apoio —
+  # mais comum que o par `muted-foreground` / `muted`, que a convenção deriva.
   EXTRA_TEXT_PAIRS = [
     %w[foreground background],
-    %w[category-1 background],
-    %w[category-2 background],
-    %w[category-3 background],
-    %w[category-4 background],
+    %w[muted-foreground background],
   ].freeze
 
-  # `input` é a fronteira de um campo — componente de UI pela 1.4.11, e não
-  # texto. `border` fica de fora: divisória decorativa, que a regra não alcança.
-  UI_PAIRS = [%w[input background]].freeze
+  # Toda categórica é lida como texto sobre o fundo da página. Derivadas, e não
+  # listadas, para que `category-5` entre coberta sem ninguém lembrar de voltar
+  # aqui — que é o que a receita em docs/design-system/tokens.md promete.
+  CATEGORICAL = /\Acategory-/
+
+  # Componentes de UI pela 1.4.11, que exige 3:1 e não os 4.5:1 de texto:
+  # `input` é a fronteira de um campo e `ring` é o indicador de foco — o anel
+  # que some no fundo deixa quem navega por teclado sem saber onde está.
+  # `border` fica de fora de propósito: divisória decorativa, fora do alcance
+  # da regra.
+  UI_PAIRS = [
+    %w[input background],
+    %w[ring background],
+  ].freeze
 
   def declarations
     Rails.root.join("app/assets/tailwind/tokens.css").read[THEME_BLOCK, 1].to_s
@@ -45,6 +54,6 @@ module DesignTokenManifest
     names = colors
     filled = names.filter_map { |name| ["#{name}-foreground", name] if names.include?("#{name}-foreground") }
     soft = names.filter_map { |name| [name, "#{name}-soft"] if names.include?("#{name}-soft") }
-    filled + soft + EXTRA_TEXT_PAIRS
+    filled + soft + names.grep(CATEGORICAL).map { |name| [name, "background"] } + EXTRA_TEXT_PAIRS
   end
 end

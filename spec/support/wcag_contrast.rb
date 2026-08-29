@@ -24,9 +24,21 @@ module WcagContrast
     (0.2126 * red) + (0.7152 * green) + (0.0722 * blue)
   end
 
-  # Aceita o `rgb(r, g, b)` e o `rgba(r, g, b, a)` que o getComputedStyle
-  # devolve. O alfa é descartado: todo par medido aqui é opaco sobre opaco.
+  # Só `rgb(r, g, b)` e `rgba(r, g, b, a)`, que é o que o getComputedStyle
+  # devolve para cor declarada em hexadecimal. O alfa é descartado: todo par
+  # medido aqui é opaco sobre opaco.
+  #
+  # A recusa é o ponto. Sem ela, `oklch(0.546 0.215 262.881)` — o formato que
+  # a paleta deste projeto usava antes de #6, e que um tema escuro traria de
+  # volta — seria lido como três canais de 0 a 255 e devolveria 1.08 onde o
+  # contraste real é 5.35. Uma razão inventada cai dos dois lados do limiar,
+  # então o par reprovado passaria em silêncio.
+  RGB_FUNCTION = /\Argba?\(/
+
   def channels(rgb)
+    raise ArgumentError, "esperava rgb()/rgba() do getComputedStyle, veio #{rgb.inspect}" unless
+      rgb.match?(RGB_FUNCTION)
+
     rgb.scan(/\d+(?:\.\d+)?/).first(3).map { |value| value.to_f / 255 }
   end
 
