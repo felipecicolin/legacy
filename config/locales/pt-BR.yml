@@ -33,9 +33,7 @@ pt-BR:
   passwords_mailer:
     reset:
       cta: Definir uma nova senha
-      expires:
-        one: O link vale por 1 minuto.
-        other: O link vale por %{count} minutos.
+      expires: O link vale por %{duration}.
       intro: Recebemos um pedido para redefinir a senha da sua conta.
       subject: Redefinir sua senha
   sessions:

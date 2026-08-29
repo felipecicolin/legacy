@@ -1,6 +1,3 @@
-<%# `distance_of_time_in_words` sairia em inglês: o rails-i18n só entra em #59,
-    e sem ele o Rails não traduz o próprio miolo. A duração vai como número
-    numa chave nossa, que o i18n-tasks cobra e que não depende daquela issue. %>
 <p>
   <%= t(".intro") %>
 </p>
@@ -10,5 +7,5 @@
 </p>
 
 <p>
-  <%= t(".expires", count: @user.password_reset_token_expires_in.in_minutes.to_i) %>
+  <%= t(".expires", duration: distance_of_time_in_words(@user.password_reset_token_expires_in)) %>
 </p>

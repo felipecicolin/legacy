@@ -134,6 +134,9 @@ que ela cai é um projeto; mantê-la é um hábito.
 
 ## i18n — todo texto visível passa por `t()`
 
+> Formatos pt-BR, convenção de nomes de chave e rótulo de enum:
+> [`docs/i18n.md`](docs/i18n.md).
+
 Locale base e único hoje: `pt-BR`. Três linters cobram isso de ângulos
 diferentes:
 
@@ -148,6 +151,13 @@ scanner e aparece como órfã. Marque com um comentário
 `# i18n-tasks-use t('status.*')` ao lado da chamada — nunca com uma entrada
 genérica em `ignore_unused`. O `directive_guard` rastreia esses comentários,
 para a lista não crescer em silêncio.
+
+A `rails-i18n` cobre o miolo do framework (validação, mês, moeda, "3 meses");
+os formatos que ela não acerta ficam em `config/locales/rails.pt-BR.yml`
+e são cobrados por `spec/i18n_spec.rb`, porque linter nenhum lê texto de gem.
+Nome de campo vai em `activerecord.attributes.*`; **valor de enum nunca vai cru
+para a tela** — o rótulo é `<enum no plural>.<valor>` no topo do locale, e
+`spec/models/enum_translation_audit_spec.rb` reprova quem esquecer.
 
 ---
 
