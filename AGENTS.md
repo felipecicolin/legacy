@@ -364,6 +364,28 @@ webhook. Quatro regras valem daqui para frente:
   marca visível — o `SimulatedDataBannerComponent` está no layout justamente
   para nenhuma precisar lembrar.
 
+## Visibilidade
+
+> Os três níveis, o que não se persiste e a auditoria:
+> [`docs/visibility.md`](docs/visibility.md).
+
+O concern `Sensitive` dá a todo registro de obra um `sensitivity_level`
+(`public` · `restricted` · `confidential`). Quatro regras valem daqui para
+frente:
+
+- **Obra nasce `restricted`.** Inclusive na criação: `create!` com nível menos
+  restritivo que o default reprova, do mesmo jeito que um `update` reprovaria.
+- **Registro `confidential` não guarda coordenada nem endereço.** Não é filtro
+  de exibição — é o que se persiste. Gravar reprova na validação e levanta
+  `Sensitive::PreciseLocationForbidden` mesmo com validação pulada. `update_column`
+  e `update_all` sobre modelo com o concern continuam proibidos: pulam callback.
+- **Afrouxar restrição só por `promote_visibility!`**, com autor e
+  justificativa. Ela grava a linha em `sensitivity_changes`; `update` direto
+  reprova. Restringir mais não pede cerimônia.
+- **Consulta de visibilidade sai de `visible_to` / `hidden_from`**, que recebem
+  um `Visibility::Context` e devolvem relação. Nunca escreva um segundo caminho
+  de SQL que decida visibilidade — é ele que vai divergir.
+
 ## Banco de dados
 
 - `bundle exec database_consistency` cobra FK sem índice, `NOT NULL` faltando,

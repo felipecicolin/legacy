@@ -43,6 +43,10 @@ acrescenta nada. Então:
   `attr_readonly`, e as duas invariantes que a CI cobra sobre o repositório
   inteiro.
 
+- [Visibilidade](visibility.md) — por que obra nasce fechada, por que registro
+  confidencial não *guarda* coordenada em vez de só não mostrá-la, como a
+  promoção de nível é auditada, e o que sustenta o agregado anonimizado.
+
 ### Deploy
 
 - [Deploy no Coolify](deploy/coolify.md) — por que Solid Cache, Queue e Cable
