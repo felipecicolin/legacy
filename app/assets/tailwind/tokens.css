@@ -102,6 +102,11 @@
   --radius-control: 5px;
   --radius-card: 8px;
   --radius-pill: 9999px;
+
+  /* proporção — os enquadramentos que a moldura de imagem reserva */
+  --ratio-wide: 16 / 9;
+  --ratio-photo: 4 / 3;
+  --ratio-tile: 1 / 1;
 }
 
 @theme inline {
@@ -187,6 +192,18 @@
 
   --text-label: 0.75rem;
   --text-label--letter-spacing: 0.08em;
+
+  /* — Proporção —————————————————————————————————————————————————
+   * Os três enquadramentos que a `ImageFrameComponent` reserva antes de a
+   * imagem chegar. São token pelo mesmo motivo do raio: `aspect-[4/3]` é
+   * valor arbitrário, e `aspect-video`/`aspect-square` existem no núcleo do
+   * Tailwind — usá-los deixaria o enquadramento fora deste arquivo, onde
+   * ninguém o encontraria para mudar. Nomes próprios (`wide`, `photo`,
+   * `tile`) porque um nome que o núcleo também tem não denuncia o token
+   * removido: a classe continuaria existindo, vinda de outro lugar. */
+  --aspect-wide: var(--ratio-wide);
+  --aspect-photo: var(--ratio-photo);
+  --aspect-tile: var(--ratio-tile);
 }
 
 /* — Contraste WCAG AA ————————————————————————————————————————————

@@ -9,6 +9,13 @@ class User < ApplicationRecord
   # acontecer no lugar em que dá para explicá-la.
   has_one :profile, dependent: :destroy
 
+  # `restrict_with_error`, e não `destroy`: a linha de auditoria existe para
+  # responder "quem abriu esta obra". Apagá-la junto com a conta transformaria
+  # remover um usuário no jeito de apagar o próprio rastro.
+  has_many :authored_sensitivity_changes, class_name: "SensitivityChange",
+                                          foreign_key: :author_id, inverse_of: :author,
+                                          dependent: :restrict_with_error
+
   # `normalizes` em vez de callback à mão: é o que faz a unicidade do índice e
   # a da validação concordarem. Um callback rodaria depois da validação, então
   # "  Fulano@Ex.COM " passaria pelo `validates uniqueness` como string
