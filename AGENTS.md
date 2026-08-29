@@ -296,6 +296,13 @@ Frame, um Turbo Stream ou um controller Stimulus. Nunca desligue o Turbo.
 - Na CI, o segundo banco sai de `CREATE DATABASE … TEMPLATE`, e não de uma
   segunda carga de schema: é o Postgres clonando, em vez do Rails subindo de
   novo.
+- **Solid Cache, Queue e Cable moram no banco primário**, não em bancos
+  dedicados: em produção há uma `DATABASE_URL` só. As tabelas entram por
+  migration como qualquer outra — ver
+  [`docs/deploy/coolify.md`](docs/deploy/coolify.md).
+- O bloco `production:` do `database.yml` não declara `database`, `username` nem
+  `host`. Chave escrita ali vence a parte correspondente da `DATABASE_URL`, em
+  silêncio.
 
 ---
 
@@ -355,6 +362,18 @@ o consumidor a declare. O Active Storage tem um `rescue LoadError` para
 degradar quando falta a libvips, mas ele casa a mensagem do dlopen — e a 2.0
 reescreve essa mensagem, então o rescue não pega. Duas mudanças pequenas em
 bibliotecas diferentes, e o resultado é a aplicação não subir.
+
+**A `DATABASE_URL` só alcança o config `primary`.** Com os quatro bancos do
+default do Rails 8, `cache`, `queue` e `cable` continuam lendo o `database.yml`
+e apontando para `localhost` — onde, dentro do container, não há Postgres. O
+`db:prepare` do entrypoint falha no boot, e só em produção: desenvolvimento e
+teste já são de banco único, então nada na CI reprova. Por isso o Solid foi
+consolidado no primário.
+
+**Healthcheck de deploy vai em `/up`, nunca em `/`.** Não há rota raiz, e a
+produção roda com `consider_all_requests_local = false`: `/` devolve 404, o
+container fica permanentemente unhealthy e o proxy nunca roteia tráfego — com a
+aplicação funcionando do outro lado.
 
 ---
 
