@@ -31,6 +31,12 @@ gem "inline_svg"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
 
+# Traduções do próprio Rails para pt-BR: mensagem de validação, nome de mês,
+# formato de moeda e de número, `distance_of_time_in_words`. Sem a gem esse
+# miolo sai em inglês na tela, e nenhum dos três linters de i18n pega — eles
+# cobram as NOSSAS chaves, não as do framework.
+gem "rails-i18n"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[windows jruby]
 
