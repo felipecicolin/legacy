@@ -1,0 +1,62 @@
+<%#
+  Um elemento por token semântico de @theme inline.
+
+  Duas coisas aqui são deliberadas e quebram em silêncio se mexidas:
+
+  1. Cada utility está escrita LITERALMENTE. O Tailwind v4 gera utility varrendo
+     o texto-fonte do projeto, então um nome de classe montado em laço não
+     produz classe nenhuma: a página inteira sairia transparente e o spec
+     reprovaria por um motivo que não é o dele. Verificado: o varredor alcança
+     spec/.
+
+  2. Toda cor é sondada por bg-*, mesmo a de papel textual como
+     muted-foreground. A propriedade color HERDA — um text-muted-foreground
+     inexistente pegaria a cor herdada do corpo da página e passaria no teste.
+     Já background-color nasce transparente, então classe que não existe se
+     denuncia.
+
+  Sem nó de texto: o herb roda sobre o repositório inteiro e
+  no-hardcoded-string cobraria t() em qualquer palavra visível aqui.
+%>
+<div data-tokens-smoke>
+  <div data-token="background" class="bg-background"></div>
+  <div data-token="foreground" class="bg-foreground"></div>
+  <div data-token="card" class="bg-card"></div>
+  <div data-token="card-foreground" class="bg-card-foreground"></div>
+  <div data-token="popover" class="bg-popover"></div>
+  <div data-token="popover-foreground" class="bg-popover-foreground"></div>
+
+  <div data-token="primary" class="bg-primary"></div>
+  <div data-token="primary-foreground" class="bg-primary-foreground"></div>
+  <div data-token="primary-soft" class="bg-primary-soft"></div>
+  <div data-token="secondary" class="bg-secondary"></div>
+  <div data-token="secondary-foreground" class="bg-secondary-foreground"></div>
+
+  <div data-token="muted" class="bg-muted"></div>
+  <div data-token="muted-foreground" class="bg-muted-foreground"></div>
+  <div data-token="accent" class="bg-accent"></div>
+  <div data-token="accent-foreground" class="bg-accent-foreground"></div>
+
+  <div data-token="success" class="bg-success"></div>
+  <div data-token="success-foreground" class="bg-success-foreground"></div>
+  <div data-token="success-soft" class="bg-success-soft"></div>
+  <div data-token="warning" class="bg-warning"></div>
+  <div data-token="warning-foreground" class="bg-warning-foreground"></div>
+  <div data-token="warning-soft" class="bg-warning-soft"></div>
+  <div data-token="destructive" class="bg-destructive"></div>
+  <div data-token="destructive-foreground" class="bg-destructive-foreground"></div>
+  <div data-token="destructive-soft" class="bg-destructive-soft"></div>
+
+  <div data-token="category-1" class="bg-category-1"></div>
+  <div data-token="category-2" class="bg-category-2"></div>
+  <div data-token="category-3" class="bg-category-3"></div>
+  <div data-token="category-4" class="bg-category-4"></div>
+
+  <div data-token="border" class="bg-border"></div>
+  <div data-token="input" class="bg-input"></div>
+  <div data-token="ring" class="bg-ring"></div>
+
+  <div data-radius="sm" class="rounded-sm"></div>
+  <div data-radius="lg" class="rounded-lg"></div>
+  <div data-radius="full" class="rounded-full"></div>
+</div>

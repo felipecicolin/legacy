@@ -1,122 +1,163 @@
-/* Tokens do design system — em camadas (primitivas → semânticas).
+/* Tokens do design system — duas camadas, de propósito.
  *
- * Regras:
- *   - As primitivas vivem em :root (apenas variáveis CSS). Nunca referencie
- *     estas diretamente em views ou componentes.
- *   - Os apelidos semânticos são expostos via @theme inline, para que o
- *     Tailwind gere utilities como bg-primary, text-muted-foreground,
- *     rounded-card.
- *   - O código da aplicação usa as utilities SEMÂNTICAS. É isso que torna
- *     cobráveis as regras `no-color-scale-utility`, `no-arbitrary-tailwind` e
- *     `no-hex-code` do herb: elas proibem `bg-blue-500`, `h-[200px]` e `#fff`
- *     justamente porque existe um nome semântico para usar no lugar.
+ *   :root   primitivas. Escala crua, sem significado. Nenhuma view consome.
+ *   @theme  semânticas. É o que vira utility. É o que a view usa.
  *
- * A paleta abaixo é um ponto de partida neutro (cinza/azul). Troque os valores
- * pela identidade do produto — a ESTRUTURA é o que importa, não os matizes. */
+ * A separação é o ponto do arquivo: enquanto a camada de baixo nomeia MATIZ
+ * (`--clay-500`) e a de cima nomeia PAPEL (`--color-primary`), trocar a
+ * identidade do produto é reescrever os valores de `:root` e reapontar os
+ * apelidos. Nenhuma view muda, porque nenhuma view jamais soube que "primary"
+ * era argila.
+ *
+ * É por existir o nome semântico que as três regras do herb são cobráveis:
+ * `no-color-scale-utility` (proíbe `bg-blue-500`), `no-arbitrary-tailwind`
+ * (proíbe `h-[200px]`) e `no-hex-code` (proíbe `#fff` em atributo). Se faltar
+ * token, adicione o token — nunca a exceção.
+ *
+ * Espaçamento não tem token: use a escala padrão do Tailwind, que já é
+ * múltipla de 4px (`p-1` = 4px … `p-6` = 24px).
+ *
+ * Tema escuro ainda não existe. A estrutura o comporta — seria um segundo
+ * bloco reapontando os apelidos para outras primitivas — mas implementá-lo
+ * está fora do escopo de #6.
+ */
 
 :root {
-  /* — Primitivas de cor —————————————————————————————————————————— */
-  --background: oklch(0.984 0.003 247.86);
-  --foreground: oklch(0.13 0 0);
+  /* — Primitivas —————————————————————————————————————————————————
+   * Escala crua. Nome diz o matiz, não o uso. Ninguém consome direto. */
 
-  --primary: oklch(0.546 0.215 262.881);
-  --primary-foreground: oklch(1 0 0);
-  --primary-soft: oklch(0.97 0.014 254.604);
+  /* argila — a cor de ação */
+  --clay-50: #FBF3F0;
+  --clay-500: #A8482C;
+  --clay-600: #8E3A22;
+  --clay-700: #712D1A;
 
-  --secondary: oklch(0.554 0.046 257.417);
-  --secondary-foreground: oklch(1 0 0);
-  --secondary-soft: oklch(0.968 0.007 247.896);
+  /* verde-ardósia — apoio e destaque frio */
+  --slate-green-600: #3A5C53;
+  --slate-green-700: #2F4A42;
+  --slate-green-900: #1D2E29;
 
-  --accent: oklch(0.769 0.188 70.08);
-  --accent-foreground: oklch(0.13 0 0);
-  --accent-soft: oklch(0.962 0.059 95.617);
+  /* areia — as superfícies e o texto de apoio */
+  --sand-50: #F7F6F2;
+  --sand-100: #EFEDE6;
+  --sand-200: #E2DFD5;
+  --sand-400: #A8A395;
+  --sand-500: #8A8472;
+  --sand-600: #6B6759;
+  --ink-900: #191A18;
 
-  /* Superfícies em camadas */
-  --surface-1: oklch(1 0 0);
-  --surface-2: oklch(0.984 0.003 247.86);
-  --surface-3: oklch(0.968 0.007 247.896);
+  --white: #FFFFFF;
 
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
+  /* estado */
+  --amber-600: #8C6012;
+  --amber-100: #F6E9CC;
+  --red-700: #8E2F20;
+  --red-100: #F6DDD8;
+  --green-700: #2E6B4F;
+  --green-100: #DCEDE3;
 
-  /* Estado — e só estado. Se precisar de cor CATEGÓRICA (dizer *qual* coisa
-   * um item é, não se está bom ou ruim), crie um vocabulário separado em vez
-   * de reaproveitar estes: um leitor não deve ter que desambiguar
-   * "vermelho = erro" de "vermelho = categoria X". */
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(1 0 0);
-  --destructive-soft: oklch(0.971 0.013 17.38);
-
-  --success: oklch(0.696 0.17 162.48);
-  --success-foreground: oklch(1 0 0);
-  --success-soft: oklch(0.95 0.052 163.051);
-
-  --warning: oklch(0.795 0.184 86.047);
-  --warning-foreground: oklch(0.13 0 0);
-  --warning-soft: oklch(0.987 0.022 95.277);
-
-  --info: oklch(0.623 0.214 259.815);
-  --info-foreground: oklch(1 0 0);
-  --info-soft: oklch(0.97 0.014 254.604);
-
-  /* — Bordas, campos e superfícies compostas ————————————————————— */
-  --border: oklch(0.929 0.013 255.508);
-  --border-strong: oklch(0.869 0.022 252.894);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.546 0.215 262.881);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.13 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.13 0 0);
-
-  /* — Escala de raio ————————————————————————————————————————————— */
-  --radius: 0.75rem;
+  /* raio */
+  --radius-control: 5px;
+  --radius-card: 8px;
+  --radius-pill: 9999px;
 }
 
 @theme inline {
-  /* — Cores semânticas (o que as views usam) ————————————————————— */
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary-soft: var(--primary-soft);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary-soft: var(--secondary-soft);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent-soft: var(--accent-soft);
-  --color-surface-1: var(--surface-1);
-  --color-surface-2: var(--surface-2);
-  --color-surface-3: var(--surface-3);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-destructive-soft: var(--destructive-soft);
-  --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
-  --color-success-soft: var(--success-soft);
-  --color-warning: var(--warning);
-  --color-warning-foreground: var(--warning-foreground);
-  --color-warning-soft: var(--warning-soft);
-  --color-info: var(--info);
-  --color-info-foreground: var(--info-foreground);
-  --color-info-soft: var(--info-soft);
+  /* — Superfície ————————————————————————————————————————————————— */
+  --color-background: var(--sand-50);
+  --color-foreground: var(--ink-900);
+  --color-card: var(--white);
+  --color-card-foreground: var(--ink-900);
+  --color-popover: var(--white);
+  --color-popover-foreground: var(--ink-900);
 
-  --color-border: var(--border);
-  --color-border-strong: var(--border-strong);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
+  /* — Ação ——————————————————————————————————————————————————————— */
+  --color-primary: var(--clay-500);
+  --color-primary-foreground: var(--sand-50);
+  --color-primary-soft: var(--clay-50);
+  --color-secondary: var(--sand-100);
+  --color-secondary-foreground: var(--ink-900);
 
-  /* — Raio semântico ————————————————————————————————————————————— */
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
+  /* — Apoio —————————————————————————————————————————————————————— */
+  --color-muted: var(--sand-100);
+  --color-muted-foreground: var(--sand-600);
+  --color-accent: var(--slate-green-700);
+  --color-accent-foreground: var(--sand-50);
+
+  /* — Estado ————————————————————————————————————————————————————
+   * Este vocabulário diz SITUAÇÃO: está bom, exige atenção, deu errado.
+   * O par `X` / `X-foreground` é o preenchido (fundo forte, texto pálido);
+   * o par `X-soft` / `X` é o suave (fundo pálido, texto forte). Os dois
+   * passam AA — ver a tabela no fim do arquivo. */
+  --color-success: var(--green-700);
+  --color-success-foreground: var(--green-100);
+  --color-success-soft: var(--green-100);
+  --color-warning: var(--amber-600);
+  --color-warning-foreground: var(--amber-100);
+  --color-warning-soft: var(--amber-100);
+  --color-destructive: var(--red-700);
+  --color-destructive-foreground: var(--red-100);
+  --color-destructive-soft: var(--red-100);
+
+  /* — Categórico ————————————————————————————————————————————————
+   * Este vocabulário diz QUAL COISA um item é. Separado do de estado de
+   * propósito: reaproveitar `destructive` para "categoria X" obriga o leitor
+   * a desambiguar "vermelho = erro" de "vermelho = categoria X" a cada
+   * leitura, e a legenda não resolve isso — a cor já significou outra coisa
+   * três telas antes. */
+  --color-category-1: var(--slate-green-600);
+  --color-category-2: var(--clay-600);
+  --color-category-3: var(--amber-600);
+  --color-category-4: var(--sand-600);
+
+  /* — Estrutura —————————————————————————————————————————————————
+   * `border` é divisória decorativa e fica de propósito abaixo de 3:1 — a
+   * WCAG 1.4.11 não a alcança. `input` é a fronteira de um campo, que ela
+   * alcança, e por isso é um passo mais escuro. Não são o mesmo token. */
+  --color-border: var(--sand-200);
+  --color-input: var(--sand-500);
+  --color-ring: var(--clay-500);
+
+  /* — Raio ——————————————————————————————————————————————————————
+   * Três papéis: controle (botão, campo), cartão e pílula. Não há `md`/`xl`
+   * — sem valor por trás, `rounded-xl` cairia no default do Tailwind e o
+   * raio deixaria de ser token sem ninguém perceber. */
+  --radius-sm: var(--radius-control);
+  --radius-lg: var(--radius-card);
+  --radius-full: var(--radius-pill);
 }
+
+/* — Contraste WCAG AA ————————————————————————————————————————————
+ *
+ * Medido, não estimado. `spec/system/design_tokens_spec.rb` recalcula estes
+ * mesmos pares a partir do `getComputedStyle` do navegador e reprova abaixo
+ * do limiar — a tabela abaixo é conveniência de leitura, não a fonte da
+ * verdade, e não tem como envelhecer em silêncio.
+ *
+ * Texto corrido exige 4.5:1; fronteira de UI exige 3:1.
+ *
+ *   foreground / background .............. 16.15  AA
+ *   card-foreground / card ............... 17.47  AA
+ *   primary-foreground / primary .......... 5.35  AA
+ *   secondary-foreground / secondary ..... 14.91  AA
+ *   muted-foreground / muted .............. 4.83  AA
+ *   muted-foreground / background ......... 5.23  AA
+ *   accent-foreground / accent ............ 8.91  AA
+ *   success-foreground / success .......... 5.18  AA
+ *   warning-foreground / warning .......... 4.59  AA
+ *   destructive-foreground / destructive .. 6.31  AA
+ *   primary / primary-soft ................ 5.29  AA
+ *   success / success-soft ................ 5.18  AA
+ *   warning / warning-soft ................ 4.59  AA
+ *   destructive / destructive-soft ........ 6.31  AA
+ *   category-1 / background ............... 6.85  AA
+ *   category-2 / background ............... 6.99  AA
+ *   category-3 / background ............... 5.11  AA
+ *   category-4 / background ............... 5.23  AA
+ *   input / background .................... 3.45  AA (fronteira de UI, 3:1)
+ *
+ * O `--amber-600` da proposta original era `#B07A18` e dava 3.09 sobre
+ * `--amber-100` — reprovado. Âmbar de meio-tom sobre âmbar pálido é a falha
+ * clássica de contraste. Escurecido para `#8C6012`, que passa nos dois usos
+ * (preenchido e suave) sem sair do matiz.
+ */

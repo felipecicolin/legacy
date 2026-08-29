@@ -17,11 +17,15 @@ class ButtonComponent < ApplicationComponent
           "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
   }.freeze
 
+  # `rounded-sm` é o raio de CONTROLE do design system (--radius-control), e
+  # botão é controle — os tamanhos variam altura e padding, não a forma. O
+  # `rounded-xl` que estava aqui não tinha token por trás depois de #6: cairia
+  # no default do Tailwind e o raio deixaria de ser tokenizado em silêncio.
   SIZES = {
-    sm: "h-9 px-3.5 text-sm rounded-lg gap-1.5",
-    md: "h-11 px-5 text-sm rounded-xl gap-2",
-    lg: "h-12 px-6 text-base rounded-xl gap-2",
-    icon: "h-10 w-10 rounded-lg",
+    sm: "h-9 px-3.5 text-sm rounded-sm gap-1.5",
+    md: "h-11 px-5 text-sm rounded-sm gap-2",
+    lg: "h-12 px-6 text-base rounded-sm gap-2",
+    icon: "h-10 w-10 rounded-sm",
   }.freeze
 
   TYPES = %i[button submit reset].freeze
