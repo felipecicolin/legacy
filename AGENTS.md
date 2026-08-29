@@ -152,8 +152,8 @@ scanner e aparece como órfã. Marque com um comentário
 genérica em `ignore_unused`. O `directive_guard` rastreia esses comentários,
 para a lista não crescer em silêncio.
 
-A `rails-i18n` cobre o miolo do framework (validação, mês, moeda, "há 3
-meses"); os formatos que ela não acerta ficam em `config/locales/rails.pt-BR.yml`
+A `rails-i18n` cobre o miolo do framework (validação, mês, moeda, "3 meses");
+os formatos que ela não acerta ficam em `config/locales/rails.pt-BR.yml`
 e são cobrados por `spec/i18n_spec.rb`, porque linter nenhum lê texto de gem.
 Nome de campo vai em `activerecord.attributes.*`; **valor de enum nunca vai cru
 para a tela** — o rótulo é `<enum no plural>.<valor>` no topo do locale, e
