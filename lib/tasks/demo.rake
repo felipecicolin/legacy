@@ -3,7 +3,7 @@
 namespace :demo do
   desc "Rebuild the demo database and reload its seed"
   task reload_seed: :environment do
-    confirmation = ENV["CONFIRM_DEMO_SEED_RELOAD"]
+    confirmation = ENV.fetch("CONFIRM_DEMO_SEED_RELOAD", nil)
     abort "Set CONFIRM_DEMO_SEED_RELOAD=1 to reload the demo seed" unless confirmation == "1"
 
     Rake::Task["db:seed:replant"].invoke

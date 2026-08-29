@@ -6,6 +6,6 @@
 require "vips"
 
 libvips_version = Vips.version_string
-raise "libvips failed to load" if libvips_version.blank?
+raise RuntimeError, "libvips failed to load" if libvips_version.blank?
 
 Rails.logger.info("libvips #{libvips_version} loaded")
