@@ -10,7 +10,12 @@ pre-commit:
       glob: "*.rb"
       exclude:
         - "db/**/*"
-      run: bundle exec rubocop --parallel --force-exclusion {staged_files}
+      # `bin/rubocop`, e não `bundle exec rubocop`: o wrapper força
+      # `--config .rubocop.yml`, o que faz o rubocop ignorar qualquer
+      # `.rubocop.yml` aninhado num subdiretório. Sem isso, o hook e a CI
+      # discordariam — um `app/.rubocop.yml` desligando um cop passaria no
+      # commit e só apareceria no PR.
+      run: bin/rubocop --parallel --force-exclusion {staged_files}
     reek:
       glob: "{app,lib}/**/*.rb"
       run: bundle exec reek {staged_files}
