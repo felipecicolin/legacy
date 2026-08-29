@@ -88,10 +88,30 @@ RSpec.describe "Passwords" do
       expect { submit }.to change(Session, :count).by(-1)
     end
 
+    # 303, e não o 302 do `redirect_to`: um 302 só vira GET quando o pedido era
+    # POST. Num PUT o fetch preserva o método, e o Turbo reemitiria PUT para
+    # `new_session_path`, onde `resource :session` não declara essa rota.
+    it "answers the PUT with See Other, so the browser follows it as a GET" do
+      submit
+
+      expect(response).to have_http_status(:see_other)
+    end
+
     it "refuses a confirmation that does not match" do
       submit(confirmacao: "outra-coisa")
 
       expect(flash[:alert]).to eq(I18n.t("passwords.update.mismatch"))
+    end
+
+    # O `maxlength: 72` da view é validação de navegador. Um pedido direto passa
+    # por ela, e antes desta correção a resposta dizia "as senhas não conferem"
+    # sobre duas senhas idênticas.
+    it "says what is actually wrong when the password is too long" do
+      longa = "x" * 100
+
+      submit(nova: longa, confirmacao: longa)
+
+      expect(flash[:alert]).to eq(I18n.t("passwords.update.invalid"))
     end
 
     it "refuses an invalid token" do
