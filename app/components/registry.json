@@ -208,6 +208,31 @@
           "source": "  def without_attachment\n    render(ImageFrameComponent.new(attachment: nil, alt: \"\"))\n  end"
         }
       ]
+    },
+    {
+      "name": "SimulatedDataBannerComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "classes",
+          "kind": "key"
+        }
+      ],
+      "constants": {},
+      "slots": [],
+      "stimulus_controller": "simulated-data-banner-component",
+      "template": "app/components/simulated_data_banner_component/simulated_data_banner_component.html.erb",
+      "preview": "spec/components/previews/simulated_data_banner_component_preview.rb",
+      "examples": [
+        {
+          "name": "default",
+          "source": "  def default\n    render(SimulatedDataBannerComponent.new)\n  end"
+        },
+        {
+          "name": "inside_a_container",
+          "source": "  def inside_a_container\n    render(SimulatedDataBannerComponent.new(classes: \"container mx-auto\"))\n  end"
+        }
+      ]
     }
   ]
 }
