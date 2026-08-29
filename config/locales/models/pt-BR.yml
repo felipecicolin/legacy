@@ -7,3 +7,10 @@ pt-BR:
         password: Senha
         password_confirmation: Confirmação de senha
         password_digest: Senha
+      credential:
+        kind: Tipo
+        number: Número
+        issuing_body: Órgão emissor
+        issued_on: Data de emissão
+        expires_on: Data de validade
+        verification_status: Situação da verificação

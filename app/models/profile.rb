@@ -12,6 +12,7 @@ class Profile < ApplicationRecord
 
   belongs_to :user
   has_one_attached :avatar
+  has_many :credentials, dependent: :destroy
 
   validates :legal_name, :display_name, presence: true
 
@@ -34,6 +35,12 @@ class Profile < ApplicationRecord
   # devolvesse `legal_name`, bastaria um `"#{profile}"` esquecido numa
   # listagem para vazar a identidade legal de quem trabalha em país sensível.
   def to_s = display_name
+
+  # É o ponto de consulta que a futura Candidacy usa para decidir se uma
+  # necessidade que exige registro profissional pode receber esta pessoa.
+  def has_valid_professional_registration?
+    credentials.any?(&:valid_for_professional_registration?)
+  end
 
   # A mesma garantia para qualquer coisa que serialize: `as_json`, `to_json` e
   # todo serializer que passe por aqui.

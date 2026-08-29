@@ -3,6 +3,17 @@ pt-BR:
   app:
     name: Legacy
     preview_title: Legacy — Preview de componente
+  kinds:
+    crea: CREA
+    cau: CAU
+    other_professional: Outro registro profissional
+    license: Licença profissional
+    certificate: Certificado
+  verification_statuses:
+    pending: Pendente
+    verified: Verificada
+    rejected: Rejeitada
+    expired: Expirada
   home:
     show:
       signed_in_as: Você entrou como %{email}.
