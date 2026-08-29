@@ -41,6 +41,10 @@ module Legacy
     config.i18n.default_locale = "pt-BR"
     config.time_zone = "Brasilia"
 
+    # A aplicação é uma demo fechada e não deve ser indexada, mesmo que um
+    # robô ignore o robots.txt.
+    config.action_dispatch.default_headers["X-Robots-Tag"] = "noindex"
+
     # NÃO coloque `app/components` em `config.assets.paths`. A receita corrente
     # para controllers Stimulus sidecar manda fazer isso, e o preço é alto: o
     # Propshaft trata TODO arquivo sob um asset path como asset, sem filtro de
