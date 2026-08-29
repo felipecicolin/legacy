@@ -28,6 +28,9 @@ acrescenta nada. Então:
 - [Autenticação](authentication.md) — para quem ela é, por que o app nasce
   fechado, por que sessão é linha no banco, e as duas decisões de segurança
   (não vazar quem tem conta, derrubar sessões na troca de senha).
+- [Identidade — `Profile`](identity.md) — por que uma pessoa e muitos papéis em
+  vez de uma tabela por papel, por que o nome público é armazenado e não
+  derivado, e como o nome legal é impedido de sair por serialização.
 
 ### Deploy
 

@@ -301,10 +301,29 @@ Autenticação nativa do Rails 8.1, sem gem. Três regras valem daqui para frent
   rota, mesmo status para senha errada e e-mail inexistente. Use
   `User.authenticate_by` — é ele que iguala também o tempo de resposta.
 
+## Identidade
+
+> Por que uma pessoa e muitos papéis, e as armadilhas:
+> [`docs/identity.md`](docs/identity.md).
+
+A pessoa é o `Profile`. Três regras:
+
+- **Uma pessoa, muitos papéis.** Nenhuma tabela por papel — papel é contexto
+  (#20, #21, #31), e "visão do investidor" é projeção autorizada sobre os mesmos
+  dados.
+- **`legal_name` nunca sai sozinho.** `to_s` devolve `display_name`, e
+  `Profile#serializable_hash` remove `legal_name` depois do `super` — não como
+  `except:` padrão, que o `only:` do Active Model atropelaria.
+- **`display_name` é armazenado, não derivado.** Corrigir o nome legal não pode
+  reescrever o histórico já exibido.
+
 ## Banco de dados
 
 - `bundle exec database_consistency` cobra FK sem índice, `NOT NULL` faltando,
   validação que o schema não sustenta. Ele roda na CI.
+- **Coluna `NOT NULL` com default é ponto cego dele**: não cobra validador de
+  presença, e `nil` explícito vira `NotNullViolation` em vez de erro de
+  formulário. Valide na mão — ver [`docs/identity.md`](docs/identity.md).
 - `db/schema.rb` é commitado, e a CI reprova se estiver fora de sincronia com as
   migrations.
 - Bancos de teste são um por processo do `parallel_tests`, via sufixo
