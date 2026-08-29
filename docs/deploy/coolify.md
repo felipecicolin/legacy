@@ -117,6 +117,7 @@ suficiente para o app conectar no lugar errado sem erro nenhum.
 | --- | --- | --- |
 | `RAILS_MASTER_KEY` | conteúdo de `config/master.key` | O arquivo é gitignored e não entra na imagem (`.dockerignore`). Sem ele o app não decifra as credentials e não sobe |
 | `DATABASE_URL` | a URL interna do serviço Postgres | O Coolify oferece essa variável pronta ao vincular o banco à aplicação |
+| `APP_HOST` | o host público da demo, sem esquema (`demo.exemplo.org`) | O link do e-mail de recuperação de senha é gerado com ele. Sem a variável **o container não sobe** — é de propósito: um host errado só apareceria na caixa de entrada de outra pessoa |
 | `SOLID_QUEUE_IN_PUMA` | `true` | Sem ela o `config/puma.rb` não carrega o plugin, e o `recurring.yml` — que limpa jobs finalizados de hora em hora — nunca roda |
 | `RAILS_MAX_THREADS` | opcional, default `5` | Entra no `max_connections` pela fórmula acima |
 | `RAILS_DB_POOL` | opcional | Sobrescreve a fórmula, se o pool precisar de ajuste fino |
@@ -180,9 +181,13 @@ justificar separar, o caminho é o mesmo — o `bin/jobs` já existe.
 Nenhuma bloqueia o deploy, mas todas viram bug no dia em que a funcionalidade
 correspondente existir:
 
-- **Sem rota raiz.** O domínio responde 404 até `config/routes.rb` ganhar um
-  `root`.
-- **`action_mailer.default_url_options` está em `example.com`.** Todo link
-  gerado em e-mail vai apontar para lá. Trocar por variável de ambiente quando o
-  primeiro mailer com link entrar.
 - **Active Storage sem volume**, conforme acima.
+
+Duas pendências que estavam aqui saíram com a autenticação (#9):
+
+- **A rota raiz existe** (`root "home#show"`) e exige sessão, então o domínio
+  deixa de responder 404. É espaço reservado até #8 e #57.
+- **O host do mailer virou `APP_HOST`**, obrigatório. O primeiro mailer com link
+  — o de recuperação de senha — entrou nessa issue, que era exatamente o gatilho
+  registrado aqui. **Adicione a variável no Coolify antes do próximo deploy**,
+  ou o container não sobe.

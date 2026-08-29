@@ -9,27 +9,35 @@
 # regras restantes e sai com status 0. O resultado é "✓ All files are clean"
 # com metade do enforcement desligado, que é pior do que uma falha.
 #
-# Aqui a contagem de regras carregadas é comparada com a quantidade de arquivos
-# em .herb/rules/, e qualquer "Error loading rule file" reprova.
+# A verificação sai numa invocação SEPARADA, sobre um arquivo só, e é por um
+# motivo concreto: o herb passa a usar worker threads a partir de
+# `PARALLEL_FILE_THRESHOLD = 10` arquivos, e nesse caminho quem carrega as
+# regras é o worker — o processo principal nunca imprime o
+# "Loaded N custom rules". As regras seguem valendo (verificado: uma violação
+# é reprovada com o repositório inteiro em modo paralelo), mas o banner some.
+#
+# Ler a contagem da execução principal fazia o guard reprovar todo mundo assim
+# que o repositório passou de 10 templates — e reprovar dizendo "0 regras
+# carregadas", que é falso e manda o leitor procurar o defeito no lugar errado.
 #
 # Uso:
 #   bin/herb_lint [arquivos...]   # sem argumentos, linta o repositório inteiro
 
 require "open3"
 
-RULES_DIR = File.expand_path("../.herb/rules", __dir__)
-expected = Dir.glob(File.join(RULES_DIR, "*.mjs")).size
+ROOT = File.expand_path("..", __dir__)
+RULES_DIR = File.join(ROOT, ".herb", "rules")
 
-output, status = Open3.capture2e("bundle", "exec", "herb", "lint", *ARGV)
-print output
+def strip_ansi(output)
+  output.dup.force_encoding("UTF-8").scrub.gsub(/\e\[[0-9;]*m/, "")
+end
 
-# `capture2e` devolve ASCII-8BIT; sem forçar UTF-8 o gsub abaixo estoura em
-# qualquer saída acentuada — que é justamente a saída de erro que interessa.
-plain = output.dup.force_encoding("UTF-8").scrub.gsub(/\e\[[0-9;]*m/, "")
-loaded = plain[/Loaded (\d+) custom rules/, 1]&.to_i || 0
-load_errors = plain.scan(/Error loading rule file[^\n]*/)
+def herb(*args)
+  output, status = Open3.capture2e("bundle", "exec", "herb", "lint", *args, chdir: ROOT)
+  [output, status]
+end
 
-if load_errors.any? || loaded != expected
+def fail_with(expected, loaded, load_errors)
   warn ""
   warn "[ bin/herb_lint ] As regras customizadas não carregaram por inteiro."
   warn "  esperadas: #{expected} (arquivos em .herb/rules/*.mjs)"
@@ -41,4 +49,29 @@ if load_errors.any? || loaded != expected
   exit 1
 end
 
+expected = Dir.glob(File.join(RULES_DIR, "*.mjs")).size
+probe_file = Dir.glob(File.join(ROOT, "app", "views", "**", "*.erb")).min
+
+# `-j 1` força o caminho serial, que é o único que imprime o banner. O arquivo
+# é um só e a passada custa ~300ms; o lint de verdade continua paralelo.
+if expected.positive? && probe_file
+  probe, = herb("-j", "1", probe_file)
+  plain = strip_ansi(probe)
+  loaded = plain[/Loaded (\d+) custom rules/, 1]&.to_i
+  load_errors = plain.scan(/Error loading rule file[^\n]*/)
+
+  if loaded.nil?
+    warn ""
+    warn "[ bin/herb_lint ] O herb não imprimiu \"Loaded N custom rules\" nem em"
+    warn "modo serial (-j 1). O formato da saída mudou: sem essa linha não dá"
+    warn "para afirmar que as #{expected} regras de .herb/rules/ estão ativas."
+    warn "Confira o CLI do @herb-tools/linter antes de confiar neste passo."
+    exit 1
+  end
+
+  fail_with(expected, loaded, load_errors) if load_errors.any? || loaded != expected
+end
+
+output, status = herb(*ARGV)
+print output
 exit status.exitstatus

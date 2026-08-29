@@ -1,0 +1,5 @@
+<%= t(".intro") %>
+
+<%= edit_password_url(@user.password_reset_token) %>
+
+<%= t(".expires", count: @user.password_reset_token_expires_in.in_minutes.to_i) %>

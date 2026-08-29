@@ -1,0 +1,16 @@
+<%# Uma cópia só, porque as três telas de autenticação mostram os mesmos dois
+    avisos. `destructive` e `success` dizem SITUAÇÃO — é o vocabulário certo
+    para alerta e confirmação, e não o categórico. %>
+<% if flash[:alert].present? %>
+  <p id="alert" role="alert"
+     class="mb-5 inline-block rounded-sm bg-destructive-soft px-3 py-2 font-medium text-destructive">
+    <%= flash[:alert] %>
+  </p>
+<% end %>
+
+<% if flash[:notice].present? %>
+  <p id="notice" role="status"
+     class="mb-5 inline-block rounded-sm bg-success-soft px-3 py-2 font-medium text-success">
+    <%= flash[:notice] %>
+  </p>
+<% end %>

@@ -28,7 +28,12 @@ CI.run do
   step "DB: schema.rb em sincronia com as migrations",
        "env RAILS_ENV=test bin/rails db:abort_if_pending_migrations && " \
        "git diff --exit-code db/schema.rb"
-  step "DB: Consistency (FKs, índices, NOT NULL)", "bundle exec database_consistency"
+  # `RAILS_ENV=test` porque é assim que o job `test` do workflow roda: lá o
+  # env vale para o job inteiro. Sem isto o passo local olha o banco de
+  # DESENVOLVIMENTO, que pode estar atrás das migrations, e reprova com
+  # "should have a corresponding table" — um erro sobre o banco errado.
+  step "DB: Consistency (FKs, índices, NOT NULL)",
+       "env RAILS_ENV=test bundle exec database_consistency"
 
   step "Tests: preparo dos bancos paralelos",
        "env RAILS_ENV=test PARALLEL_TEST_PROCESSORS=2 bin/rails parallel:create parallel:load_schema"
