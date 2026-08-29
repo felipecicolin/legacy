@@ -18,9 +18,17 @@ RSpec.describe EnumTranslationAudit do
   end
 
   # O conjunto real ainda é vazio, então o guarda precisa provar que reprovaria.
+  #
+  # O enum falso NÃO pode se chamar `status`: `statuses.draft` é o exemplo
+  # canônico do docs/i18n.md, e o dia em que o primeiro modelo trouxer essa
+  # chave para o locale o `I18n.exists?` passaria a devolver true e este
+  # exemplo ficaria vermelho sem nada estar quebrado — convidando quem for
+  # consertar a apagar justamente a única prova de que a auditoria reprova.
+  # `absent_status` mantém o plural irregular (`-us` → `-uses`) e nunca vira
+  # chave de produto.
   it "reports the key that a model without a label would need" do
-    model = Class.new { def self.defined_enums = { "status" => { "draft" => 0 } } }
+    model = Class.new { def self.defined_enums = { "absent_status" => { "never_translated" => 0 } } }
 
-    expect(described_class.missing_keys([model])).to eq(["statuses.draft"])
+    expect(described_class.missing_keys([model])).to eq(["absent_statuses.never_translated"])
   end
 end
