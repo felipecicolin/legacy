@@ -162,13 +162,6 @@ jobs:
         with:
           system-dependencies: libpq-dev
 
-      # `app/assets/builds/` é gitignorado, então o CSS não existe num clone
-      # limpo. Sem este passo, o primeiro spec que renderizar o layout morre
-      # num Propshaft::MissingAssetError — e o erro apontaria para o spec, não
-      # para a causa.
-      - name: Build Tailwind CSS
-        run: bin/rails tailwindcss:build
-
       # Uma carga de schema, e o Postgres clona o resto. Um segundo
       # `db:test:prepare` subiria o Rails de novo só para reproduzir o mesmo
       # schema no banco do segundo processo.
@@ -187,6 +180,13 @@ jobs:
 
       - name: Check database consistency
         run: bundle exec database_consistency
+
+      # `app/assets/builds/` é gitignorado, então o CSS não existe num clone
+      # limpo. Sem este passo, o primeiro spec que renderizar o layout morre
+      # num Propshaft::MissingAssetError — e o erro apontaria para o spec, não
+      # para a causa.
+      - name: Build Tailwind CSS
+        run: bin/rails tailwindcss:build
 
       # `-n 2` porque o runner padrão tem 2 cores (medido: `nproc=2`, 7,9 GB).
       # Quando a suíte crescer a ponto de um runner não dar conta, a volta para
