@@ -1,0 +1,7 @@
+<%# Envelope de todo conteúdo de texto rico renderizado. A classe `trix-content`
+    não é decorativa: é o gancho do `actiontext.css`, o mesmo que o editor usa,
+    e é o que faz o texto salvo sair com a mesma aparência que tinha enquanto
+    era digitado. Trocá-la por utilities do Tailwind separaria as duas coisas. %>
+<div class="trix-content">
+  <%= yield -%>
+</div>

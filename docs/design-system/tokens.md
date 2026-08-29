@@ -97,6 +97,21 @@ cor.
 | `rounded-lg` | 8px | **Cartão** |
 | `rounded-full` | 9999px | Pílula, avatar |
 
+### Proporção
+
+| Token | Valor | Uso |
+| --- | --- | --- |
+| `aspect-wide` | 16/9 | Foto de obra — o enquadramento padrão |
+| `aspect-photo` | 4/3 | Foto em coluna estreita |
+| `aspect-tile` | 1/1 | Miniatura, grade densa |
+
+Nomes próprios em vez de `aspect-video`/`aspect-square` de propósito: esses dois
+existem no núcleo do Tailwind, e um nome que o núcleo também tem não denuncia o
+token removido — é a mesma armadilha do `rounded-xl` logo abaixo. Quem cobra é
+[`spec/system/image_frame_spec.rb`](../../spec/system/image_frame_spec.rb), e
+não a página de fumaça: o porquê está em
+[Moldura de imagem](image-frame.md).
+
 Não existem `rounded-md` nem `rounded-xl`. Isso é deliberado, e é uma armadilha
 que vale conhecer: no Tailwind v4 o `@theme` **mescla** com a escala padrão em
 vez de substituí-la. Um `rounded-xl` continua funcionando — só que pegando o

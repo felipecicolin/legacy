@@ -7,6 +7,8 @@ RSpec.describe User do
 
   it { is_expected.to have_many(:sessions).dependent(:destroy) }
   it { is_expected.to have_one(:profile).dependent(:destroy) }
+
+  it { is_expected.to have_many(:authored_sensitivity_changes).dependent(:restrict_with_error) }
   it { is_expected.to validate_presence_of(:email_address) }
   it { is_expected.to validate_presence_of(:password_digest) }
 
