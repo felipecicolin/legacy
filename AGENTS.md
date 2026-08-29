@@ -477,12 +477,13 @@ ou `geom` sai inteira do alcance: as três camadas passam a proteger um conjunto
 vazio, e nada reprova — nem linter, nem spec, nem constraint. Coluna de
 localização usa os nomes da constante, ou a constante cresce junto.
 
-**`filter_parameters` não conhece coordenada.** O Rails alimenta o
-`filter_attributes` do Active Record com o `filter_parameters` da aplicação, e a
-lista do projeto tem `passw`, `token`, `secret` — nada de localização. Sem o
-`self.filter_attributes +=` do concern, o `inspect` de um registro `restricted`
-imprime o ponto exato da base na linha de log de exceção e no rastreador de
-erros.
+**Coordenada vaza por dois logs, não um.** A lista default do
+`filter_parameters` tem `passw`, `token`, `secret` — nada de localização, e o
+Rails é ela que usa para alimentar o `filter_attributes` do Active Record. São
+duas superfícies: o `inspect` do modelo (linha de log de exceção, rastreador de
+erros) e o `Parameters: {…}` da requisição, que não passa por modelo nenhum. Por
+isso os nomes de `PRECISE_LOCATION_ATTRIBUTES` entram nos dois lugares — no
+`filter_parameter_logging.rb` e, por modelo, no próprio concern.
 
 **`stylesheet_link_tag :app` não carrega o Tailwind.** O `:app` resolve para
 `app/assets/stylesheets/application.css` — o manifesto vazio do generator. O

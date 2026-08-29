@@ -49,10 +49,11 @@ module Sensitive
     enum :sensitivity_level, LEVELS, default: DEFAULT_LEVEL, validate: true, scopes: false
 
     # Endereço e coordenada fora do `inspect`, que é o que vai parar na linha de
-    # log de exceção e no rastreador de erros. O Rails alimenta o
-    # `filter_attributes` com o `filter_parameters`, e lá não há nome de
-    # localização — sem isto, um registro `restricted` imprime o ponto exato.
-    self.filter_attributes += PRECISE_LOCATION_ATTRIBUTES
+    # log de exceção e no rastreador de erros — um registro `restricted` guarda
+    # o ponto exato. `|=` porque o `filter_parameter_logging` já fixa os mesmos
+    # nomes para o log de requisição: aqui a garantia é por modelo, e viaja com
+    # o concern mesmo que alguém enxugue aquela lista.
+    self.filter_attributes |= PRECISE_LOCATION_ATTRIBUTES
 
     # `destroy` aqui, e `restrict_with_error` do lado do autor (ver `User`), e
     # a assimetria é o ponto: apagar a obra é a direção segura — some o dado

@@ -77,6 +77,13 @@ t.check_constraint Sensitive::PRECISE_LOCATION_CHECK,
                    name: "fields_confidential_has_no_location"
 ```
 
+`PRECISE_LOCATION_CHECK` nomeia as **três** colunas. A camada Ruby não exige as
+três — `precise_location_attributes` intersecta com o `column_names`, e uma
+tabela só com `latitude`/`longitude` é perfeitamente válida para ela. A
+constraint não: aplicada a uma tabela sem `address`, a migration levanta
+`PG::UndefinedColumn`. Falha barulhenta na hora certa, mas escreva a expressão à
+mão nesse caso, com as colunas que a tabela tem.
+
 O `null: false` não é decoração. `visible_to` e `hidden_from` são complementares
 apenas porque a coluna nunca é nula: `where.not` não devolve linha com `NULL`,
 então uma linha sem nível somem das **duas** consultas — inclusive do agregado
@@ -100,15 +107,19 @@ passam a proteger um conjunto vazio. Coluna de localização usa os nomes de
 
 ### `inspect` também é um caminho de vazamento
 
-Registro `public` e `restricted` guardam coordenada de verdade, e é o `inspect`
-que vai parar na linha de log de exceção e no payload do rastreador de erros. O
-Rails alimenta o `filter_attributes` do Active Record com o `filter_parameters`
-da aplicação, e lá não há nome de localização — então o concern acrescenta os
-seus:
+Registro `public` e `restricted` guardam coordenada de verdade, e ela sai por
+**duas** portas de log, não uma:
 
-```ruby
-self.filter_attributes += PRECISE_LOCATION_ATTRIBUTES
-```
+| Porta | Quem filtra | O que aparece sem o filtro |
+| --- | --- | --- |
+| `inspect` do modelo — linha de log de exceção, rastreador de erros | `filter_attributes`, fixado por modelo no concern | `latitude: -0.229e2` |
+| `Parameters: {…}` da requisição, que não passa por modelo nenhum | `filter_parameters`, no initializer | `"latitude" => "-22.9"` |
+
+A lista default do `filter_parameters` — `passw`, `token`, `secret` — não conhece
+nome de localização, e é dela que o Rails alimenta o `filter_attributes`. Por
+isso os nomes entram nos dois lugares. No concern é `|=`, não `+=`: os dois se
+sobrepõem de propósito, e a garantia por modelo viaja com o concern mesmo que
+alguém enxugue a lista do initializer.
 
 Isso alcança `inspect`, e não `to_json` — de propósito. Serialização é resposta
 para alguém, e quem decide o que ela carrega é o `visible_to`; se `filter_attributes`
@@ -149,10 +160,11 @@ que gravam sem validar. Sem essa segunda camada, um
 confidencial em vitrine **sem uma única linha de auditoria** — e `update_attribute`
 não é uma chamada exótica: é o que se escreve quando "só" se quer mudar um campo.
 
-Fora do alcance continuam `update_column` e `update_all` sobre a própria coluna
-`sensitivity_level`: a regra depende do valor anterior, que a constraint não
-enxerga, e fechar isso exigiria trigger. Sobre modelo com o concern, os dois
-continuam proibidos.
+Fora do alcance continuam `update_column`, `update_all` e `insert_all` sobre a
+própria coluna `sensitivity_level`: a regra compara com o valor anterior — que
+no `insert_all` nem existe — e a constraint só enxerga a linha final. Fechar
+isso exigiria trigger. Sobre modelo com o concern, os três continuam proibidos:
+um `insert_all` cria linha `public` sem nenhuma linha de auditoria.
 
 ### A linha de auditoria é imutável
 
