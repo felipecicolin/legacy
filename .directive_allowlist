@@ -1,0 +1,16 @@
+# Directive allowlist — `bin/directive_guard`.
+#
+# Every `# rubocop:disable`, `# rubocop:enable`, `# :reek:`, and
+# `# i18n-tasks-use t('…')` directive under app/, lib/, config/, spec/,
+# test/, db/, bin/ MUST appear here. New entries (and new occurrences of
+# existing ones in the same file) require explicit maintainer review —
+# most suppressions hide a refactor that would resolve the underlying
+# smell or surface the missing translation.
+#
+# To regenerate after an approved exception: bin/directive_guard --update
+#
+# Format: <relative path>\t<directive line>[\t<count>]   (count defaults to 1)
+.reek.yml	enabled: false	6
+.reek.yml	exclude-items	0
+.rubocop.yml	Exclude:	7
+.rubocop.yml	exclude-items	19

@@ -1,0 +1,122 @@
+/* Tokens do design system — em camadas (primitivas → semânticas).
+ *
+ * Regras:
+ *   - As primitivas vivem em :root (apenas variáveis CSS). Nunca referencie
+ *     estas diretamente em views ou componentes.
+ *   - Os apelidos semânticos são expostos via @theme inline, para que o
+ *     Tailwind gere utilities como bg-primary, text-muted-foreground,
+ *     rounded-card.
+ *   - O código da aplicação usa as utilities SEMÂNTICAS. É isso que torna
+ *     cobráveis as regras `no-color-scale-utility`, `no-arbitrary-tailwind` e
+ *     `no-hex-code` do herb: elas proibem `bg-blue-500`, `h-[200px]` e `#fff`
+ *     justamente porque existe um nome semântico para usar no lugar.
+ *
+ * A paleta abaixo é um ponto de partida neutro (cinza/azul). Troque os valores
+ * pela identidade do produto — a ESTRUTURA é o que importa, não os matizes. */
+
+:root {
+  /* — Primitivas de cor —————————————————————————————————————————— */
+  --background: oklch(0.984 0.003 247.86);
+  --foreground: oklch(0.13 0 0);
+
+  --primary: oklch(0.546 0.215 262.881);
+  --primary-foreground: oklch(1 0 0);
+  --primary-soft: oklch(0.97 0.014 254.604);
+
+  --secondary: oklch(0.554 0.046 257.417);
+  --secondary-foreground: oklch(1 0 0);
+  --secondary-soft: oklch(0.968 0.007 247.896);
+
+  --accent: oklch(0.769 0.188 70.08);
+  --accent-foreground: oklch(0.13 0 0);
+  --accent-soft: oklch(0.962 0.059 95.617);
+
+  /* Superfícies em camadas */
+  --surface-1: oklch(1 0 0);
+  --surface-2: oklch(0.984 0.003 247.86);
+  --surface-3: oklch(0.968 0.007 247.896);
+
+  --muted: oklch(0.968 0.007 247.896);
+  --muted-foreground: oklch(0.554 0.046 257.417);
+
+  /* Estado — e só estado. Se precisar de cor CATEGÓRICA (dizer *qual* coisa
+   * um item é, não se está bom ou ruim), crie um vocabulário separado em vez
+   * de reaproveitar estes: um leitor não deve ter que desambiguar
+   * "vermelho = erro" de "vermelho = categoria X". */
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(1 0 0);
+  --destructive-soft: oklch(0.971 0.013 17.38);
+
+  --success: oklch(0.696 0.17 162.48);
+  --success-foreground: oklch(1 0 0);
+  --success-soft: oklch(0.95 0.052 163.051);
+
+  --warning: oklch(0.795 0.184 86.047);
+  --warning-foreground: oklch(0.13 0 0);
+  --warning-soft: oklch(0.987 0.022 95.277);
+
+  --info: oklch(0.623 0.214 259.815);
+  --info-foreground: oklch(1 0 0);
+  --info-soft: oklch(0.97 0.014 254.604);
+
+  /* — Bordas, campos e superfícies compostas ————————————————————— */
+  --border: oklch(0.929 0.013 255.508);
+  --border-strong: oklch(0.869 0.022 252.894);
+  --input: oklch(0.929 0.013 255.508);
+  --ring: oklch(0.546 0.215 262.881);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.13 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.13 0 0);
+
+  /* — Escala de raio ————————————————————————————————————————————— */
+  --radius: 0.75rem;
+}
+
+@theme inline {
+  /* — Cores semânticas (o que as views usam) ————————————————————— */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary-soft: var(--secondary-soft);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-soft: var(--accent-soft);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-soft: var(--warning-soft);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-soft: var(--info-soft);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  /* — Raio semântico ————————————————————————————————————————————— */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+}

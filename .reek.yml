@@ -1,0 +1,46 @@
+---
+# Detector de code smells.
+#
+# Só afinação de limites aqui. Nenhuma exceção por classe ou por método: uma
+# lista de `exclude:` é a mesma dívida de um `.rubocop_todo.yml`, só que com
+# outro nome. Smell apontado se refatora — ver AGENTS.md.
+exclude_paths:
+  - db
+  - spec
+  - vendor
+  - node_modules
+detectors:
+  # Exigir um comentário de documentação em cada módulo é ruído: o
+  # `Style/Documentation` do rubocop também está desligado.
+  IrresponsibleModule:
+    enabled: false
+  # Mesmo teto do `Metrics/MethodLength` do rubocop, para que os dois linters
+  # não discordem sobre o tamanho de um método.
+  TooManyStatements:
+    max_statements: 7
+  DuplicateMethodCall:
+    max_calls: 2
+  # Barulhento demais em Rails: acusa todo helper, componente e objeto de
+  # apresentação que legitimamente lê dados de um colaborador.
+  FeatureEnvy:
+    enabled: false
+
+# Afinação por diretório. A `directories:` do reek existe exatamente para isto:
+# são regras estruturais de um tipo de arquivo, não perdão para uma classe.
+directories:
+  app/components:
+    # A lista de kwargs de um componente É a API pública dele, e um `disabled:`
+    # booleano é o atributo HTML — não uma flag escondendo dois códigos.
+    LongParameterList:
+      enabled: false
+    BooleanParameter:
+      enabled: false
+    # Helpers de apresentação (class_merge) legitimamente não dependem de
+    # estado da instância: compõem argumentos e devolvem string.
+    UtilityFunction:
+      enabled: false
+    # O `!` do Rails quer dizer "levanta exceção" (save!, find_by!), não
+    # "contraparte perigosa de um método seguro" — que é a premissa deste
+    # detector. Segue valendo fora de app/components.
+    MissingSafeMethod:
+      enabled: false

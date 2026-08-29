@@ -1,0 +1,3 @@
+DatabaseConsistencyCheckers:
+  NumericalityConstraintChecker:
+    enabled: false

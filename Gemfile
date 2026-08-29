@@ -1,11 +1,15 @@
+# frozen_string_literal: true
+
 source "https://rubygems.org"
+
+ruby "4.0.2"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 8.1.3", ">= 8.1.3.1"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 gem "propshaft"
-# Use sqlite3 as the database for Active Record
-gem "sqlite3", ">= 2.1"
+# Use postgresql as the database for Active Record
+gem "pg", "~> 1.1"
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
@@ -14,17 +18,26 @@ gem "importmap-rails"
 gem "turbo-rails"
 # Hotwire's modest JavaScript framework [https://stimulus.hotwired.dev]
 gem "stimulus-rails"
+# Use Tailwind CSS [https://github.com/rails/tailwindcss-rails]
+gem "tailwindcss-rails"
+# Resolve conflitos entre classes do Tailwind na hora de compor (ApplicationComponent#class_merge)
+gem "tailwind_merge"
+
+# Componentes de view testáveis [https://viewcomponent.org]
+gem "view_component"
+# Renderiza SVG inline a partir do asset pipeline (IconComponent)
+gem "inline_svg"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
-gem "tzinfo-data", platforms: %i[ windows jruby ]
+gem "tzinfo-data", platforms: %i[windows jruby]
 
 # Use the database-backed adapters for Rails.cache, Active Job, and Action Cable
+gem "solid_cable"
 gem "solid_cache"
 gem "solid_queue"
-gem "solid_cable"
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
@@ -36,20 +49,67 @@ gem "thruster", require: false
 gem "image_processing", "~> 1.2"
 
 group :development, :test do
-  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
-  gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
+  # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
+  gem "brakeman", require: false
 
   # Audits gems for known security defects (use config/bundler-audit.yml to ignore issues)
   gem "bundler-audit", require: false
 
-  # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
-  gem "brakeman", require: false
+  # Checks the schema against the models: missing FKs, indexes, NOT NULL, validations.
+  gem "database_consistency", require: false
 
-  # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
-  gem "rubocop-rails-omakase", require: false
+  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
+  gem "debug", platforms: %i[mri windows], require: "debug/prelude"
+
+  gem "factory_bot_rails"
+  gem "faker"
+
+  # HTML+ERB parser, formatter and linter [https://herb-tools.dev]
+  gem "herb", require: false
+
+  # Translation hygiene: missing / unused / unnormalized keys.
+  gem "i18n-tasks", require: false
+
+  # Git hooks manager — see lefthook.yml.
+  gem "lefthook", require: false
+
+  gem "parallel_tests"
+
+  # Code smell detector [https://github.com/troessner/reek]
+  gem "reek", require: false
+
+  gem "rspec-rails"
+
+  gem "rubocop", require: false
+  gem "rubocop-capybara", require: false
+  gem "rubocop-factory_bot", require: false
+  gem "rubocop-i18n", require: false
+  gem "rubocop-performance", require: false
+  gem "rubocop-rails", require: false
+  gem "rubocop-rspec", require: false
+  gem "rubocop-rspec_rails", require: false
+  gem "rubocop-thread_safety", require: false
+  gem "rubocop-view_component", require: false
+
+  gem "shoulda-matchers"
 end
 
 group :development do
-  # Use console on exceptions pages [https://github.com/rails/web-console]
+  # N+1 query detector.
+  gem "bullet"
+
+  # Use console on exceptions pages
   gem "web-console"
+end
+
+group :test do
+  # O `page` do ViewComponent::TestHelpers e os matchers `have_button`/
+  # `have_link` são Capybara — sem a gem, specs de componente só têm o
+  # `rendered_content` cru.
+  gem "capybara"
+  gem "simplecov", require: false
+  gem "simplecov_json_formatter", require: false
+  gem "stackprof", require: false
+  gem "test-prof", require: false
+  gem "webmock"
 end

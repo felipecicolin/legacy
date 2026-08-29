@@ -1,0 +1,62 @@
+<%
+  # Os diretórios sidecar de ViewComponent são descobertos sozinhos, então
+  # adicionar um componente novo nunca exige editar este arquivo. Cada entrada
+  # contribui uma rota de escrita e um relative_root.
+  component_dirs = Dir.glob("app/components/*_component").sort
+%>
+base_locale: pt-BR
+locales: [pt-BR]
+
+data:
+  # Envelopa o yml sidecar sob o nome do componente na leitura, para que as
+  # buscas do scanner (`<component>.<key>`) resolvam, e desenvelopa na escrita,
+  # para que os arquivos continuem planos. Ver
+  # `lib/i18n_tasks/sidecar_aware_file_system.rb`. Carregado por
+  # `bin/i18n-tasks` (use esse, e não `bundle exec i18n-tasks`).
+  adapter: I18nTasks::SidecarAwareFileSystem
+
+  read:
+    - config/locales/**/*.yml
+    - app/components/*_component/*_component.*.yml
+
+  router: pattern_router
+  write:
+    - ['{activerecord,activemodel}.*', 'config/locales/models/%{locale}.yml']
+    - ['{date,time,datetime,number,support,helpers,errors}.*', 'config/locales/rails.%{locale}.yml']
+<% component_dirs.each do |dir| %>
+<%   name = File.basename(dir) %>
+    - ['<%= name %>.*', '<%= dir %>/<%= name %>.%{locale}.yml']
+<% end %>
+    - ['*', 'config/locales/%{locale}.yml']
+
+  yaml:
+    write:
+      line_width: -1
+
+search:
+  paths:
+    - app/
+    - config/locales/
+
+  # Cada diretório sidecar precisa ser seu próprio relative root para que
+  # `t(".key")` resolva para uma busca de namespace único (`<component>.key`).
+  # Sem isso, o scanner prefixaria o caminho duas vezes.
+  relative_roots:
+    - app/controllers
+    - app/views
+    - app/mailers
+<% component_dirs.each do |dir| %>
+    - <%= dir %>
+<% end %>
+    - app/components
+
+ignore_missing: []
+
+# Defaults do framework Rails (validators, helpers de ActionView, etc.) são
+# referenciados por gems que não escaneamos, então sempre parecem "unused".
+#
+# Exceções por chave vivem ao lado da busca dinâmica, como comentários
+# `# i18n-tasks-use t('…')` inline — rastreados por bin/directive_guard, para
+# que a lista não cresça em silêncio. Prefira isso a uma entrada genérica aqui.
+ignore_unused:
+  - "{activerecord,activemodel,date,time,datetime,number,support,helpers,errors}.*"

@@ -1,6 +1,20 @@
+# frozen_string_literal: true
+
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
+  # Detector de N+1. `after_initialize` porque a gem só existe no grupo
+  # :development — referenciar a constante no corpo do configure quebraria o
+  # boot em qualquer outro ambiente que carregasse este arquivo.
+  config.after_initialize do
+    Bullet.enable        = true
+    Bullet.alert         = true
+    Bullet.bullet_logger = true
+    Bullet.console       = true
+    Bullet.rails_logger  = true
+    Bullet.add_footer    = true
+  end
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Make code changes take effect immediately without server restart.

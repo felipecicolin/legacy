@@ -1,8 +1,510 @@
-# Omakase Ruby styling for Rails
-inherit_gem: { rubocop-rails-omakase: rubocop.yml }
-
-# Overwrite or add rules to create your own house style
+# Regras de estilo do projeto.
 #
-# # Use `[a, [b, c]]` not `[ a, [ b, c ] ]`
-# Layout/SpaceInsideArrayLiteralBrackets:
-#   Enabled: false
+# Não existe `.rubocop_todo.yml` aqui, e isso é política, não acaso: o projeto
+# nasceu limpo e a única forma sustentável de continuar assim é nunca abrir a
+# porta da dívida. Ofensa se conserta, não se cataloga — ver AGENTS.md.
+
+inherit_mode:
+  merge:
+    - Exclude
+
+plugins:
+  - rubocop-capybara
+  - rubocop-rails
+  - rubocop-performance
+  - rubocop-rspec
+  - rubocop-factory_bot
+  - rubocop-rspec_rails
+  - rubocop-thread_safety
+  - rubocop-view_component
+  - rubocop-i18n
+
+AllCops:
+  NewCops: enable
+  # Exigido pelos cops de ViewComponent 0.7+: eles detectam a classe pela
+  # ancestralidade, e isso depende do índice de projeto do rubocop.
+  UseProjectIndex: true
+  Exclude:
+    - bin/**/*
+    - db/**/*
+    - tmp/**/*
+    - node_modules/**/*
+    - vendor/**/*
+  DisplayCopNames: true
+  DisplayStyleGuide: true
+  CacheRootDirectory: tmp
+
+# — Metrics ————————————————————————————————————————————————
+
+Metrics/MethodLength:
+  Max: 7
+
+Metrics/AbcSize:
+  Max: 15
+
+Metrics/CyclomaticComplexity:
+  Max: 6
+
+Metrics/PerceivedComplexity:
+  Max: 6
+
+Metrics/ParameterLists:
+  Max: 4
+  CountKeywordArgs: true
+  Exclude:
+    # A lista de kwargs de um ViewComponent É a API pública dele (variant,
+    # size, type, disabled, href, classes, data). Espremê-la num objeto de
+    # valor só empurraria a mesma lista para o call site, com ergonomia pior.
+    - "app/components/**/*"
+
+Metrics/ClassLength:
+  Max: 120
+
+Metrics/ModuleLength:
+  Max: 120
+
+Metrics/BlockLength:
+  Exclude:
+    - spec/**/*.rb
+    - Rakefile
+    - lib/tasks/**/*.rb
+    - config/**/*.rb
+
+Layout/LineLength:
+  Max: 120
+
+# — Style ——————————————————————————————————————————————————
+
+Style/Documentation:
+  Enabled: false
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/CollectionMethods:
+  Enabled: true
+
+Style/ReturnNil:
+  Enabled: true
+
+Style/ImplicitRuntimeError:
+  Enabled: true
+
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInArguments:
+  EnforcedStyleForMultiline: comma
+
+# — Lint ———————————————————————————————————————————————————
+
+# Lint/ConstantResolution: too noisy in Rails apps (flags Rails, RSpec, ActiveRecord
+# at every top-level reference). Disabled.
+Lint/ConstantResolution:
+  Enabled: false
+
+Lint/NumberConversion:
+  Enabled: false
+
+# — Naming —————————————————————————————————————————————————
+
+Naming/RescuedExceptionsVariableName:
+  PreferredName: error
+
+Naming/VariableNumber:
+  EnforcedStyle: snake_case
+
+# — i18n ———————————————————————————————————————————————————
+
+# rubocop-i18n in Rails-i18n style: catches user-facing string literals
+# that should go through `t()` / `I18n.t()` / model-error i18n keys.
+# GetText style is unused.
+I18n/RailsI18n:
+  Enabled: true
+I18n/GetText:
+  Enabled: false
+
+I18n/RailsI18n/DecorateString:
+  Enabled: true
+  Exclude:
+    - spec/**/*
+    - config/**/*
+    - db/**/*
+    - lib/tasks/**/*
+
+# — Rails ——————————————————————————————————————————————————
+
+Rails/Date:
+  Enabled: true
+
+Rails/TimeZone:
+  Enabled: true
+
+Rails/I18nLocaleTexts:
+  Enabled: true
+
+Rails/I18nLazyLookup:
+  Enabled: true
+
+Rails/WhereExists:
+  Enabled: true
+
+Rails/WhereNot:
+  Enabled: true
+
+Rails/WhereEquals:
+  Enabled: true
+
+Rails/Pluck:
+  Enabled: true
+
+Rails/PluckInWhere:
+  Enabled: true
+
+Rails/FindEach:
+  Enabled: true
+
+Rails/InverseOf:
+  Enabled: true
+
+Rails/UniqueValidationWithoutIndex:
+  Enabled: true
+
+Rails/BulkChangeTable:
+  Enabled: true
+
+Rails/SaveBang:
+  Enabled: true
+
+Rails/OutputSafety:
+  Enabled: true
+
+Rails/SkipsModelValidations:
+  Enabled: false
+
+Rails/TransactionExitStatement:
+  Enabled: true
+
+Rails/ActionControllerFlashBeforeRender:
+  Enabled: true
+
+Rails/HelperInstanceVariable:
+  Enabled: true
+
+Rails/EnvLocal:
+  Enabled: true
+
+Rails/StrongParametersExpect:
+  Enabled: true
+
+Rails/WhereMissing:
+  Enabled: true
+
+Rails/CompactBlank:
+  Enabled: true
+
+Rails/RedundantPresenceValidationOnBelongsTo:
+  Enabled: true
+
+Rails/ThreeStateBooleanColumn:
+  Enabled: true
+
+Rails/RedundantActiveRecordAllMethod:
+  Enabled: true
+
+Rails/DurationArithmetic:
+  Enabled: true
+
+Rails/FreezeTime:
+  Enabled: true
+
+Rails/I18nLocaleAssignment:
+  Enabled: true
+
+Rails/RootPathnameMethods:
+  Enabled: true
+
+Rails/ResponseParsedBody:
+  Enabled: true
+
+Rails/IgnoredColumnsAssignment:
+  Enabled: true
+
+Rails/ActionOrder:
+  Enabled: true
+
+Rails/MigrationClassName:
+  Enabled: true
+
+Rails/DangerousColumnNames:
+  Enabled: true
+
+Rails/DotSeparatedKeys:
+  Enabled: true
+
+Rails/EagerEvaluationLogMessage:
+  Enabled: true
+
+Rails/DuplicateAssociation:
+  Enabled: true
+
+Rails/DuplicateScope:
+  Enabled: true
+
+Rails/AfterCommitOverride:
+  Enabled: true
+
+Rails/ActiveSupportOnLoad:
+  Enabled: true
+
+Rails/AttributeDefaultBlockValue:
+  Enabled: true
+
+Rails/EnumSyntax:
+  Enabled: true
+
+Rails/MultipleRoutePaths:
+  Enabled: true
+
+Rails/NegateInclude:
+  Enabled: true
+
+Rails/ExpandedDateRange:
+  Enabled: true
+
+Rails/FindById:
+  Enabled: true
+
+Rails/MailerName:
+  Enabled: true
+
+Rails/MatchRoute:
+  Enabled: true
+
+Rails/Inquiry:
+  Enabled: true
+
+Rails/RedirectBackOrTo:
+  Enabled: true
+
+Rails/RenderInline:
+  Enabled: true
+
+# — Performance ————————————————————————————————————————————
+
+Performance/CollectionLiteralInLoop:
+  Enabled: true
+
+Performance/MapCompact:
+  Enabled: true
+
+Performance/RedundantBlockCall:
+  Enabled: true
+
+Performance/Sum:
+  Enabled: true
+
+Performance/StringIdentifierArgument:
+  Enabled: true
+
+Performance/AncestorsInclude:
+  Enabled: true
+
+Performance/ConcurrentMonotonicTime:
+  Enabled: true
+
+Performance/ReverseFirst:
+  Enabled: true
+
+Performance/RedundantStringChars:
+  Enabled: true
+
+Performance/RedundantSortBlock:
+  Enabled: true
+
+Performance/SortReverse:
+  Enabled: true
+
+Performance/RedundantSplitRegexpArgument:
+  Enabled: true
+
+Performance/RedundantEqualityComparisonBlock:
+  Enabled: true
+
+Performance/MethodObjectAsBlock:
+  Enabled: true
+
+Performance/ConstantRegexp:
+  Enabled: true
+
+Performance/Squeeze:
+  Enabled: true
+
+Performance/StringBytesize:
+  Enabled: true
+
+Performance/StringInclude:
+  Enabled: true
+
+Performance/ZipWithoutBlock:
+  Enabled: true
+
+Performance/MapMethodChain:
+  Enabled: true
+
+Performance/BigDecimalWithNumericArgument:
+  Enabled: true
+
+# — RSpec ——————————————————————————————————————————————————
+
+RSpec/MultipleExpectations:
+  Enabled: true
+  Max: 5
+
+RSpec/DescribeClass:
+  Exclude:
+    - spec/system/**/*.rb
+    - spec/requests/**/*.rb
+
+RSpec/ImplicitSubject:
+  EnforcedStyle: single_statement_only
+
+RSpec/MultipleMemoizedHelpers:
+  Max: 7
+
+RSpec/SharedExamples:
+  Enabled: false
+
+RSpec/AnyInstance:
+  Enabled: false
+
+RSpec/VerifiedDoubleReference:
+  Enabled: true
+
+RSpec/LetSetup:
+  Enabled: true
+
+RSpec/InstanceVariable:
+  Enabled: true
+
+RSpec/SubjectStub:
+  Enabled: true
+
+RSpec/MessageSpies:
+  EnforcedStyle: receive
+
+RSpec/NestedGroups:
+  Max: 4
+
+RSpec/ContextWording:
+  Prefixes: [when, with, without, if, unless, for]
+
+RSpec/NamedSubject:
+  Enabled: true
+
+RSpec/NoExpectationExample:
+  Enabled: true
+
+RSpec/PredicateMatcher:
+  Enabled: true
+
+RSpec/EmptyLineAfterFinalLet:
+  Enabled: true
+
+RSpec/EmptyLineAfterHook:
+  Enabled: true
+
+RSpec/IncludeExamples:
+  Enabled: true
+
+RSpec/SpecFilePathFormat:
+  Enabled: true
+
+RSpec/SpecFilePathSuffix:
+  Enabled: true
+
+RSpec/MetadataStyle:
+  Enabled: true
+
+RSpec/EmptyMetadata:
+  Enabled: true
+
+RSpec/SortMetadata:
+  Enabled: true
+
+RSpec/DuplicatedMetadata:
+  Enabled: true
+
+RSpec/IndexedLet:
+  Enabled: true
+
+RSpec/PendingWithoutReason:
+  Enabled: true
+
+RSpec/RedundantAround:
+  Enabled: true
+
+RSpec/SkipBlockInsideExample:
+  Enabled: true
+
+RSpec/SubjectDeclaration:
+  Enabled: true
+
+RSpec/RemoveConst:
+  Enabled: true
+
+RSpec/ExampleLength:
+  CountAsOne: ["array", "hash", "heredoc"]
+  Exclude:
+    - spec/system/**/*.rb
+    - spec/requests/**/*.rb
+
+# — FactoryBot ————————————————————————————————————————————
+
+FactoryBot/ConsistentParenthesesStyle:
+  Enabled: true
+
+FactoryBot/IdSequence:
+  Enabled: true
+
+FactoryBot/AssociationStyle:
+  Enabled: true
+
+FactoryBot/FactoryAssociationWithStrategy:
+  Enabled: true
+
+FactoryBot/FactoryNameStyle:
+  Enabled: true
+
+FactoryBot/ExcessiveCreateList:
+  Enabled: true
+
+FactoryBot/RedundantFactoryOption:
+  Enabled: true
+
+FactoryBot/SyntaxMethods:
+  Enabled: true
+
+# — ViewComponent ————————————————————————————————————————
+#
+# Todos os cops vêm ligados por padrão e a detecção da classe sai da
+# ancestralidade (`AllCops/UseProjectIndex` acima). Duas exceções:
+
+# Este cop acusa QUALQUER componente que herde de outro componente — e
+# `ApplicationComponent` é um componente. Como todo componente do projeto herda
+# dela (é o padrão da própria gem, o mesmo `ApplicationRecord` de sempre), o
+# cop dispara em 100% dos arquivos e não distingue "herda a base abstrata do
+# app" de "herda outro componente concreto", que é o que ele quer coibir.
+ViewComponent/PreferComposition:
+  Enabled: false
+
+ViewComponent/TestRenderedOutput:
+  Exclude:
+    # ApplicationComponent é abstrata: não tem template e não renderiza nada.
+    # O que ela tem são os helpers (class_merge, validate_inclusion!,
+    # stimulus_controller), e é isso que o spec dela testa. Para os
+    # componentes concretos o cop continua valendo.
+    - "spec/components/application_component_spec.rb"
