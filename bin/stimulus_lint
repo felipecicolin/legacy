@@ -18,7 +18,7 @@ VALID_VALUE_TYPES       = %w[String Number Boolean Array Object].freeze
 # Whitelisted import path prefixes. Any other path (npm name, absolute
 # URL, etc.) is rejected — this project has no JS build pipeline so npm
 # packages can't actually load anyway.
-ALLOWED_IMPORT_PREFIXES = %w[@hotwired/ controllers/ components/ ./ ../].freeze
+ALLOWED_IMPORT_PREFIXES = %w[@hotwired/ controllers/ ./ ../].freeze
 
 class StimulusLint
   RULES = %i[
