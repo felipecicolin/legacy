@@ -21,6 +21,12 @@ RSpec.configure do |config|
         t.decimal :latitude, precision: 9, scale: 6
         t.decimal :longitude, precision: 9, scale: 6
         t.integer :sensitivity_level, null: false, default: Sensitive::LEVELS.fetch(:restricted)
+
+        # A tabela do host reproduz o que toda migration de modelo com o concern
+        # tem de declarar — é o que deixa o spec provar que a constraint pega o
+        # `update_column`, e não só que a constante existe.
+        t.check_constraint Sensitive::PRECISE_LOCATION_CHECK,
+                           name: "sensitive_test_records_confidential_has_no_location"
       end
     end
   end

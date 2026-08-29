@@ -82,6 +82,21 @@ RSpec.describe Sensitive do
     it "does not stand in the way of a restricted record" do
       expect(build_record(latitude: -22.9)).to be_valid
     end
+
+    # A camada que alcança o que pula callback. Sem ela, `update_column` grava a
+    # coordenada de uma base confidencial e nada reclama.
+    it "is refused by the database when the callbacks are skipped" do
+      record = build_record(sensitivity_level: :confidential).tap(&:save!)
+
+      expect { record.update_column(:latitude, -22.9) }
+        .to raise_error(ActiveRecord::StatementInvalid)
+    end
+
+    it "keeps the database rule as loose as the Ruby one" do
+      record = build_record(sensitivity_level: :confidential, address: "   ")
+
+      expect { record.save! }.not_to raise_error
+    end
   end
 
   describe "#promote_visibility!" do
@@ -134,6 +149,32 @@ RSpec.describe Sensitive do
 
       expect(record.sensitivity_changes.count).to eq(1)
     end
+
+    # A autorização vale por uma gravação, e não pela vida do objeto: uma
+    # promoção que reprovou por outro motivo não pode ficar pendurada
+    # autorizando o `update` seguinte.
+    it "drops a promotion that failed for another reason" do
+      record = build_record(latitude: -22.9).tap(&:save!)
+      suppress(ActiveRecord::RecordInvalid) { promote(record, level: :confidential) }
+
+      expect(record.update(sensitivity_level: :public)).to be(false)
+    end
+
+    # Espelha a segunda camada da regra de coordenada: `update_attribute` grava
+    # sem validar, e sem esta guarda a obra vira vitrine sem auditoria nenhuma.
+    it "raises when a write that skips validation relaxes the level" do
+      record = build_record(sensitivity_level: :confidential).tap(&:save!)
+
+      expect { record.update_attribute(:sensitivity_level, :public) }
+        .to raise_error(Sensitive::UnauditedDisclosure)
+    end
+
+    it "leaves a write that skips validation alone when it restricts" do
+      record = build_record.tap(&:save!)
+      record.sensitivity_level = :confidential
+
+      expect(record.save(validate: false)).to be(true)
+    end
   end
 
   describe "#location_label" do
@@ -170,6 +211,12 @@ RSpec.describe Sensitive do
     end
 
     before { promote(build_record(name: "Vitrine", code: "PB-01"), level: :public) }
+
+    # `inspect` é o que a linha de log de exceção e o rastreador de erros
+    # carregam. Um registro restricted guarda coordenada de verdade.
+    it "keeps the precise location out of inspect" do
+      expect(restricted.inspect).to include("latitude: [FILTERED]", "longitude: [FILTERED]")
+    end
 
     it "leaks neither name, code nor coordinates" do
       payload = SensitiveTestRecord.visible_to(anonymous).to_json

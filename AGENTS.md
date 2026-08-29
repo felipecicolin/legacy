@@ -370,18 +370,26 @@ webhook. Quatro regras valem daqui para frente:
 > [`docs/visibility.md`](docs/visibility.md).
 
 O concern `Sensitive` dá a todo registro de obra um `sensitivity_level`
-(`public` · `restricted` · `confidential`). Quatro regras valem daqui para
+(`public` · `restricted` · `confidential`). Seis regras valem daqui para
 frente:
 
 - **Obra nasce `restricted`.** Inclusive na criação: `create!` com nível menos
   restritivo que o default reprova, do mesmo jeito que um `update` reprovaria.
 - **Registro `confidential` não guarda coordenada nem endereço.** Não é filtro
-  de exibição — é o que se persiste. Gravar reprova na validação e levanta
-  `Sensitive::PreciseLocationForbidden` mesmo com validação pulada. `update_column`
-  e `update_all` sobre modelo com o concern continuam proibidos: pulam callback.
+  de exibição — é o que se persiste. Gravar reprova na validação, levanta
+  `Sensitive::PreciseLocationForbidden` com validação pulada e reprova na CHECK
+  constraint quando o caminho pula callback (`update_column`, `insert_all`).
+- **Migration de modelo com o concern leva a constraint e o `null: false`.**
+  `t.check_constraint Sensitive::PRECISE_LOCATION_CHECK` mais
+  `sensitivity_level` NOT NULL com o default do enum — sem os dois, o concern
+  protege menos do que parece. A receita está em
+  [`docs/visibility.md`](docs/visibility.md).
 - **Afrouxar restrição só por `promote_visibility!`**, com autor e
-  justificativa. Ela grava a linha em `sensitivity_changes`; `update` direto
-  reprova. Restringir mais não pede cerimônia.
+  justificativa. `update` direto reprova na validação e
+  `update_attribute`/`save(validate: false)` levantam
+  `Sensitive::UnauditedDisclosure`. Restringir mais não pede cerimônia.
+- **Linha de `sensitivity_changes` não se edita.** Qualquer `update` levanta
+  `SensitivityChange::Immutable`: reescrever a auditoria é pior que apagá-la.
 - **Consulta de visibilidade sai de `visible_to` / `hidden_from`**, que recebem
   um `Visibility::Context` e devolvem relação. Nunca escreva um segundo caminho
   de SQL que decida visibilidade — é ele que vai divergir.
@@ -461,6 +469,20 @@ teste. Localmente o `config/ci.rb` não passava env e o passo reprovava com
 "should have a corresponding table" sempre que o banco de dev estivesse atrás
 das migrations — um erro sobre o banco errado. O passo agora leva
 `RAILS_ENV=test`, como a CI.
+
+**O `Sensitive` só protege coluna que ele sabe nomear.**
+`precise_location_attributes` intersecta `PRECISE_LOCATION_ATTRIBUTES` com o
+`column_names` da tabela. Uma tabela que chame suas colunas de `street`, `lat`
+ou `geom` sai inteira do alcance: as três camadas passam a proteger um conjunto
+vazio, e nada reprova — nem linter, nem spec, nem constraint. Coluna de
+localização usa os nomes da constante, ou a constante cresce junto.
+
+**`filter_parameters` não conhece coordenada.** O Rails alimenta o
+`filter_attributes` do Active Record com o `filter_parameters` da aplicação, e a
+lista do projeto tem `passw`, `token`, `secret` — nada de localização. Sem o
+`self.filter_attributes +=` do concern, o `inspect` de um registro `restricted`
+imprime o ponto exato da base na linha de log de exceção e no rastreador de
+erros.
 
 **`stylesheet_link_tag :app` não carrega o Tailwind.** O `:app` resolve para
 `app/assets/stylesheets/application.css` — o manifesto vazio do generator. O

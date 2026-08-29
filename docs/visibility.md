@@ -55,7 +55,7 @@ falhar: um filtro de exibição ainda vaza por bug de view, por serializer novo,
 por export CSV, por linha de log, por dump de backup e por acesso direto ao
 banco. **Dado que não existe não vaza por nenhum desses.**
 
-O concern cobra isso em duas camadas, e as duas são de propósito:
+O concern cobra isso em três camadas, e as três são de propósito:
 
 1. Uma **validação**, que é o caminho normal: o formulário recebe o erro e
    `save!` levanta `ActiveRecord::RecordInvalid`.
@@ -63,13 +63,56 @@ O concern cobra isso em duas camadas, e as duas são de propósito:
    pega o caminho que pula validação (`save(validate: false)`). Uma gravação que
    escapa da primeira camada é um bug, e um bug aqui é uma pessoa localizável —
    então ele explode em vez de gravar.
+3. Uma **CHECK constraint no banco**, que é a única que alcança `update_column`,
+   `update_all` e `insert_all`. Callback se pula por definição; o banco não.
 
-Nem uma nem outra alcança `update_column`, `update_all` e `insert_all`, que
-pulam callbacks por definição. Esses continuam sendo, e devem continuar sendo,
-proibidos sobre modelos que incluem o concern.
+### A constraint, e por que ela precisa de `btrim`
+
+Toda migration de modelo que inclui o concern declara a coluna e a constraint:
+
+```ruby
+t.integer :sensitivity_level, null: false,
+                              default: Sensitive::LEVELS.fetch(Sensitive::DEFAULT_LEVEL)
+t.check_constraint Sensitive::PRECISE_LOCATION_CHECK,
+                   name: "fields_confidential_has_no_location"
+```
+
+O `null: false` não é decoração. `visible_to` e `hidden_from` são complementares
+apenas porque a coluna nunca é nula: `where.not` não devolve linha com `NULL`,
+então uma linha sem nível somem das **duas** consultas — inclusive do agregado
+anonimizado, que passaria a subnotificar em silêncio. E não conte com o
+`database_consistency` para pegar isso: o `validate: true` do enum gera
+validação de *inclusão*, não de presença, e é presença que ele procura.
+
+A expressão usa `nullif(btrim(coluna::text), '') is null`, e o `btrim` é a parte
+que importa: o Ruby considera `"   "` ausente (`present?` é falso), então um
+endereço com espaços **passa na validação**. Uma constraint que só testasse
+`IS NULL` reprovaria no banco uma gravação já validada — erro 500 no lugar de
+erro de campo. A regra do banco tem de ser exatamente tão frouxa quanto a do
+Ruby, nunca mais rígida.
 
 `precise_location_attributes` intersecta a lista com `column_names`: o concern é
-abstrato e cada modelo concreto guarda as colunas que guarda.
+abstrato e cada modelo concreto guarda as colunas que guarda. O outro lado dessa
+moeda é uma armadilha: uma tabela que chame suas colunas de `street`, `lat` ou
+`geom` sai inteira do alcance do concern, sem erro nenhum — as três camadas
+passam a proteger um conjunto vazio. Coluna de localização usa os nomes de
+`PRECISE_LOCATION_ATTRIBUTES`, ou a lista cresce junto.
+
+### `inspect` também é um caminho de vazamento
+
+Registro `public` e `restricted` guardam coordenada de verdade, e é o `inspect`
+que vai parar na linha de log de exceção e no payload do rastreador de erros. O
+Rails alimenta o `filter_attributes` do Active Record com o `filter_parameters`
+da aplicação, e lá não há nome de localização — então o concern acrescenta os
+seus:
+
+```ruby
+self.filter_attributes += PRECISE_LOCATION_ATTRIBUTES
+```
+
+Isso alcança `inspect`, e não `to_json` — de propósito. Serialização é resposta
+para alguém, e quem decide o que ela carrega é o `visible_to`; se `filter_attributes`
+mexesse nela, o spec de vazamento passaria a medir a máscara em vez do escopo.
 
 ### `location_label`
 
@@ -98,6 +141,31 @@ Um `update(sensitivity_level: :public)` direto **reprova na validação**. O
 caminho contrário — tornar mais restritivo — não pede cerimônia nenhuma:
 fechar uma obra em emergência não pode depender de preencher formulário.
 
+A regra de exposição tem as mesmas duas camadas da regra de coordenada, e pelo
+mesmo motivo. A validação pega o caminho normal; um `before_save` que levanta
+`Sensitive::UnauditedDisclosure` pega `update_attribute` e `save(validate: false)`,
+que gravam sem validar. Sem essa segunda camada, um
+`base.update_attribute(:sensitivity_level, :public)` transforma uma base
+confidencial em vitrine **sem uma única linha de auditoria** — e `update_attribute`
+não é uma chamada exótica: é o que se escreve quando "só" se quer mudar um campo.
+
+Fora do alcance continuam `update_column` e `update_all` sobre a própria coluna
+`sensitivity_level`: a regra depende do valor anterior, que a constraint não
+enxerga, e fechar isso exigiria trigger. Sobre modelo com o concern, os dois
+continuam proibidos.
+
+### A linha de auditoria é imutável
+
+`SensitivityChange` levanta `SensitivityChange::Immutable` em qualquer `update`
+de linha já gravada. Apagar a linha deixa uma lacuna visível; **reescrevê-la
+deixa uma resposta errada com cara de legítima**, que é pior — um
+`change.update!(author: outra_pessoa)` troca quem responde pela exposição sem
+deixar sinal. Ela levanta em vez de devolver `false` porque gravação de
+auditoria que falha calada é o mesmo que auditoria nenhuma.
+
+Isso não alcança `SensitivityChange.update_all` nem `delete_all`, que pulam
+callback como sempre.
+
 Cada promoção grava uma linha em `sensitivity_changes` (registro polimórfico,
 autor, nível de origem, nível de destino, justificativa, data). É a existência
 dessa linha que separa uma decisão de um esquecimento, e é ela que permite
@@ -117,10 +185,16 @@ default: o registro não existia antes, e o que a auditoria descreve é a
 distância entre "o que teria acontecido sozinho" e "o que alguém decidiu".
 
 O que distingue a chamada auditada do `update` direto é uma variável de
-instância transitória (`@sensitivity_promotion`), lida pela validação e pelo
-`after_save` da mesma gravação e apagada em seguida. Ela não é atributo público
+instância transitória (`@sensitivity_promotion`), lida pela validação, pelo
+`before_save` e pelo `after_save` da mesma gravação. Ela não é atributo público
 de propósito: um atributo convidaria a "setar agora e salvar depois", que é
 justamente o `update` direto de novo, com um passo a mais.
+
+Apagá-la é trabalho de um `ensure`, e não do fim do caminho feliz: uma promoção
+que reprovou por outro motivo — nome em branco, digamos — deixaria a autorização
+pendurada no objeto, e o `update` seguinte do mesmo objeto, que deveria
+reprovar, passaria e gravaria a auditoria com a justificativa da tentativa
+anterior. "Vale por uma gravação" tem de valer também quando a gravação falha.
 
 ## `visible_to`, `hidden_from` e o agregado anonimizado
 

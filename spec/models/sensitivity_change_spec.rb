@@ -21,4 +21,15 @@ RSpec.describe SensitivityChange do
 
     expect(change).not_to be_valid
   end
+
+  # Reescrever a linha não deixa lacuna: deixa uma resposta errada com cara de
+  # legítima para "quem abriu esta obra".
+  it "refuses to be rewritten once persisted" do
+    record = SensitiveTestRecord.create!(code: "IM-01")
+    record.promote_visibility!(level: :public, author: create(:user),
+                               justification: "Consentimento da equipe local")
+
+    expect { record.sensitivity_changes.sole.update!(justification: "Outro") }
+      .to raise_error(SensitivityChange::Immutable)
+  end
 end
