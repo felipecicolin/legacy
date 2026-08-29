@@ -3,6 +3,10 @@ pt-BR:
   app:
     name: Legacy
     preview_title: Legacy — Preview de componente
+  from_levels:
+    confidential: Confidencial
+    public: Pública
+    restricted: Restrita
   home:
     show:
       signed_in_as: Você entrou como %{email}.
@@ -40,6 +44,10 @@ pt-BR:
       expires: O link vale por %{duration}.
       intro: Recebemos um pedido para redefinir a senha da sua conta.
       subject: Redefinir sua senha
+  sensitivity_levels:
+    confidential: Confidencial
+    public: Pública
+    restricted: Restrita
   sessions:
     create:
       failed: E-mail ou senha incorretos.
@@ -55,3 +63,7 @@ pt-BR:
     pending: Pendente
     refused: Recusado
     succeeded: Aprovado
+  to_levels:
+    confidential: Confidencial
+    public: Pública
+    restricted: Restrita
