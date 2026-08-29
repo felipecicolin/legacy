@@ -24,6 +24,15 @@ Rails.application.configure do
   config.consider_all_requests_local = true
   config.cache_store = :null_store
 
+  # O `rate_limit` do Action Controller conta no cache, e sobre o :null_store o
+  # `increment` devolve nil — o contador nunca sobe e o limite nunca dispara.
+  # Um gate de força bruta que existe no código e não existe em execução é pior
+  # que nenhum, porque o spec fica verde.
+  #
+  # Só o store do Action Controller, e não o `config.cache_store` acima: o
+  # resto da suíte continua sem cache, que é o que se quer num teste.
+  config.action_controller.cache_store = :memory_store
+
   # Render exception templates for rescuable exceptions and raise for other exceptions.
   config.action_dispatch.show_exceptions = :rescuable
 

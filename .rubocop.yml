@@ -149,6 +149,16 @@ Rails/I18nLocaleTexts:
 Rails/I18nLazyLookup:
   Enabled: true
 
+# O cop mira o finder dinâmico do Active Record (`find_by_nome`), que resolve
+# coluna por method_missing. `find_by_password_reset_token` não é isso: é um
+# método real, gerado pelo `generates_token_for` que o `has_secure_password`
+# instala, e o token não é coluna nenhuma. A sugestão do cop
+# (`find_by(password_reset_token: …)`) consultaria uma coluna que não existe.
+Rails/DynamicFindBy:
+  AllowedMethods:
+    - find_by_password_reset_token
+    - find_by_password_reset_token!
+
 Rails/WhereExists:
   Enabled: true
 

@@ -23,6 +23,12 @@ acrescenta nada. Então:
   semântico, como adicionar um token, como trocar a identidade visual do
   produto, e o que sustenta que nada disso quebre em silêncio.
 
+### Plataforma
+
+- [Autenticação](authentication.md) — para quem ela é, por que o app nasce
+  fechado, por que sessão é linha no banco, e as duas decisões de segurança
+  (não vazar quem tem conta, derrubar sessões na troca de senha).
+
 ### Deploy
 
 - [Deploy no Coolify](deploy/coolify.md) — por que Solid Cache, Queue e Cable

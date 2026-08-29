@@ -1,0 +1,28 @@
+<div class="mx-auto w-full max-w-md">
+  <%= render "shared/flash" %>
+
+  <h1 class="text-2xl font-bold text-foreground"><%= t(".title") %></h1>
+
+  <%= form_with url: session_url, class: "contents" do |form| %>
+    <div class="my-5">
+      <%= form.label :email_address, t(".email"), class: "font-medium text-foreground" %>
+      <%= form.email_field :email_address, required: true, autofocus: true,
+                           autocomplete: "username", value: params[:email_address],
+                           class: auth_field_classes %>
+    </div>
+
+    <div class="my-5">
+      <%= form.label :password, t(".password"), class: "font-medium text-foreground" %>
+      <%# maxlength 72 porque o bcrypt trunca em 72 bytes: sem o limite, o
+          usuário digitaria uma senha maior achando que ela conta inteira. %>
+      <%= form.password_field :password, required: true, maxlength: 72,
+                              autocomplete: "current-password",
+                              class: auth_field_classes %>
+    </div>
+
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+      <%= render ButtonComponent.new(label: t(".submit"), type: :submit, classes: "w-full sm:w-auto") %>
+      <%= link_to t(".forgot"), new_password_path, class: "text-sm text-muted-foreground underline hover:no-underline" %>
+    </div>
+  <% end %>
+</div>

@@ -58,8 +58,17 @@ Rails.application.configure do
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
   # config.action_mailer.raise_delivery_errors = false
 
-  # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "example.com" }
+  # O link do e-mail de recuperação de senha sai daqui. Com `example.com`, quem
+  # está tentando recuperar a conta recebe um link morto — e o e-mail é
+  # entregue normalmente, então nada reclama.
+  #
+  # `fetch` sem default de propósito: sem APP_HOST o container não sobe. Um host
+  # errado só aparece depois, na caixa de entrada de outra pessoa.
+  #
+  # O `assets:precompile` do Dockerfile roda com RAILS_ENV=production e passaria
+  # por aqui no build; por isso ele leva um APP_HOST descartável, do mesmo jeito
+  # que já leva SECRET_KEY_BASE_DUMMY.
+  config.action_mailer.default_url_options = { host: ENV.fetch("APP_HOST"), protocol: "https" }
 
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
   # config.action_mailer.smtp_settings = {

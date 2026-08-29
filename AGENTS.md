@@ -285,6 +285,22 @@ Frame, um Turbo Stream ou um controller Stimulus. Nunca desligue o Turbo.
 
 ---
 
+## Autenticação
+
+> Para quem ela é, as decisões e as armadilhas:
+> [`docs/authentication.md`](docs/authentication.md).
+
+Autenticação nativa do Rails 8.1, sem gem. Três regras valem daqui para frente:
+
+- **Fechado por padrão.** O concern `Authentication` põe
+  `before_action :require_authentication` em todo controller. Abrir uma action é
+  explícito, com `allow_unauthenticated_access` — e a decisão vai comentada.
+- **`User` guarda credencial e sessão, nada de pessoa.** Nome, país e foto são
+  do `Profile` (#18); papel é contexto (#20, #21, #31), nunca coluna em `users`.
+- **Login e recuperação não dizem se a conta existe.** Mesma mensagem, mesma
+  rota, mesmo status para senha errada e e-mail inexistente. Use
+  `User.authenticate_by` — é ele que iguala também o tempo de resposta.
+
 ## Banco de dados
 
 - `bundle exec database_consistency` cobra FK sem índice, `NOT NULL` faltando,
@@ -335,6 +351,28 @@ com status 0.
 O padrão nos quatro casos é o mesmo: **ferramenta que falha em silêncio e sai
 zero**. Quando ligar um linter novo, confirme que ele reprova algo que deveria
 reprovar antes de confiar nele.
+
+**A partir de 10 templates o herb vira paralelo e para de imprimir
+`Loaded N custom rules`.** O `PARALLEL_FILE_THRESHOLD` do
+`@herb-tools/linter` é 10: acima disso quem carrega as regras é o worker
+thread, e o processo principal nunca imprime o banner. As regras continuam
+valendo — verificado, uma violação é reprovada com o repositório inteiro em
+modo paralelo — mas o `bin/herb_lint` lia a contagem dali e passou a reprovar
+todo mundo dizendo "0 regras carregadas", que é falso. Ele agora faz a
+verificação numa passada separada com `-j 1` sobre um arquivo só, e o lint de
+verdade segue paralelo.
+
+**`rate_limit` sobre o `:null_store` nunca dispara.** O contador é um
+`increment` no cache, e o null store devolve `nil` — o limite existe no código
+e não existe em execução. Em teste, `config.action_controller.cache_store`
+aponta para um memory store por isso; ver [`docs/authentication.md`](docs/authentication.md).
+
+**O `database_consistency` local olhava o banco de DESENVOLVIMENTO.** Na CI o
+job `test` define `RAILS_ENV` para o job inteiro, então lá ele olha o banco de
+teste. Localmente o `config/ci.rb` não passava env e o passo reprovava com
+"should have a corresponding table" sempre que o banco de dev estivesse atrás
+das migrations — um erro sobre o banco errado. O passo agora leva
+`RAILS_ENV=test`, como a CI.
 
 **`stylesheet_link_tag :app` não carrega o Tailwind.** O `:app` resolve para
 `app/assets/stylesheets/application.css` — o manifesto vazio do generator. O

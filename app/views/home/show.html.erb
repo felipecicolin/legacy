@@ -1,0 +1,9 @@
+<%# Espaço reservado: #8 traz o shell de layout e #57 as telas de verdade. O
+    que esta página precisa provar hoje é que o ciclo de autenticação fecha —
+    entrou, chegou em algum lugar, e consegue sair. %>
+<div class="mx-auto w-full max-w-md">
+  <%= render "shared/flash" %>
+
+  <h1 class="text-2xl font-bold text-foreground"><%= t(".title") %></h1>
+  <p class="mt-2 text-sm text-muted-foreground"><%= t(".signed_in_as", email: Current.user.email_address) %></p>
+</div>

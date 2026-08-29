@@ -3,3 +3,47 @@ pt-BR:
   app:
     name: Legacy
     preview_title: Legacy — Preview de componente
+  home:
+    show:
+      signed_in_as: Você entrou como %{email}.
+      title: Você está autenticado
+  layouts:
+    application:
+      sign_out: Sair
+  passwords:
+    create:
+      sent: Se houver conta com esse e-mail, as instruções de recuperação foram enviadas.
+    edit:
+      confirmation: Repita a nova senha
+      password: Nova senha
+      submit: Salvar nova senha
+      title: Definir uma nova senha
+    invalid_token: O link de recuperação é inválido ou expirou. Peça um novo.
+    new:
+      back: Voltar para o acesso
+      email: E-mail
+      help: Enviamos um link de recuperação para o e-mail cadastrado.
+      submit: Enviar instruções
+      title: Esqueceu a senha?
+    rate_limited: Muitos pedidos de recuperação. Tente de novo em alguns minutos.
+    update:
+      mismatch: As senhas não conferem.
+      updated: Senha alterada. Entre com a nova senha.
+  passwords_mailer:
+    reset:
+      cta: Definir uma nova senha
+      expires:
+        one: O link vale por 1 minuto.
+        other: O link vale por %{count} minutos.
+      intro: Recebemos um pedido para redefinir a senha da sua conta.
+      subject: Redefinir sua senha
+  sessions:
+    create:
+      failed: E-mail ou senha incorretos.
+    new:
+      email: E-mail
+      forgot: Esqueceu a senha?
+      password: Senha
+      submit: Entrar
+      title: Acessar a plataforma
+    rate_limited: Muitas tentativas de acesso. Tente de novo em alguns minutos.

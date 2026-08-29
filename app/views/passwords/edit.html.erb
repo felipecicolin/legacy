@@ -1,0 +1,23 @@
+<div class="mx-auto w-full max-w-md">
+  <%= render "shared/flash" %>
+
+  <h1 class="text-2xl font-bold text-foreground"><%= t(".title") %></h1>
+
+  <%= form_with url: password_path(params[:token]), method: :put, class: "contents" do |form| %>
+    <div class="my-5">
+      <%= form.label :password, t(".password"), class: "font-medium text-foreground" %>
+      <%= form.password_field :password, required: true, maxlength: 72, autofocus: true,
+                              autocomplete: "new-password",
+                              class: auth_field_classes %>
+    </div>
+
+    <div class="my-5">
+      <%= form.label :password_confirmation, t(".confirmation"), class: "font-medium text-foreground" %>
+      <%= form.password_field :password_confirmation, required: true, maxlength: 72,
+                              autocomplete: "new-password",
+                              class: auth_field_classes %>
+    </div>
+
+    <%= render ButtonComponent.new(label: t(".submit"), type: :submit, classes: "w-full sm:w-auto") %>
+  <% end %>
+</div>

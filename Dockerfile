@@ -52,7 +52,10 @@ COPY . .
 RUN bundle exec bootsnap precompile -j 1 app/ lib/
 
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
+# O APP_HOST é descartável e existe pela mesma razão do SECRET_KEY_BASE_DUMMY:
+# o precompile carrega o ambiente de produção, e lá o host do mailer é
+# obrigatório. Nada gerado aqui embute o valor.
+RUN SECRET_KEY_BASE_DUMMY=1 APP_HOST=assets.invalid ./bin/rails assets:precompile
 
 
 
