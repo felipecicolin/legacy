@@ -327,6 +327,28 @@ A pessoa é o `Profile`. Três regras:
 - **`display_name` é armazenado, não derivado.** Corrigir o nome legal não pode
   reescrever o histórico já exibido.
 
+## Pagamentos
+
+> A fronteira, o simulador determinístico e a marca de dado simulado:
+> [`docs/payments.md`](docs/payments.md).
+
+Demonstração, sem integração financeira: nenhum gateway, nenhuma chave, nenhum
+webhook. Quatro regras valem daqui para frente:
+
+- **Ninguém fala com o provedor.** Modelo, controller, view e componente
+  chamam `Payments::Gateway`; o provedor concreto é resolvido uma vez em
+  `config.x.payment_provider`. Um spec de fronteira reprova o nome
+  `SimulatedProvider` em `app/models`, `app/controllers`, `app/views` e
+  `app/components`.
+- **Nenhum dado de instrumento de pagamento em coluna nenhuma.** Sem número,
+  validade, CVV, titular ou IBAN — um spec percorre o schema inteiro e reprova.
+- **Dinheiro é `bigint` de centavos mais coluna `currency`.** Nunca `float`.
+- **Todo lançamento nasce com `simulated`**, e a marca é `attr_readonly`:
+  promover simulado a real levanta `ReadonlyAttributeError`, não passa por
+  update. Toda tela que mostra valor traz a marca visível — o
+  `SimulatedDataBannerComponent` está no layout justamente para nenhuma
+  precisar lembrar.
+
 ## Banco de dados
 
 - `bundle exec database_consistency` cobra FK sem índice, `NOT NULL` faltando,

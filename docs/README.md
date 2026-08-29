@@ -35,6 +35,11 @@ acrescenta nada. Então:
   vez de uma tabela por papel, por que o nome público é armazenado e não
   derivado, e como o nome legal é impedido de sair por serialização.
 
+- [Pagamentos](payments.md) — a fronteira que isola o provedor, por que o
+  simulador é determinístico e configurável, por que a marca de origem é
+  `attr_readonly`, e as duas invariantes que a CI cobra sobre o repositório
+  inteiro.
+
 ### Deploy
 
 - [Deploy no Coolify](deploy/coolify.md) — por que Solid Cache, Queue e Cable

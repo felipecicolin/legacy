@@ -24,6 +24,11 @@
   </head>
 
   <body class="bg-background text-foreground">
+    <%# No layout, e não na tela de arrecadação: assim toda tela nasce marcada
+        e nenhuma precisa lembrar. O componente decide sozinho se aparece —
+        pergunta ao provedor de pagamento, não ao ambiente. %>
+    <%= render SimulatedDataBannerComponent.new(classes: "container mx-auto mt-4") %>
+
     <%# Cabeçalho mínimo: sair precisa existir em toda página autenticada, não
         só na de chegada. #8 troca isto pelo shell de verdade. %>
     <% if authenticated? %>
