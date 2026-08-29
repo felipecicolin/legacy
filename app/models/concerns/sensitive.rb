@@ -1,0 +1,170 @@
+# frozen_string_literal: true
+
+# Visibilidade de um registro que descreve obra em campo. A plataforma fala de
+# bases missionárias em países perseguidos: listar uma delas com coordenada e
+# responsável é risco físico para pessoas reais. Ver docs/visibility.md.
+module Sensitive
+  extend ActiveSupport::Concern
+
+  LEVELS = { public: 0, restricted: 1, confidential: 2 }.freeze
+
+  # Registro nasce fechado. Default aberto faz o esquecimento vazar; default
+  # fechado faz o esquecimento só atrapalhar.
+  DEFAULT_LEVEL = :restricted
+
+  # Colunas que põem a obra no mapa. Registro confidential não as persiste —
+  # dado que não existe não vaza por view, por log, por export nem por backup.
+  PRECISE_LOCATION_ATTRIBUTES = %i[address latitude longitude].freeze
+
+  # `btrim` porque a regra do banco precisa casar com a do Ruby: `present?`
+  # trata "   " como ausente, e uma constraint mais rígida reprovaria no banco
+  # uma gravação que passou na validação — erro 500 no lugar de erro de campo.
+  PRECISE_LOCATION_BLANK = PRECISE_LOCATION_ATTRIBUTES
+                           .map { |name| "nullif(btrim(#{name}::text), '') is null" }
+                           .join(" and ")
+  private_constant :PRECISE_LOCATION_BLANK
+
+  # Terceira camada da regra de coordenada, e a única que alcança
+  # `update_column`, `update_all` e `insert_all`: eles pulam callback por
+  # definição, e o banco não pula. Toda migration de modelo com o concern leva
+  # esta constraint — a receita está em docs/visibility.md.
+  PRECISE_LOCATION_CHECK = "sensitivity_level <> #{LEVELS.fetch(:confidential)} " \
+                           "or (#{PRECISE_LOCATION_BLANK})".freeze
+
+  # Levantada quando alguém grava coordenada em registro confidential por um
+  # caminho que pula as validações (`save(validate: false)`).
+  class PreciseLocationForbidden < StandardError; end
+
+  # Levantada quando alguém afrouxa o nível por um caminho que pula as
+  # validações. Exposição sem autor e sem motivo não é gravação a corrigir
+  # depois: é uma base no mapa sem ninguém para responder por quê.
+  class UnauditedDisclosure < StandardError; end
+
+  included do
+    # `scopes: false` porque o escopo que o enum geraria para o nível `public`
+    # se chamaria `public` e colidiria com o `Module#public` do Ruby — o
+    # Active Record levanta na definição. Os escopos que interessam são o
+    # `visible_to` e o `hidden_from`, que perguntam por um contexto, não por
+    # um nível solto.
+    enum :sensitivity_level, LEVELS, default: DEFAULT_LEVEL, validate: true, scopes: false
+
+    # Endereço e coordenada fora do `inspect`, que é o que vai parar na linha de
+    # log de exceção e no rastreador de erros — um registro `restricted` guarda
+    # o ponto exato. `|=` porque o `filter_parameter_logging` já fixa os mesmos
+    # nomes para o log de requisição: aqui a garantia é por modelo, e viaja com
+    # o concern mesmo que alguém enxugue aquela lista.
+    self.filter_attributes |= PRECISE_LOCATION_ATTRIBUTES
+
+    # `destroy` aqui, e `restrict_with_error` do lado do autor (ver `User`), e
+    # a assimetria é o ponto: apagar a obra é a direção segura — some o dado
+    # que expunha gente, e o log fica sem sujeito. Apagar o autor não tira
+    # risco de ninguém, só tiraria o rastro de quem decidiu expor.
+    has_many :sensitivity_changes, as: :record, dependent: :destroy
+
+    # Relação, e não array, de propósito: o agregado anonimizado por região
+    # (trilha:dados) sai de `hidden_from(context).group(:region_id)`, sem
+    # precisar de um segundo caminho de SQL.
+    scope :visible_to, ->(context) { where(sensitivity_level: context.allowed_levels) }
+    scope :hidden_from, ->(context) { where.not(sensitivity_level: context.allowed_levels) }
+
+    validate :confidential_stores_no_precise_location
+    validate :relaxed_sensitivity_is_justified
+
+    before_save :forbid_precise_location_on_confidential
+    before_save :forbid_unaudited_disclosure
+    after_save :log_sensitivity_promotion
+  end
+
+  class_methods do
+    # Intersecção com o schema real: o concern é abstrato e cada modelo
+    # concreto guarda as colunas que guarda.
+    def precise_location_attributes
+      PRECISE_LOCATION_ATTRIBUTES & column_names.map(&:to_sym)
+    end
+  end
+
+  # Única porta para afrouxar a restrição. `update` direto reprova na
+  # validação: exposição sem autor e sem motivo não tem como ser revista.
+  # A promoção viaja numa variável de instância, e não num atributo público,
+  # porque ela vale por uma gravação só: quem a lê é a validação, o `before_save`
+  # e o `after_save` desta mesma chamada, e deixá-la exposta convidaria a "setar
+  # e salvar depois" — que é exatamente o `update` direto que a auditoria coíbe.
+  def promote_visibility!(level:, author:, justification:)
+    @sensitivity_promotion = SensitivityPromotion.new(author:, justification:)
+    update!(sensitivity_level: level)
+  ensure
+    # `ensure`, e não só o fim do caminho feliz: uma promoção que reprovou por
+    # outro motivo (nome em branco, por exemplo) deixaria a autorização pendurada
+    # no objeto, e o próximo `update` do mesmo objeto — que deveria reprovar —
+    # passaria, gravando a auditoria com a justificativa da tentativa anterior.
+    @sensitivity_promotion = nil
+  end
+
+  # País sempre; região só para quem alcança o nível do registro. O modelo
+  # concreto responde `country_label` e `region_label` — as tabelas de país e
+  # de região são de outra issue, e o concern não precisa conhecê-las.
+  def location_label(context)
+    return country_label unless context.can_see_precise_location?(self)
+
+    [region_label, country_label].compact_blank.join(" · ")
+  end
+
+  private
+
+  def stored_precise_location
+    self.class.precise_location_attributes.select { |name| self[name].present? }
+  end
+
+  def confidential_stores_no_precise_location
+    return unless confidential?
+    return if stored_precise_location.empty?
+
+    errors.add(:base, :confidential_precise_location)
+  end
+
+  def forbid_precise_location_on_confidential
+    return unless confidential?
+    return if stored_precise_location.empty?
+
+    raise PreciseLocationForbidden, stored_precise_location.join(", ")
+  end
+
+  # Um registro que ainda não existe parte do default: nascer aberto é
+  # promoção como qualquer outra, e passa pela mesma auditoria.
+  def sensitivity_relaxed?
+    previous = LEVELS.fetch(new_record? ? DEFAULT_LEVEL : sensitivity_level_was.to_sym)
+    current = LEVELS[sensitivity_level&.to_sym]
+
+    current.present? && current < previous
+  end
+
+  def disclosure_unaudited?
+    sensitivity_relaxed? && !@sensitivity_promotion&.justified?
+  end
+
+  def relaxed_sensitivity_is_justified
+    return unless disclosure_unaudited?
+
+    errors.add(:sensitivity_level, :promotion_requires_justification)
+  end
+
+  # Segunda camada da regra de exposição, espelhando a da coordenada: a
+  # validação pega o caminho normal, e isto pega `update_attribute` e
+  # `save(validate: false)`, que gravam sem validar. Sem ela um registro
+  # confidential vira `public` sem uma linha de auditoria — que é exatamente o
+  # que `promote_visibility!` existe para impedir.
+  def forbid_unaudited_disclosure
+    return unless disclosure_unaudited?
+
+    raise UnauditedDisclosure, "#{sensitivity_level_was} -> #{sensitivity_level}"
+  end
+
+  def log_sensitivity_promotion
+    promotion = @sensitivity_promotion
+    levels = saved_change_to_sensitivity_level
+    return if promotion.blank? || levels.blank?
+
+    sensitivity_changes.create!(**promotion.to_h, to_level: levels.last,
+                                                  from_level: levels.first || DEFAULT_LEVEL)
+  end
+end
