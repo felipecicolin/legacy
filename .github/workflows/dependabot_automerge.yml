@@ -1,5 +1,19 @@
 name: Dependabot auto-merge
-on: pull_request
+
+# O `gh pr merge --auto` espera apenas pelos checks OBRIGATÓRIOS do branch.
+# Sem proteção de branch configurada, "obrigatório" é o conjunto vazio e o
+# merge acontece na hora, sem olhar a CI. Foi exatamente assim que o bump de
+# `image_processing` 1.14 → 2.0.3 entrou na main com `lint` e `test`
+# vermelhos, quebrando o boot da aplicação.
+#
+# Por isso este workflow não acorda quando o PR abre: ele acorda quando a CI
+# TERMINA, e só age se ela passou. Proteção de branch com checks obrigatórios
+# continua sendo a trava certa e deve ser configurada — isto aqui é o que
+# funciona sem depender de uma configuração de repositório.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
 
 permissions:
   contents: write
@@ -8,10 +22,42 @@ permissions:
 jobs:
   dependabot:
     runs-on: ubuntu-latest
-    if: ${{ github.actor == 'dependabot[bot]' }}
+    timeout-minutes: 5
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.actor.login == 'dependabot[bot]'
+
     steps:
-      - name: Enable auto-merge for Dependabot PRs
-        run: gh pr merge --auto --squash "$PR_URL"
+      - name: Merge the Dependabot PR whose CI just passed
         env:
-          PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+
+          pr=$(gh api "repos/$REPO/commits/$HEAD_SHA/pulls" \
+                 --jq '.[] | select(.state == "open") | .number' | head -n1)
+
+          if [ -z "$pr" ]; then
+            echo "Nenhum PR aberto para $HEAD_SHA — nada a fazer."
+            exit 0
+          fi
+
+          author=$(gh pr view "$pr" --repo "$REPO" --json author --jq '.author.login')
+          if [ "$author" != "app/dependabot" ] && [ "$author" != "dependabot[bot]" ]; then
+            echo "PR #$pr é de '$author', não do dependabot. Ignorando."
+            exit 0
+          fi
+
+          # A CI provou este commit, não o branch. Se veio push novo entre o
+          # fim da CI e agora, o que seria mergeado não é o que passou.
+          current=$(gh pr view "$pr" --repo "$REPO" --json headRefOid --jq '.headRefOid')
+          if [ "$current" != "$HEAD_SHA" ]; then
+            echo "PR #$pr avançou para $current desde a CI de $HEAD_SHA. A CI do novo commit decide."
+            exit 0
+          fi
+
+          echo "CI verde em $HEAD_SHA — mergeando o PR #$pr."
+          gh pr merge "$pr" --repo "$REPO" --squash --delete-branch

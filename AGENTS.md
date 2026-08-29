@@ -9,6 +9,11 @@ que entrar daqui para frente. Vale para pessoas e para agentes.
 Turbo + Stimulus · Tailwind v4 · ViewComponent · Solid Cache/Queue/Cable ·
 RSpec. Locale `pt-BR`, timezone Brasília.
 
+**Requisitos de sistema:** PostgreSQL e **libvips** (`brew install vips` /
+`apt install libvips`). A libvips não é opcional: o processador de variantes
+padrão do Active Storage é o vips, e sem a biblioteca a aplicação não sobe —
+nem para rodar os specs. O Dockerfile já a instala.
+
 ---
 
 ## A regra que explica todas as outras
@@ -302,6 +307,21 @@ com status 0.
 O padrão nos quatro casos é o mesmo: **ferramenta que falha em silêncio e sai
 zero**. Quando ligar um linter novo, confirme que ele reprova algo que deveria
 reprovar antes de confiar nele.
+
+**`gh pr merge --auto` só espera pelos checks obrigatórios do branch.** Sem
+proteção de branch configurada, "obrigatório" é o conjunto vazio, e o auto-merge
+do dependabot merge na hora — sem olhar a CI. Já aconteceu aqui: o bump de
+`image_processing` 1.14 → 2.0.3 entrou na main com `lint` e `test` vermelhos e
+quebrou o boot. O `dependabot_automerge.yml` foi reescrito para acordar no
+**fim** da CI e só agir se ela passou, mas configurar proteção de branch com
+`scan`/`lint`/`test`/`coverage` obrigatórios continua sendo a trava certa.
+
+**Bump de major de dependência merece leitura, não só CI verde.** O
+`image_processing` 2.0 largou a dependência de `ruby-vips` e passou a exigir que
+o consumidor a declare. O Active Storage tem um `rescue LoadError` para
+degradar quando falta a libvips, mas ele casa a mensagem do dlopen — e a 2.0
+reescreve essa mensagem, então o rescue não pega. Duas mudanças pequenas em
+bibliotecas diferentes, e o resultado é a aplicação não subir.
 
 ---
 

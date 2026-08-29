@@ -71,7 +71,9 @@ jobs:
       - name: Setup shared Ruby environment
         uses: ./.github/actions/setup-ruby-environment
         with:
-          system-dependencies: libpq-dev
+          # libvips porque o `bin/components_registry --check` sobe o Rails, e
+          # o Active Storage carrega o transformer de vips no boot.
+          system-dependencies: libpq-dev libvips
 
       # O Node existe neste repo por um motivo só: as regras customizadas do
       # herb são `.herb/rules/*.mjs`. Não há build de JS — o navegador é servido
@@ -182,7 +184,7 @@ jobs:
       - name: Setup shared Ruby environment
         uses: ./.github/actions/setup-ruby-environment
         with:
-          system-dependencies: libpq-dev
+          system-dependencies: libpq-dev libvips
 
       # Uma carga de schema, e o Postgres clona o resto. Um segundo
       # `db:test:prepare` subiria o Rails de novo só para reproduzir o mesmo

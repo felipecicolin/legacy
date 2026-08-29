@@ -61,7 +61,7 @@ jobs:
       - name: Setup shared Ruby environment
         uses: ./.github/actions/setup-ruby-environment
         with:
-          system-dependencies: libpq-dev
+          system-dependencies: libpq-dev libvips
 
       # O cache do RuboCop tinha o mesmo problema de escopo, e ainda um ramo
       # morto: a chave do ci.yml termina em `github.run_id` quando o ref é o
