@@ -85,6 +85,40 @@
       ]
     },
     {
+      "name": "CardComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "variant",
+          "kind": "key"
+        },
+        {
+          "name": "options",
+          "kind": "keyrest"
+        }
+      ],
+      "constants": {
+        "VARIANTS": [
+          "default",
+          "elevated",
+          "outlined"
+        ]
+      },
+      "slots": [
+        "footer",
+        "header"
+      ],
+      "stimulus_controller": "card-component",
+      "template": "app/components/card_component/card_component.html.erb",
+      "preview": "spec/components/previews/card_component_preview.rb",
+      "examples": [
+        {
+          "name": "playground",
+          "source": "  def playground(variant: \"default\")\n    render(CardComponent.new(variant: variant)) do |card|\n      card.with_header { \"Resumo da obra\" }\n      \"O conteúdo do cartão respeita os tokens do design system.\"\n    end\n  end"
+        }
+      ]
+    },
+    {
       "name": "IconComponent",
       "category": "ui",
       "params": [
