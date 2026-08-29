@@ -162,6 +162,111 @@
           "source": "  def playground(name: \"check\", size: :md)\n    render(IconComponent.new(name: name, size: size))\n  end"
         }
       ]
+    },
+    {
+      "name": "ImageFrameComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "attachment",
+          "kind": "keyreq"
+        },
+        {
+          "name": "alt",
+          "kind": "keyreq"
+        },
+        {
+          "name": "ratio",
+          "kind": "key"
+        },
+        {
+          "name": "sizes",
+          "kind": "key"
+        },
+        {
+          "name": "classes",
+          "kind": "key"
+        }
+      ],
+      "constants": {
+        "CLASSES": [
+          "frame",
+          "image",
+          "fallback"
+        ],
+        "RATIOS": [
+          "16/9",
+          "4/3",
+          "1/1"
+        ],
+        "RATIO_CLASSES": [
+          "16/9",
+          "4/3",
+          "1/1"
+        ],
+        "WIDTHS": [
+          "480",
+          "960",
+          "1440"
+        ]
+      },
+      "slots": [
+        "caption"
+      ],
+      "stimulus_controller": "image-frame-component",
+      "template": "app/components/image_frame_component/image_frame_component.html.erb",
+      "preview": "spec/components/previews/image_frame_component_preview.rb",
+      "examples": [
+        {
+          "name": "four_by_three",
+          "source": "  def four_by_three\n    render(ImageFrameComponent.new(attachment: analyzed_photo, alt: ALT, ratio: \"4/3\"))\n  end"
+        },
+        {
+          "name": "playground",
+          "source": "  def playground\n    render(ImageFrameComponent.new(attachment: analyzed_photo, alt: ALT))\n  end"
+        },
+        {
+          "name": "processing",
+          "source": "  def processing\n    render(ImageFrameComponent.new(attachment: pending_photo, alt: ALT))\n  end"
+        },
+        {
+          "name": "square",
+          "source": "  def square\n    render(ImageFrameComponent.new(attachment: analyzed_photo, alt: ALT, ratio: \"1/1\"))\n  end"
+        },
+        {
+          "name": "with_caption",
+          "source": "  def with_caption\n    render(ImageFrameComponent.new(attachment: analyzed_photo, alt: ALT)) do |frame|\n      frame.with_caption { \"12 de março de 2026 · Marina Duarte\" }\n    end"
+        },
+        {
+          "name": "without_attachment",
+          "source": "  def without_attachment\n    render(ImageFrameComponent.new(attachment: nil, alt: \"\"))\n  end"
+        }
+      ]
+    },
+    {
+      "name": "SimulatedDataBannerComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "classes",
+          "kind": "key"
+        }
+      ],
+      "constants": {},
+      "slots": [],
+      "stimulus_controller": "simulated-data-banner-component",
+      "template": "app/components/simulated_data_banner_component/simulated_data_banner_component.html.erb",
+      "preview": "spec/components/previews/simulated_data_banner_component_preview.rb",
+      "examples": [
+        {
+          "name": "default",
+          "source": "  def default\n    render(SimulatedDataBannerComponent.new)\n  end"
+        },
+        {
+          "name": "inside_a_container",
+          "source": "  def inside_a_container\n    render(SimulatedDataBannerComponent.new(classes: \"container mx-auto\"))\n  end"
+        }
+      ]
     }
   ]
 }

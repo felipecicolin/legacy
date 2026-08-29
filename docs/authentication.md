@@ -55,6 +55,10 @@ pede login.
 > Isso só faz sentido se alguém navega sem entrar. Quando as telas de vitrine
 > chegarem (#51, #52, #53), abrir cada uma é um `allow_unauthenticated_access`
 > — e a decisão deve ser tomada olhando esta nota, não por omissão.
+>
+> A #23 já entrou, e trouxe o lado do modelo: `Visibility::Context.anonymous`
+> é o leitor sem sessão, com teto no nível `public`. O que ela **não** decidiu
+> é quais controllers abrem — ver [Visibilidade](visibility.md).
 
 ## Sessão é linha no banco
 

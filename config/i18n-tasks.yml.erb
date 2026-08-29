@@ -60,3 +60,18 @@ ignore_missing: []
 # que a lista não cresça em silêncio. Prefira isso a uma entrada genérica aqui.
 ignore_unused:
   - "{activerecord,activemodel,date,time,datetime,number,support,helpers,errors}.*"
+
+  # Vocabulário de enum. A chave é montada em tempo de execução
+  # (`I18n.t(status, scope: :statuses)`), e o scanner não a resolve.
+  #
+  # As duas saídas que o AGENTS.md preferia não funcionam aqui, e as duas foram
+  # medidas: `# i18n-tasks-use` em arquivo `.rb` não é lido por esta versão
+  # (`i18n-tasks find` devolve 0 usos), e a forma interpolada que o scanner
+  # entenderia — `t("statuses.#{value}")` — é reprovada pelo cop
+  # `I18n/RailsI18n/DecorateStringFormattingUsingInterpolation`.
+  #
+  # O que torna esta entrada segura, e não uma porta aberta: chave órfã aqui é
+  # impossível de esconder, porque `spec/models/enum_translation_audit_spec.rb`
+  # percorre os enums de todos os modelos e reprova qualquer valor SEM rótulo.
+  # A checagem de "não usada" foi substituída por uma mais forte, não removida.
+  - "{kinds,statuses,sensitivity_levels,from_levels,to_levels}.*"
