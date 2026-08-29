@@ -66,14 +66,29 @@ Verificado por mutação: renomear `--aspect-wide` reprova em
 | Estado | Quando | O que aparece |
 | --- | --- | --- |
 | Vazio | Sem anexo, **ou** anexo que nunca vira imagem | Ícone e "Sem imagem" |
-| Processando | Anexo representável, `analyzed?` ainda falso | Ícone e "Processando a imagem" |
-| Pronto | Anexo representável e analisado | A `<img>` com `srcset` |
+| Processando | Anexo `variable?`, `analyzed?` ainda falso | Ícone e "Processando a imagem" |
+| Pronto | Anexo `variable?` e analisado | A `<img>` com `srcset` |
 
 O caso que exige atenção é o **anexo que não é imagem** — um PDF, um `.txt`.
 Ele cai no estado vazio, e não no de processamento, porque "processando" é uma
 promessa: diz que existe trabalho em curso e que a imagem vai chegar. Para um
 `.txt` não vai chegar nunca, e a promessa vira uma espera infinita para quem
 lê.
+
+**A pergunta é `variable?`, e não `representable?`.** Os dois são parecidos e
+não são a mesma coisa: `representable?` é `variable? || previewable?`, e
+`previewable?` é verdadeiro para o PDF (capa pelo poppler) e para o vídeo (quadro
+pelo ffmpeg). Um blob apenas pré-visualizável cairia no estado **pronto** e a
+moldura pediria `blob.variant` sobre ele, que levanta
+`ActiveStorage::InvariableError` — uma exceção em produção, no meio da
+renderização, para um anexo que o usuário podia perfeitamente ter enviado.
+
+Prévia é outro produto, com outra dependência de sistema: a moldura precisa da
+libvips, que o Dockerfile instala; poppler e ffmpeg não estão lá. E `previewable?`
+responde conforme os binários instalados na máquina, então essa fronteira também
+é o que mantém o comportamento igual entre o laptop, a CI e o servidor. Por isso
+o spec estuba `previewable?` em vez de contar com o poppler local — sem o estube,
+o teste ficaria verde num runner sem poppler mesmo com o bug de volta.
 
 ## O erro de carregamento
 

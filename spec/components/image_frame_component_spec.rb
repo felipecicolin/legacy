@@ -48,6 +48,24 @@ RSpec.describe ImageFrameComponent, type: :component do
       expect(page).to have_text("Sem imagem")
       expect(page).to have_no_text("Processando")
     end
+
+    # Um PDF (ou um vídeo) é `representable?`: o Active Storage sabe extrair uma
+    # capa dele com o poppler ou o ffmpeg. Mas ele nunca é `variable?`, e
+    # `blob.variant` sobre ele levanta `ActiveStorage::InvariableError` — o que
+    # a `<img>` pede aqui é variante, não prévia.
+    #
+    # `previewable?` é estubado porque a resposta de verdade depende de o
+    # poppler estar instalado na máquina: sem o estube este spec ficaria verde
+    # num runner sem poppler mesmo com o bug de volta.
+    it "does not build a variant out of a file that is only previewable" do
+      blob = blob_for(content_type: "application/pdf")
+      allow(blob).to receive(:previewable?).and_return(true)
+
+      render_inline(described_class.new(attachment: blob, alt: alt))
+
+      expect(page).to have_no_css("img")
+      expect(page).to have_text("Sem imagem")
+    end
   end
 
   describe "when the variant is still being processed" do

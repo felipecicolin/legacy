@@ -47,14 +47,14 @@ class ImageFrameComponent < ApplicationComponent
     @attrs = Attrs.new(alt: alt, ratio: ratio, sizes: sizes, classes: classes)
   end
 
-  # Um anexo que não é imagem nunca vira variante: dizer "processando" nele
+  # Um anexo que não vira variante nunca vira `<img>`: dizer "processando" nele
   # seria mentira, porque nada está em curso. Cai no mesmo quadro do vazio.
   def ready?
-    representable? && @blob.analyzed?
+    variable? && @blob.analyzed?
   end
 
   def processing?
-    representable? && !@blob.analyzed?
+    variable? && !@blob.analyzed?
   end
 
   # `hidden` chega ao controller como classe declarada, e não escrita no JS:
@@ -100,8 +100,13 @@ class ImageFrameComponent < ApplicationComponent
     attachment.try(:blob) || attachment
   end
 
-  def representable?
-    @blob&.representable?
+  # `variable?`, e não `representable?`: este último também é verdadeiro para o
+  # que o Active Storage sabe *pré-visualizar* — PDF pelo poppler, vídeo pelo
+  # ffmpeg —, e sobre esses `blob.variant` levanta `InvariableError`. O que a
+  # `<img>` daqui pede é variante; prévia é outro produto, com outra dependência
+  # de sistema (o Dockerfile instala só a libvips).
+  def variable?
+    @blob&.variable?
   end
 
   def variant_url(width)
