@@ -456,6 +456,37 @@ mudou e um call site que continuou compilando.
 
 ---
 
+## Issues e PRs
+
+**Todo PR que entrega uma issue fecha a issue sozinho, com palavra-chave em
+inglês:**
+
+```
+Closes #9
+```
+
+O GitHub só reconhece `close`/`closes`/`closed`, `fix`/`fixes`/`fixed` e
+`resolve`/`resolves`/`resolved`. Este repositório escreve o corpo do PR em
+português, e é exatamente aí que a pegadinha mora: **`Fecha #9` não fecha nada.**
+Não é erro, não é aviso — o GitHub trata como texto comum e o
+`closingIssuesReferences` do PR volta vazio.
+
+Já aconteceu aqui: #6 e #9 foram entregues e mergeadas com "Fecha #N" no corpo,
+e as duas ficaram abertas. O board mentiu por dois dias, e a descoberta veio de
+uma consulta que por acaso listou as issues antigas.
+
+A linha `Closes #N` é a única em inglês num corpo em português. É feio e é
+proposital: ela é sintaxe de ferramenta, não texto para pessoa.
+
+Junto com isso:
+
+- **Quando a entrega fecha uma issue de rastreamento parcial** (a #56 é o
+  índice do milestone), marque a caixa correspondente no mesmo dia. Índice que
+  mente é pior que índice que não existe — a mesma regra do `docs/README.md`.
+- **Issue substituída não é deletada.** Feche como *not planned*, explique no
+  comentário o que a substituiu e mova o que sobrou para a issue nova. Deletar
+  no GitHub é irreversível, e o que se perde junto é o registro da decisão.
+
 ## Convenções de escrita
 
 - Código, nomes de método e mensagens de commit: **inglês**.
