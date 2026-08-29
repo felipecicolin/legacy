@@ -15,6 +15,13 @@ class Profile < ApplicationRecord
 
   validates :legal_name, :display_name, presence: true
 
+  # As duas colunas são NOT NULL com default, e é justamente o default que faz
+  # o `database_consistency` não cobrar presença aqui. Sem a validação, um
+  # `nil` vindo de um PATCH chega ao banco e volta como
+  # `ActiveRecord::NotNullViolation` — exceção de driver no meio do request —,
+  # e um `""` seria gravado como fuso vazio, que quebra na primeira leitura.
+  validates :preferred_locale, :timezone, presence: true
+
   # Quem de fato garante um perfil por pessoa é o índice único — validação
   # perde a corrida entre dois requests concorrentes. A validação existe para
   # a segunda tentativa virar erro de formulário em vez de exceção de driver,
@@ -44,5 +51,9 @@ class Profile < ApplicationRecord
   # `display_name` nasce copiando `legal_name`, mas fica ARMAZENADO. Derivar
   # em tempo de leitura faria a correção de um nome legal reescrever
   # retroativamente todo o histórico já exibido.
-  def default_display_name = self.display_name ||= legal_name
+  #
+  # `presence` e não `||=`: campo de texto vazio chega do formulário como `""`,
+  # que é truthy. Com `||=` o default não correria e o campo apresentado como
+  # opcional reprovaria a criação.
+  def default_display_name = self.display_name = display_name.presence || legal_name
 end

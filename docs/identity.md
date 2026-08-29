@@ -41,6 +41,14 @@ sobrenomes) reescreveria **retroativamente** todo o histórico já exibido, em
 telas que outras pessoas já leram. O spec cobra os dois lados: criar sem nome
 público copia o legal, e alterar o legal depois não mexe no público.
 
+A cópia é `display_name.presence || legal_name`, e **não** `||=`. A diferença
+não é estilo: um campo de texto que a pessoa deixou em branco chega do
+formulário como `""`, não como `nil`, e `""` é truthy. Com `||=` o default não
+correria, a validação de presença reprovaria, e o campo que a UI apresenta como
+opcional passaria a reprovar a criação inteira — com uma mensagem de erro sobre
+um campo que ninguém pediu para preencher. O `presence` também cuida do nome só
+com espaços.
+
 ## `legal_name` não sai por serialização
 
 Duas defesas no modelo, e as duas são incondicionais:
@@ -76,6 +84,21 @@ grava com `save(validate: false)` e precisa preencher `display_name` à mão,
 porque pular a validação pula também o callback que o preencheria — e aí quem
 dispara primeiro é o `NOT NULL`, não o índice.
 
+## `NOT NULL` com default é ponto cego do gate de consistência
+
+`preferred_locale` e `timezone` são `NOT NULL` **com default**, e é exatamente o
+default que faz o `database_consistency` não cobrar um validador de presença
+para elas: da perspectiva dele a coluna nunca fica vazia sozinha. Só que o
+default protege quem **omite** o atributo, não quem o manda vazio. Um
+`update(timezone: params[:timezone])` com o parâmetro ausente atribui `nil`, e
+sem validação isso atravessa o modelo inteiro e volta como
+`ActiveRecord::NotNullViolation` — exceção de driver no meio de um request, em
+vez de erro de formulário. Pior, `""` não viola `NOT NULL` nenhum: seria
+gravado como fuso vazio e quebraria só na primeira leitura, longe da causa.
+
+Por isso as duas levam `validates … presence: true` explícito. A regra geral:
+**coluna `NOT NULL` com default não é coberta pelo gate — a validação é sua.**
+
 ## Active Storage entra aqui
 
 `has_one_attached :avatar` precisa das tabelas do Active Storage, e elas ainda
@@ -91,6 +114,13 @@ verificado antes de escrever o modelo, e não depois.
 
 Processamento de imagem (variantes, remoção de EXIF, entrega autorizada) é #30 e
 #24. Aqui o anexo só existe.
+
+O spec do anexo **grava e recarrega**, em vez de anexar sobre um registro
+construído em memória. Sobre um `build`, o `attach` só encosta o anexo no
+objeto: `attached?` responde `true` sem uma única linha inserida, e o exemplo
+passaria sem nunca provar que `active_storage_blobs` e
+`active_storage_attachments` aguentam o insert — que é exatamente o que a
+migration desta issue existe para garantir.
 
 ## O que ficou de fora, e onde cada coisa chega
 

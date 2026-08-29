@@ -24,6 +24,15 @@ RSpec.describe Profile do
     expect(profile.display_name).to eq("Maria Aparecida de Souza")
   end
 
+  # Campo de texto vazio chega do formulário como `""`, e não como `nil`. Um
+  # `||=` não enxerga isso: `""` é truthy, o default não corre e o campo que a
+  # UI apresenta como opcional reprova a criação inteira.
+  it "copies the legal name when the display name arrives blank" do
+    profile = create(:profile, legal_name: "Maria Aparecida de Souza", display_name: "")
+
+    expect(profile.display_name).to eq("Maria Aparecida de Souza")
+  end
+
   it "keeps a display name that was given" do
     profile = create(:profile, legal_name: "Maria Aparecida de Souza", display_name: "Cida")
 
@@ -85,9 +94,34 @@ RSpec.describe Profile do
     expect { profile.user.destroy }.to change(described_class, :count).by(-1)
   end
 
+  # `preferred_locale` e `timezone` são NOT NULL com default, e o
+  # `database_consistency` não cobra presença em coluna que tem default. Sem
+  # validação, um `nil` vindo de um PATCH atravessa o modelo inteiro e estoura
+  # como `ActiveRecord::NotNullViolation` — exceção de driver no meio de um
+  # request, em vez de erro de formulário. E `""` passaria e viraria um fuso
+  # vazio gravado, que quebra na primeira leitura.
+  it "refuses to blank out the preferred locale" do
+    profile = create(:profile)
+    profile.preferred_locale = nil
+
+    expect(profile).not_to be_valid
+  end
+
+  it "refuses to blank out the timezone" do
+    profile = create(:profile)
+    profile.timezone = ""
+
+    expect(profile).not_to be_valid
+  end
+
+  # Com `build` o anexo fica só na memória: `attached?` responde true sem uma
+  # única linha gravada, e o exemplo passaria sem provar que as tabelas do
+  # Active Storage aguentam a inserção — que é justamente o que a migration
+  # deste PR existe para garantir.
   it "carries the picture as an Active Storage attachment" do
+    profile = create(:profile)
     profile.avatar.attach(io: StringIO.new("bytes"), filename: "foto.png", content_type: "image/png")
 
-    expect(profile.avatar).to be_attached
+    expect(profile.reload.avatar).to be_attached
   end
 end

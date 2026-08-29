@@ -321,6 +321,9 @@ A pessoa é o `Profile`. Três regras:
 
 - `bundle exec database_consistency` cobra FK sem índice, `NOT NULL` faltando,
   validação que o schema não sustenta. Ele roda na CI.
+- **Coluna `NOT NULL` com default é ponto cego dele**: não cobra validador de
+  presença, e `nil` explícito vira `NotNullViolation` em vez de erro de
+  formulário. Valide na mão — ver [`docs/identity.md`](docs/identity.md).
 - `db/schema.rb` é commitado, e a CI reprova se estiver fora de sincronia com as
   migrations.
 - Bancos de teste são um por processo do `parallel_tests`, via sufixo
