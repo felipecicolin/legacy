@@ -1,0 +1,7 @@
+---
+pt-BR:
+  number:
+    percentage:
+      format:
+        precision: 2
+        strip_insignificant_zeros: true

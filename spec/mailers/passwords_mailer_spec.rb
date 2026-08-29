@@ -27,8 +27,8 @@ RSpec.describe PasswordsMailer do
     end
   end
 
-  # Sem o rails-i18n (#59) o `distance_of_time_in_words` sairia em inglês. A
-  # duração vem de chave própria, então o prazo é legível desde já.
+  # O prazo é `distance_of_time_in_words`, que a rails-i18n traduz. Quem muda o
+  # tempo de vida do token não precisa mexer em locale nenhum.
   it "states the expiry window in Portuguese" do
     expect(mail.text_part.body.to_s).to include("15 minutos")
   end
