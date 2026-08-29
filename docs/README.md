@@ -22,6 +22,9 @@ acrescenta nada. Então:
 - [Tokens de cor, superfície e raio](design-system/tokens.md) — o vocabulário
   semântico, como adicionar um token, como trocar a identidade visual do
   produto, e o que sustenta que nada disso quebre em silêncio.
+- [Moldura de imagem](design-system/image-frame.md) — por que a proporção é
+  reservada antes de a imagem existir, os tokens de enquadramento, os três
+  estados do anexo, e a evidência que obrigou a instalar o Active Storage.
 
 ### Plataforma
 
@@ -34,6 +37,21 @@ acrescenta nada. Então:
 - [Identidade — `Profile`](identity.md) — por que uma pessoa e muitos papéis em
   vez de uma tabela por papel, por que o nome público é armazenado e não
   derivado, e como o nome legal é impedido de sair por serialização.
+
+- [Pagamentos](payments.md) — a fronteira que isola o provedor, por que o
+  simulador é determinístico e configurável, por que a marca de origem é
+  `attr_readonly`, e as duas invariantes que a CI cobra sobre o repositório
+  inteiro.
+
+- [Visibilidade](visibility.md) — por que obra nasce fechada, por que registro
+  confidencial não *guarda* coordenada em vez de só não mostrá-la, como a
+  promoção de nível é auditada, e o que sustenta o agregado anonimizado.
+
+- [Action Text](action-text.md) — por que texto rico nasce sem anexo embutido,
+  as duas camadas que cobram isso, a corrida que a barra do Trix perde se a
+  tradução chegar um tique atrasada, por que o CSS do Trix fica verbatim, e o
+  `trix.js` disputado por dois arquivos que matou o grafo de módulos inteiro em
+  silêncio — em uma máquina só.
 
 ### Deploy
 

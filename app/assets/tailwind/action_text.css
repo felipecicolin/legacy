@@ -1,0 +1,28 @@
+/*
+ * Sobreposições do repositório sobre o actiontext.css que o Rails deposita.
+ *
+ * O arquivo em app/assets/stylesheets/actiontext.css fica VERBATIM: ele estiliza
+ * o chrome de um web component de terceiro (a barra do Trix, as âncoras
+ * .attachment*), traz hex e SVG embutidos por design, e mantê-lo intocado é o
+ * que permite re-sincronizá-lo num upgrade do Rails sem reler diff. O que é
+ * decisão deste produto entra aqui, onde os tokens semânticos existem.
+ *
+ * As regras usam @apply de propósito: assim quem define a cor continua sendo o
+ * token, e trocar a identidade visual segue sendo editar só o tokens.css.
+ */
+
+/*
+ * Anexo embutido não é permitido — ver config/initializers/action_text.rb e
+ * docs/action-text.md. O grupo de ferramentas de arquivo é a única affordance
+ * de anexo da barra; escondê-lo evita oferecer um botão que o
+ * rich_text_controller.js recusa e o servidor poda.
+ */
+trix-toolbar .trix-button-group--file-tools {
+  display: none;
+}
+
+/* `input` e não `border`: a moldura do editor é fronteira de campo, e esse é o
+ * token que a WCAG 1.4.11 alcança. */
+trix-editor {
+  @apply rounded-sm border-input bg-background text-foreground;
+}

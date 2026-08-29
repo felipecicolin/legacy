@@ -14,3 +14,7 @@ pt-BR:
         issued_on: Data de emissão
         expires_on: Data de validade
         verification_status: Situação da verificação
+    errors:
+      messages:
+        confidential_precise_location: Registro confidencial não guarda coordenada nem endereço.
+        promotion_requires_justification: Reduzir a restrição exige autor e justificativa registrados.

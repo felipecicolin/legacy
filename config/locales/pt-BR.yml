@@ -3,17 +3,24 @@ pt-BR:
   app:
     name: Legacy
     preview_title: Legacy — Preview de componente
+  from_levels:
+    confidential: Confidencial
+    public: Pública
+    restricted: Restrita
   kinds:
-    crea: CREA
     cau: CAU
-    other_professional: Outro registro profissional
-    license: Licença profissional
     certificate: Certificado
+    charge: Cobrança
+    crea: CREA
+    license: Licença profissional
+    other_professional: Outro registro profissional
+    refund: Estorno
+    schedule_recurring: Agendamento recorrente
   verification_statuses:
-    pending: Pendente
-    verified: Verificada
-    rejected: Rejeitada
     expired: Expirada
+    pending: Pendente
+    rejected: Rejeitada
+    verified: Verificada
   home:
     show:
       signed_in_as: Você entrou como %{email}.
@@ -47,6 +54,10 @@ pt-BR:
       expires: O link vale por %{duration}.
       intro: Recebemos um pedido para redefinir a senha da sua conta.
       subject: Redefinir sua senha
+  sensitivity_levels:
+    confidential: Confidencial
+    public: Pública
+    restricted: Restrita
   sessions:
     create:
       failed: E-mail ou senha incorretos.
@@ -57,3 +68,12 @@ pt-BR:
       submit: Entrar
       title: Acessar a plataforma
     rate_limited: Muitas tentativas de acesso. Tente de novo em alguns minutos.
+  statuses:
+    failed: Falhou
+    pending: Pendente
+    refused: Recusado
+    succeeded: Aprovado
+  to_levels:
+    confidential: Confidencial
+    public: Pública
+    restricted: Restrita
