@@ -18,6 +18,10 @@
     <%# O build do Tailwind (app/assets/builds/tailwind.css). Sem esta linha a
         página sobe sem nenhuma utility: `:app` resolve para
         app/assets/stylesheets/application.css, que é só manifesto. %>
+    <%# O actiontext.css entra ANTES do tailwind: as duas folhas trazem regra
+        sem camada para `trix-editor`, e sem camada quem vence é a ordem. As
+        sobreposições com token do projeto estão em app/assets/tailwind/. %>
+    <%= stylesheet_link_tag "actiontext", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>

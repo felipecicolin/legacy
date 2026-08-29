@@ -394,6 +394,26 @@ frente:
   um `Visibility::Context` e devolvem relação. Nunca escreva um segundo caminho
   de SQL que decida visibilidade — é ele que vai divergir.
 
+## Action Text
+
+> As decisões, as medições e as armadilhas:
+> [`docs/action-text.md`](docs/action-text.md).
+
+Texto rico é `has_rich_text`, com Trix e Active Storage por trás. Quatro regras:
+
+- **Sem anexo embutido.** O upload do Trix não passa pelo processamento de foto
+  da plataforma, então o `config/initializers/action_text.rb` poda
+  `action-text-attachment` na renderização. Reabrir isso é decisão de produto,
+  não conveniência de tela.
+- **Listagem de texto rico usa `with_rich_text_<nome>_and_embeds`.** Sem o
+  preload, cada registro renderizado custa três queries a mais.
+- **Rótulo do Trix vive em `app/javascript/trix_locale.js`**, e a chamada é
+  síncrona no `application.js` — não em `connect()` de Stimulus. Ver armadilhas.
+- **O Trix vem da gem `action_text-trix`, não de uma cópia em
+  `vendor/javascript/`.** Ela já serve do próprio domínio e é travada pela
+  `actiontext`. A cópia é UMD: `import "trix"`, nunca
+  `import Trix from "trix"`.
+
 ## Banco de dados
 
 - `bundle exec database_consistency` cobra FK sem índice, `NOT NULL` faltando,
@@ -403,6 +423,10 @@ frente:
   formulário. Valide na mão — ver [`docs/identity.md`](docs/identity.md).
 - `db/schema.rb` é commitado, e a CI reprova se estiver fora de sincronia com as
   migrations.
+- **Toda tabela do `db/schema.rb` tem uma migration neste repositório que a
+  cria.** Se dois branches precisam da mesma migration copiada de engine, os
+  dois trazem o **mesmo arquivo**, byte a byte, com o timestamp combinado — ver
+  [`docs/action-text.md`](docs/action-text.md).
 - Bancos de teste são um por processo do `parallel_tests`, via sufixo
   `TEST_ENV_NUMBER` no `database.yml`.
 - Na CI, o segundo banco sai de `CREATE DATABASE … TEMPLATE`, e não de uma
@@ -491,6 +515,53 @@ build do Tailwind sai em `app/assets/builds/tailwind.css` e precisa do próprio
 `stylesheet_link_tag "tailwind"`. Os dois layouts subiam sem uma única utility
 e nada reclamava: o Propshaft serve o manifesto, o link tag não levanta erro, e
 até #6 nenhum spec renderizava layout. Foi o spec de tokens que descobriu.
+
+**`db:migrate` num banco VAZIO carrega o `db/schema.rb` em vez de rodar as
+migrations** — sem imprimir uma linha de `== migrating`. Isso esconde tabela
+declarada no schema que nenhuma migration cria: a CI (`db:schema:load`) e o
+clone limpo passam os dois. Quem paga é o `db:migrate` **incremental**, o do
+banco de desenvolvimento e o do deploy: ele roda só o que falta, não cria a
+tabela órfã e, no dump que escreve em seguida, **apaga** a tabela do
+`db/schema.rb` commitado. Para verificar de verdade, migre a partir do schema
+da `main`, não de um banco vazio. Ver [`docs/action-text.md`](docs/action-text.md).
+
+**Tirar `action-text-attachment` da lista de tags permitidas não remove o
+anexo.** O `PermitScrubber` DESEMBRULHA a tag não permitida: tira o elemento e
+mantém os filhos. E o Action Text renderiza o conteúdo do anexo — o `img` com a
+URL do blob — antes de sanitizar. Sem `prune: true` a imagem fica, com o
+elemento em volta removido, e parece que a política funcionou. Ver
+[`docs/action-text.md`](docs/action-text.md).
+
+**A `ActionText::Engine` atribui o sanitizador num `config.after_initialize` +
+`on_load(:action_view)`.** Configurar antes disso — num `to_prepare`, que é o
+reflexo — não levanta erro: é sobrescrito depois, e a política some pela metade.
+O `config/initializers/action_text.rb` usa o mesmo par de ganchos.
+
+**`Trix.config.lang` aplicado tarde demais devolve a barra em inglês, sem erro.**
+O `getDefaultHTML()` roda uma vez, quando o custom element sobe, e o Trix
+registra o `customElements.define` num `setTimeout` — então código síncrono do
+`application.js` chega a tempo e um `connect()` de Stimulus não. E é
+`Object.assign(Trix.config.lang, …)`: o gerador da barra fecha sobre o objeto,
+então substituí-lo deixa o gerador lendo o antigo. `spec/system/rich_text_editor_spec.rb`
+é quem cobra as duas coisas — nenhum linter aqui lê o Trix.
+
+**Dois arquivos com o mesmo caminho lógico de asset: quem vence muda de
+máquina.** O `Propshaft::LoadPath` monta o mapa com `mapped[nome] ||= …`, então
+decide a ordem do `config.assets.paths` — e ela não é a mesma em todo lugar.
+Medido: com `vendor/javascript/trix.js` e o `trix.js` da gem `action_text-trix`
+disputando `trix.js`, o vendor ganhava na máquina de quem escreveu e a gem
+ganhava no runner do GitHub. Nada reclama: os dois arquivos existem, os dois são
+servidos com 200, e nem `assets:precompile` nem `importmap audit` olham nome
+duplicado. `spec/propshaft/load_path_spec.rb` cobra. Ver
+[`docs/action-text.md`](docs/action-text.md).
+
+**Erro de ligação num módulo derruba o grafo INTEIRO, em silêncio.** Foi o custo
+da armadilha acima: a cópia da gem é UMD, sem `export default`, então o
+`import Trix from "trix"` não resolvia — e o navegador rejeita o grafo antes de
+avaliar qualquer módulo. Sintoma: todo `/assets/*.js` com 200 no painel de rede
+e `window.Turbo`, `window.Stimulus` e `window.Trix` os três `undefined`. Um
+`import` que erra sozinho leva junto Turbo, Stimulus e tudo mais que o
+`application.js` alcança.
 
 **O parser do herb lê marcação dentro de `<%# … %>`.** Comentário ERB não é zona
 neutra: um `<body>` ou um `<%= … %>` citado na explicação vira erro de
