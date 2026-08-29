@@ -419,6 +419,10 @@ Texto rico é `has_rich_text`, com Trix e Active Storage por trás. Três regras
   formulário. Valide na mão — ver [`docs/identity.md`](docs/identity.md).
 - `db/schema.rb` é commitado, e a CI reprova se estiver fora de sincronia com as
   migrations.
+- **Toda tabela do `db/schema.rb` tem uma migration neste repositório que a
+  cria.** Se dois branches precisam da mesma migration copiada de engine, os
+  dois trazem o **mesmo arquivo**, byte a byte, com o timestamp combinado — ver
+  [`docs/action-text.md`](docs/action-text.md).
 - Bancos de teste são um por processo do `parallel_tests`, via sufixo
   `TEST_ENV_NUMBER` no `database.yml`.
 - Na CI, o segundo banco sai de `CREATE DATABASE … TEMPLATE`, e não de uma
@@ -507,6 +511,15 @@ build do Tailwind sai em `app/assets/builds/tailwind.css` e precisa do próprio
 `stylesheet_link_tag "tailwind"`. Os dois layouts subiam sem uma única utility
 e nada reclamava: o Propshaft serve o manifesto, o link tag não levanta erro, e
 até #6 nenhum spec renderizava layout. Foi o spec de tokens que descobriu.
+
+**`db:migrate` num banco VAZIO carrega o `db/schema.rb` em vez de rodar as
+migrations** — sem imprimir uma linha de `== migrating`. Isso esconde tabela
+declarada no schema que nenhuma migration cria: a CI (`db:schema:load`) e o
+clone limpo passam os dois. Quem paga é o `db:migrate` **incremental**, o do
+banco de desenvolvimento e o do deploy: ele roda só o que falta, não cria a
+tabela órfã e, no dump que escreve em seguida, **apaga** a tabela do
+`db/schema.rb` commitado. Para verificar de verdade, migre a partir do schema
+da `main`, não de um banco vazio. Ver [`docs/action-text.md`](docs/action-text.md).
 
 **Tirar `action-text-attachment` da lista de tags permitidas não remove o
 anexo.** O `PermitScrubber` DESEMBRULHA a tag não permitida: tira o elemento e

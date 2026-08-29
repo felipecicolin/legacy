@@ -13,7 +13,8 @@ Este documento é o **porquê**. As regras em uma linha estão no
 
 | Arquivo | O que é |
 | --- | --- |
-| `db/migrate/*_create_action_text_tables.action_text.rb` | A tabela `action_text_rich_texts` |
+| `db/migrate/20260829214359_create_active_storage_tables.active_storage.rb` | As três tabelas do Active Storage |
+| `db/migrate/20260829214631_create_action_text_tables.action_text.rb` | A tabela `action_text_rich_texts` |
 | `app/views/active_storage/blobs/_blob.html.erb` | Como um anexo é renderizado — reescrito |
 | `app/views/layouts/action_text/contents/_content.html.erb` | O envelope `.trix-content` |
 | `app/assets/stylesheets/actiontext.css` | O CSS do Trix, **verbatim** |
@@ -22,6 +23,36 @@ Este documento é o **porquê**. As regras em uma linha estão no
 | `app/javascript/trix_locale.js` | A barra de ferramentas em pt-BR |
 | `app/javascript/controllers/rich_text_controller.js` | Recusa de anexo no navegador |
 | `vendor/javascript/trix.js` | O Trix baixado, não apontado para CDN |
+
+## As duas migrations, e o timestamp compartilhado
+
+O `bin/rails action_text:install` copia `FROM=active_storage,action_text`: as
+três tabelas do Active Storage vêm junto, porque anexo de texto rico é blob.
+A #18 (perfil) precisa exatamente das mesmas três tabelas, e por um tempo este
+branch **omitiu** a migration do Active Storage para não colidir com ela.
+
+Omitir custa mais do que colidir, e o preço é uma mentira silenciosa: o
+`db/schema.rb` declarava as três tabelas e nenhuma migration daqui as criava. A
+CI não vê, porque ela monta o banco com `db:schema:load`. Quem migra de forma
+**incremental** — um banco de desenvolvimento já na versão anterior, ou o
+`db:migrate` do deploy sobre o banco de produção — recebe só a migration do
+Action Text, fica sem as três tabelas, e o dump que o próprio `db:migrate`
+escreve em seguida **apaga** as três do `db/schema.rb` commitado. Reproduzido:
+30 linhas removidas do arquivo, e o passo `git diff --exit-code db/schema.rb` do
+`bin/ci` vermelho por causa de uma edição que ninguém fez à mão.
+
+A saída não é escolher entre as duas migrations: é as duas trazerem **o mesmo
+arquivo**, com o mesmo timestamp e o mesmo conteúdo byte a byte
+(`20260829214359_create_active_storage_tables.active_storage.rb`). Adição
+idêntica nos dois branches é adição idêntica para o git: merge sem conflito,
+uma linha só em `schema_migrations`, nenhum `PG::DuplicateTable`. E `214359` é
+anterior a `214631`, então o Active Storage nasce antes do Action Text, que é a
+ordem que as FKs pedem.
+
+A regra que fica: **migration copiada de engine que dois branches precisam vai
+com o timestamp combinado, não com o timestamp de quem rodou o generator
+primeiro.** Duas cópias com timestamps diferentes das mesmas tabelas é
+`PG::DuplicateTable` num clone limpo; nenhuma cópia é schema mentindo.
 
 ## A política de anexo, e por que ela existe
 
