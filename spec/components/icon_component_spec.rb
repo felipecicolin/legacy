@@ -45,5 +45,11 @@ RSpec.describe IconComponent, type: :component do
 
       expect(page).to have_css("svg.w-5[aria-hidden='true']")
     end
+
+    it "inherits the color from its context" do
+      render_inline(described_class.new(name: "search"))
+
+      expect(page).to have_css("svg[stroke='currentColor']")
+    end
   end
 end
