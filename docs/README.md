@@ -22,6 +22,9 @@ acrescenta nada. Então:
 - [Tokens de cor, superfície e raio](design-system/tokens.md) — o vocabulário
   semântico, como adicionar um token, como trocar a identidade visual do
   produto, e o que sustenta que nada disso quebre em silêncio.
+- [Moldura de imagem](design-system/image-frame.md) — por que a proporção é
+  reservada antes de a imagem existir, os tokens de enquadramento, os três
+  estados do anexo, e a evidência que obrigou a instalar o Active Storage.
 
 ### Plataforma
 

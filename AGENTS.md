@@ -187,6 +187,11 @@ semântico para usar no lugar.
 A paleta atual é um ponto de partida neutro. Trocar os matizes pela identidade
 do produto é editar `tokens.css` e nada mais — nenhuma view muda.
 
+Proporção também é token — `aspect-wide`, `aspect-photo`, `aspect-tile` —, e a
+`ImageFrameComponent` a reserva antes de a imagem existir; quem cobra é
+`spec/system/image_frame_spec.rb`. Ver
+[`docs/design-system/image-frame.md`](docs/design-system/image-frame.md).
+
 Se falta um token, **adicione o token**, não uma exceção. E mantenha os
 vocabulários separados: `success`/`warning`/`destructive` dizem *estado*;
 `category-1`…`category-4` dizem *qual coisa* um item é. Sem essa separação o

@@ -1,0 +1,34 @@
+<%#
+  O quadro de apoio vem ANTES da imagem no DOM de propósito: os dois ocupam o
+  mesmo retângulo absoluto, e quem chega depois pinta por cima. Assim a imagem
+  cobre o apoio sozinha quando carrega, e esconder a imagem em caso de erro
+  revela um estado neutro sem trocar nada de lugar.
+
+  O div da moldura sai de tag.div, e não escrito na mão, porque o nome do
+  atributo depende do identificador do controller Stimulus.
+
+  Já o alt sai do hash e vai escrito aqui no call site: a regra
+  html-img-require-alt do herb lê o texto da chamada, e um alt escondido dentro
+  de image_options a faria reprovar uma imagem que tem alt.
+%>
+<figure>
+  <%= tag.div(**frame_options) do %>
+    <%= tag.div(**fallback_options) do %>
+      <%= render IconComponent.new(name: "image", size: :lg) %>
+      <span>
+        <% if ready? %>
+          <%= t(".failed") %>
+        <% elsif processing? %>
+          <%= t(".processing") %>
+        <% else %>
+          <%= t(".empty") %>
+        <% end %>
+      </span>
+    <% end %>
+    <%= tag.img(alt: alt, **image_options) if ready? %>
+  <% end %>
+
+  <% if caption? %>
+    <figcaption class="mt-2 text-sm text-muted-foreground"><%= caption %></figcaption>
+  <% end %>
+</figure>
