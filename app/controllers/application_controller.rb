@@ -35,8 +35,16 @@ class ApplicationController < ActionController::Base
   # As policies recebem o contexto, não o `User`: papel de plataforma e
   # vínculos aceitos são resolvidos uma vez por request, e o contexto anônimo é
   # representável — o que deixa a mesma policy responder a quem não entrou.
+  #
+  # `authenticated?` é chamado pelo efeito: ele resume a sessão do cookie. Num
+  # controller que exige login isso já aconteceu no `before_action`; num que
+  # abra a action ao público e ainda assim autorize, é esta linha que faz o
+  # leitor autenticado ser reconhecido em vez de tratado como anônimo. Sem ela,
+  # `Current.session` continuaria vazia e a policy responderia a pergunta
+  # errada — em silêncio, porque a tela renderiza igual.
   def pundit_user
-    Authorization::Context.for(authenticated? ? Current.user : nil)
+    authenticated?
+    Authorization::Context.for(Current.user)
   end
 
   # 404, e não 403. Um 403 confirma que o recurso existe, e para uma obra
