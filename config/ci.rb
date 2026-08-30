@@ -17,6 +17,7 @@ CI.run do
   step "Lint: Reek (smells)", "bundle exec reek app/ lib/"
   step "Lint: Herb (templates HTML+ERB)", "bin/herb_lint"
   step "Lint: Stimulus controllers", "bin/stimulus_lint"
+  step "Lint: SVG icon catalog", "bin/icon_lint"
 
   step "i18n: Health (missing/unused/normalized)", "bin/i18n-tasks health"
   step "i18n: Disciplina de sidecar", "bin/i18n_sidecar_lint"

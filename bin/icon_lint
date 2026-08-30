@@ -1,0 +1,66 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Valida o contrato dos SVGs antes que um ícone chegue a uma tela.
+# O script é deliberadamente independente de Rails e de gems: precisa rodar
+# no primeiro passo da CI, antes do ambiente da aplicação existir.
+
+require "pathname"
+
+ROOT = Pathname.new(__dir__).join("..").expand_path
+ICONS_DIR = ROOT.join("app/assets/images/icons")
+SVG_PATHS = ICONS_DIR.glob("*.svg").sort
+KEBAB_CASE = /\A[a-z0-9]+(?:-[a-z0-9]+)*\.svg\z/
+HEX_COLOR = /#[0-9a-f]{3,8}\b/i
+FORBIDDEN_TAG = /<(?:title|desc|script|image)\b/i
+FORBIDDEN_ATTRIBUTE = /\b(?:id|class|style)\s*=/i
+EXTERNAL_REFERENCE = /\b(?:href|xlink:href)\s*=\s*["'](?:https?:|\/\/|data:)/i
+
+def root_tag(content)
+  content[/\A\s*(<svg\b[^>]*>)/i, 1]
+end
+
+def attributes(tag)
+  tag.scan(/([a-zA-Z_:][-:\w.]*)\s*=\s*(["'])(.*?)\2/).to_h do |name, _quote, value|
+    [name, value]
+  end
+end
+
+def offenses_for(path)
+  content = path.read
+  tag = root_tag(content)
+  attrs = tag ? attributes(tag) : {}
+  offenses = []
+
+  offenses << "filename must be kebab-case" unless path.basename.to_s.match?(KEBAB_CASE)
+  offenses << "missing root <svg>" unless tag
+  offenses << 'viewBox must be "0 0 24 24"' unless attrs["viewBox"] == "0 0 24 24"
+  offenses << "fixed width/height is forbidden" if content.match?(/(?:\A|\s)(?:width|height)\s*=/i)
+  offenses << "stroke must be currentColor" unless attrs["stroke"] == "currentColor"
+  offenses << "fill must be none or currentColor" if attrs["fill"] && !%w[none currentColor].include?(attrs["fill"])
+  offenses << 'stroke-width must be "1.5"' unless attrs["stroke-width"] == "1.5"
+  offenses << 'stroke-linecap must be "round"' unless attrs["stroke-linecap"] == "round"
+  offenses << 'stroke-linejoin must be "round"' unless attrs["stroke-linejoin"] == "round"
+  offenses << "hex colors are forbidden" if content.match?(HEX_COLOR)
+  offenses << "title/desc/script/image tags are forbidden" if content.match?(FORBIDDEN_TAG)
+  offenses << "id/class/style attributes are forbidden" if content.match?(FORBIDDEN_ATTRIBUTE)
+  offenses << "external references are forbidden" if content.match?(EXTERNAL_REFERENCE) || content.match?(/url\(/i)
+
+  offenses.map { |offense| "#{path.relative_path_from(ROOT)}: #{offense}" }
+end
+
+if SVG_PATHS.empty?
+  warn "Icon catalog FAILED: no SVG files found in #{ICONS_DIR.relative_path_from(ROOT)}."
+  exit 1
+end
+
+offenses = SVG_PATHS.flat_map { |path| offenses_for(path) }
+
+if offenses.empty?
+  puts "Icon catalog OK (#{SVG_PATHS.size} SVGs)."
+  exit 0
+end
+
+warn "Icon catalog FAILED:"
+offenses.each { |offense| warn "  #{offense}" }
+exit 1
