@@ -180,7 +180,8 @@ recusa é v2: um fluxo que ninguém opera é estado morto no banco.
 concreto: a mesma pessoa é coordenadora numa obra, voluntária em outra e
 anfitriã local na terceira.
 
-**O índice único é `[project, profile, role]`, e o `role` está lá de propósito.**
+**O índice único é `[project, profile, participation_role]`, e o papel está lá
+de propósito.**
 A mesma pessoa pode ser `technical_lead` **e** `local_host` na mesma obra;
 deixar o papel fora do índice proibiria um caso real.
 
@@ -228,6 +229,19 @@ default, em vez de o próximo formato ruim passar.
 
 O limite de tamanho é 12 MB — foto de celular cabe, PDF de planta e vídeo não, e
 é o upload acidental desses que enche o storage sem ninguém ver.
+
+**A recusa por tamanho acontece ANTES do anexo**, no mesmo `prepend` que captura
+a exceção do scrubber. Não é detalhe: o `ExifScrubber` decodifica e reescreve a
+imagem inteira, e medir depois de processar seria pagar o custo justamente do
+upload que se quer recusar. A checagem sobre o blob continua existindo como
+rede, porque nem toda forma de anexável responde `size`.
+
+**Os enums são `participation_role`, `participation_status` e `photo_category`,
+e não `role`, `status` e `category`.** A convenção deriva a chave de locale do
+nome do enum, e `roles.*` já é o vocabulário de `Membership`: papel numa
+organização e papel numa obra são coisas diferentes e não dividem balde. É a
+mesma razão de `Organization#organization_kind`, e o
+`spec/models/enum_translation_audit_spec.rb` é quem cobra.
 
 As variantes não são declaradas aqui: as três larguras do `srcset` vivem em
 `ImageFrameComponent::WIDTHS` (480/960/1440), e é o componente que as monta. O

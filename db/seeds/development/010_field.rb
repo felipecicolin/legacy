@@ -103,9 +103,9 @@ module DevelopmentSeeds
     end
 
     def ensure_coordinator(project)
-      project.project_participations.find_or_create_by!(profile: coordinator_profile, role: :coordinator) do |record|
+      project.project_participations.find_or_create_by!(profile: coordinator_profile, participation_role: :coordinator) do |record|
         record.started_on = 3.months.ago.to_date
-        record.status = :active
+        record.participation_status = :active
       end
     end
 

@@ -106,12 +106,12 @@ RSpec.describe ProjectPhoto do
   end
 
   it "labels the category in pt-BR" do
-    expect(build(:project_photo, project: project, category: :before).category_label).to eq("Antes")
+    expect(build(:project_photo, project: project, photo_category: :before).photo_category_label).to eq("Antes")
   end
 
   it "orders by category and position" do
-    last = create(:project_photo, project: project, category: :after, position: 0)
-    first = create(:project_photo, project: project, category: :before, position: 1)
+    last = create(:project_photo, project: project, photo_category: :after, position: 0)
+    first = create(:project_photo, project: project, photo_category: :before, position: 1)
 
     expect(project.project_photos.ordered).to eq([first, last])
   end

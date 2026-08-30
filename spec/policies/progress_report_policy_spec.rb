@@ -11,7 +11,8 @@ RSpec.describe ProgressReportPolicy do
   def context_for(user_record) = Authorization::Context.for(user_record.reload)
 
   def policy_with(role, status: :active)
-    create(:project_participation, project: project, profile: profile, role: role, status: status)
+    create(:project_participation, project: project, profile: profile,
+                                   participation_role: role, participation_status: status)
     described_class.new(context_for(user), report)
   end
 

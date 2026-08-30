@@ -96,7 +96,7 @@ class Project < ApplicationRecord
   # responda por ela, que é problema de processo e aparece na primeira tela.
   def work_in_progress_has_a_coordinator
     return unless status_changed? && in_progress?
-    return if project_participations.reporting.exists?(role: :coordinator)
+    return if project_participations.reporting.exists?(participation_role: :coordinator)
 
     errors.add(:status, :in_progress_without_coordinator)
   end

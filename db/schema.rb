@@ -188,21 +188,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_160200) do
   create_table "project_participations", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.date "ended_on"
+    t.integer "participation_role", null: false
+    t.integer "participation_status", default: 0, null: false
     t.bigint "profile_id", null: false
     t.bigint "project_id", null: false
-    t.integer "role", null: false
     t.date "started_on", null: false
-    t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
-    t.index ["profile_id", "status"], name: "index_project_participations_on_profile_id_and_status"
-    t.index ["project_id", "profile_id", "role"], name: "idx_on_project_id_profile_id_role_9c778fc32b", unique: true
+    t.index ["profile_id", "participation_status"], name: "idx_on_profile_id_participation_status_034dbcd2f9"
+    t.index ["project_id", "profile_id", "participation_role"], name: "idx_on_project_id_profile_id_participation_role_364d007448", unique: true
     t.check_constraint "ended_on IS NULL OR ended_on >= started_on", name: "project_participations_ends_after_it_starts"
   end
 
   create_table "project_photos", force: :cascade do |t|
     t.string "caption"
-    t.integer "category", default: 0, null: false
     t.datetime "created_at", null: false
+    t.integer "photo_category", default: 0, null: false
     t.integer "position", default: 0, null: false
     t.bigint "progress_report_id"
     t.bigint "project_id", null: false
@@ -210,7 +210,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_160200) do
     t.date "taken_on", null: false
     t.datetime "updated_at", null: false
     t.index ["progress_report_id"], name: "index_project_photos_on_progress_report_id"
-    t.index ["project_id", "category", "position"], name: "index_project_photos_on_project_id_and_category_and_position"
+    t.index ["project_id", "photo_category", "position"], name: "idx_on_project_id_photo_category_position_c69d933c2d"
     t.index ["taken_by_id"], name: "index_project_photos_on_taken_by_id"
     t.check_constraint "\"position\" >= 0", name: "project_photos_position_not_negative"
   end

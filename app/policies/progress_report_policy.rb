@@ -22,7 +22,7 @@ class ProgressReportPolicy < ApplicationPolicy
     context.profile.project_participations.where(project_id: record.project_id)
   end
 
-  def participates? = participations.status_active.exists?
+  def participates? = participations.active.exists?
 
   def reporting_participation? = participations.reporting.exists?
 end

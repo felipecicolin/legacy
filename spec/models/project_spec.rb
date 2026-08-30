@@ -114,7 +114,8 @@ RSpec.describe Project do
     # Convite pendente não conta como coordenação.
     it "refuses a coordinator who was only invited" do
       project = create(:project)
-      create(:project_participation, project: project, role: :coordinator, status: :invited)
+      create(:project_participation, project: project, participation_role: :coordinator,
+                                     participation_status: :invited)
 
       expect(project.update(status: :in_progress)).to be(false)
     end

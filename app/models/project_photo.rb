@@ -29,6 +29,9 @@ class ProjectPhoto < ApplicationRecord
   module RefusesUnreadableImage
     def image=(attachable)
       self.unreadable_image = false
+      self.oversized_image = attachable.try(:size).to_i > MAX_BYTE_SIZE
+      return if oversized_image?
+
       super
     rescue ExifScrubber::Unsupported
       self.unreadable_image = true
@@ -37,9 +40,11 @@ class ProjectPhoto < ApplicationRecord
 
   prepend RefusesUnreadableImage
 
-  # Atributo virtual, e não variável de instância: o Active Record o inicializa
-  # em todo registro novo, e a validação abaixo não precisa supor estado.
+  # Atributos virtuais, e não variáveis de instância: o Active Record os
+  # inicializa em todo registro novo, e a validação abaixo não precisa supor
+  # estado.
   attribute :unreadable_image, :boolean, default: false
+  attribute :oversized_image, :boolean, default: false
 
   # O EXIF é destruído na ingestão SEMPRE, e não só em obra confidencial.
   # Regra única é regra que não se esquece — e a obra pode ser promovida a
@@ -50,16 +55,18 @@ class ProjectPhoto < ApplicationRecord
   belongs_to :progress_report, optional: true
   belongs_to :taken_by, class_name: "Profile", optional: true, inverse_of: :project_photos
 
-  enum :category, { before: 0, during: 1, after: 2, detail: 3, team: 4 }, validate: true, prefix: true
+  # `photo_category` e não `category`: `categories.*` seria um balde genérico no
+  # topo do locale, e a convenção deriva a chave do nome do enum.
+  enum :photo_category, { before: 0, during: 1, after: 2, detail: 3, team: 4 }, validate: true, prefix: true
 
-  scope :ordered, -> { order(:category, :position, :id) }
+  scope :ordered, -> { order(:photo_category, :position, :id) }
 
   validates :taken_on, presence: true, comparison: { less_than_or_equal_to: -> { Date.current } }
   validates :position, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validate :attached_image_is_usable
 
-  def category_label
-    I18n.t(category, scope: :photo_categories)
+  def photo_category_label
+    I18n.t(photo_category, scope: :photo_categories)
   end
 
   # A legenda omite quem tirou a foto quando o contexto não alcança o registro:
@@ -81,7 +88,15 @@ class ProjectPhoto < ApplicationRecord
     errors.add(:image, problem, limit: MAX_MEGABYTES) if problem
   end
 
+  # `oversized_image?` vem antes de tudo porque a recusa acontece ANTES do
+  # anexo: um arquivo grande demais nem chega ao `ExifScrubber`, que decodifica
+  # e reescreve a imagem inteira. Medir depois de processar seria pagar o custo
+  # justamente do upload que se quer recusar.
+  #
+  # A checagem sobre o blob continua embaixo como rede: nem toda forma de
+  # anexável responde `size`, e nesse caso o tamanho só é conhecido depois.
   def image_problem
+    return :too_large if oversized_image?
     return :unsupported_picture if unreadable_image?
     return :blank unless image.attached?
     return :unsupported_picture unless CONTENT_TYPES.include?(image.blob.content_type)

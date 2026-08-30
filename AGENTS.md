@@ -506,7 +506,7 @@ GPS dentro.
   `approved?` — a aprovação é ela própria um `update`.
 - **Texto rico "preenchido" se mede por `body.to_plain_text.strip.present?`.**
   O Trix envia `<div><br></div>` quando ninguém digitou nada.
-- **Papel na obra é `[project, profile, role]`** — a mesma pessoa acumula dois
+- **Papel na obra é `[project, profile, participation_role]`** — a mesma pessoa acumula dois
   papéis na mesma obra. `invited` não concede nada. E **obra em execução exige
   coordenação**, cobrada na transição para `in_progress`, não na criação.
 - **Participação em obra confidencial não aparece no perfil**
