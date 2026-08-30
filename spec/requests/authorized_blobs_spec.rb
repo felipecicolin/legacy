@@ -140,4 +140,29 @@ RSpec.describe "Authorized blobs" do
       expect(response).to have_http_status(:ok)
     end
   end
+
+  # O ProxyController do Active Storage responde `public, immutable` com
+  # validade de cem anos, porque foi desenhado para entrega sem autorização.
+  # Herdando dele, a MESMA URL passa a devolver bytes ou 404 conforme quem
+  # pergunta — e um cache compartilhado guardaria a resposta de quem podia ver.
+  describe "cache headers" do
+    it "keeps the shared caches out of an authorization-dependent response" do
+      record = record_with_photo(sensitivity_level: :public)
+
+      get_blob(record)
+
+      aggregate_failures do
+        expect(response.headers["Cache-Control"]).to include("private")
+        expect(response.headers["Cache-Control"]).not_to include("public")
+      end
+    end
+
+    it "tells caches the session changes the answer" do
+      record = record_with_photo(sensitivity_level: :public)
+
+      get_blob(record)
+
+      expect(response.headers["Vary"].to_s).to include("Cookie")
+    end
+  end
 end

@@ -17,6 +17,7 @@ module AuthorizedBlobDelivery
 
   included do
     before_action :require_visible_blob
+    after_action :forbid_shared_caching
   end
 
   private
@@ -32,6 +33,26 @@ module AuthorizedBlobDelivery
   # se a conta existe.
   def require_visible_blob
     head :not_found unless blob_visible?
+  end
+
+  # O `ProxyController` do Active Storage responde com
+  # `Cache-Control: public, immutable, max-age=100 anos` (`http_cache_forever
+  # public: true`). É o desenho certo para entrega SEM autorização, onde a
+  # única proteção é a URL ser difícil de adivinhar e o conteúdo é o mesmo para
+  # todo mundo.
+  #
+  # Aqui é errado, e do jeito pior: a mesma URL devolve os bytes ou 404
+  # conforme QUEM pergunta. Um cache compartilhado — CDN, proxy de empresa —
+  # guardaria a resposta de quem tinha direito e a serviria para quem não tem,
+  # sem passar por este controller de novo.
+  #
+  # `private` mantém o cache do navegador de quem já viu, que é legítimo, e
+  # tira o compartilhado. O `Vary: Cookie` existe porque é a sessão que muda a
+  # resposta.
+  def forbid_shared_caching
+    headers = response.headers
+    headers["Cache-Control"] = "private, max-age=300"
+    headers["Vary"] = [headers["Vary"], "Cookie"].compact_blank.join(", ")
   end
 
   # `all?`, e não `any?`: um mesmo blob pode estar anexado a mais de um
