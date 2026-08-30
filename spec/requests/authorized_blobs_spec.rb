@@ -147,7 +147,8 @@ RSpec.describe "Authorized blobs" do
   # pergunta — e um cache compartilhado guardaria a resposta de quem podia ver.
   describe "cache headers" do
     it "keeps the shared caches out of an authorization-dependent response" do
-      record = record_with_photo(sensitivity_level: :public)
+      record = record_with_photo
+      sign_in
 
       get_blob(record)
 
@@ -158,7 +159,8 @@ RSpec.describe "Authorized blobs" do
     end
 
     it "tells caches the session changes the answer" do
-      record = record_with_photo(sensitivity_level: :public)
+      record = record_with_photo
+      sign_in
 
       get_blob(record)
 
