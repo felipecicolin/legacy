@@ -49,8 +49,12 @@ RSpec.describe Country do
       expect(described_class.new.default_sensitivity).to eq("restricted")
     end
 
+    # `validate: true` no enum troca o `ArgumentError` da atribuição por uma
+    # validação — o valor desconhecido chega ao objeto e reprova no `valid?`.
+    # É o mesmo comportamento do `Sensitive`, e o motivo é o mesmo: nível
+    # inválido vindo de formulário tem de virar erro de campo, não 500.
     it "refuses a level the concern does not name" do
-      expect { build(:country, default_sensitivity: :secret) }.to raise_error(ArgumentError)
+      expect(build(:country, default_sensitivity: :secret)).not_to be_valid
     end
 
     it "refuses a country whose editorial flag was left undecided" do
