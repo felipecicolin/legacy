@@ -132,6 +132,47 @@ RSpec.describe MissionBase do
     end
   end
 
+  describe "the coordinate" do
+    # Faixa, e não só ausência em registro confidencial: uma latitude de 200
+    # não localiza nada e não dá erro nenhum — o mapa não desenha o ponto, e
+    # ninguém descobre por quê.
+    it "refuses a coordinate outside the surface of the planet" do
+      answers = [[91, 0], [0, 181], [-91, 0], [0, -181]].map do |latitude, longitude|
+        build(:mission_base, latitude: latitude, longitude: longitude).valid?
+      end
+
+      expect(answers).to all(be(false))
+    end
+
+    it "accepts a coordinate on the surface of the planet" do
+      expect(build(:mission_base, :located)).to be_valid
+    end
+
+    it "accepts a base whose coordinate was never recorded" do
+      expect(build(:mission_base, latitude: nil, longitude: nil)).to be_valid
+    end
+  end
+
+  describe "the region" do
+    # A mesma invariante que `Need` cobra entre obra e base: sem ela a base
+    # aponta para um país pela coluna e para outro pela região.
+    it "refuses a region from another country" do
+      base = build(:mission_base, country: create(:country), region: create(:region))
+
+      expect(base).not_to be_valid
+    end
+
+    it "accepts a region of its own country" do
+      country = create(:country)
+
+      expect(build(:mission_base, country: country, region: create(:region, country: country))).to be_valid
+    end
+
+    it "accepts a base with no region" do
+      expect(build(:mission_base, region: nil)).to be_valid
+    end
+  end
+
   it "refuses a negative headcount" do
     expect(build(:mission_base, people_served: -1)).not_to be_valid
   end

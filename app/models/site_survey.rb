@@ -8,9 +8,11 @@
 # qualquer equipe viajar — que é a metade diferenciada do produto. Ver
 # docs/field.md.
 class SiteSurvey < ApplicationRecord
+  include ScrubbedPhoto
+
   has_rich_text :findings
   has_rich_text :recommendations
-  has_many_attached :documents
+  attaches_scrubbed_files :documents
 
   belongs_to :project
   belongs_to :surveyed_by, class_name: "Profile", inverse_of: :site_surveys

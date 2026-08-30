@@ -474,8 +474,9 @@ Texto rico é `has_rich_text`, com Trix e Active Storage por trás. Quatro regra
 > [`docs/photo-policy.md`](docs/photo-policy.md).
 
 - **Anexo de foto entra por `attaches_scrubbed_photo`**, nunca por
-  `has_one_attached` direto. O EXIF é destruído na ingestão — os bytes com GPS
-  não chegam ao storage. Blob pronto e signed id são **recusados**: não há como
+  `has_one_attached` direto, e **`attaches_scrubbed_files` no lugar de
+  `has_many_attached`** — coleção crua não passa pelo scrubber. O EXIF é
+  destruído na ingestão — os bytes com GPS não chegam ao storage. Blob pronto e signed id são **recusados**: não há como
   limpar o que já foi armazenado.
 - **Quem decide se uma pessoa aparece pelo nome é o recurso ao lado dela**, não
   o perfil: `ProfilePresenter#name_for(context)`, com `subject:` obrigatório. O

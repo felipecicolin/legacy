@@ -49,10 +49,18 @@ class MissionBase < ApplicationRecord
   validates :slug, uniqueness: true
   validates :people_served, numericality: { only_integer: true, greater_than_or_equal_to: 0 }, allow_nil: true
 
+  # Faixa da coordenada, e não só a ausência dela em registro confidencial: uma
+  # latitude de 200 não localiza nada e não dá erro em lugar nenhum — o mapa
+  # simplesmente não desenha o ponto, e ninguém descobre por quê.
+  validates :latitude, numericality: { in: -90..90 }, allow_nil: true
+  validates :longitude, numericality: { in: -180..180 }, allow_nil: true
+
   # URL pública que quebra é dívida permanente — quem já compartilhou o link não
   # tem como saber que mudou. Mesmo alcance do `attr_readonly` de
   # `Organization#slug`: `update_all` e SQL cru passam por baixo.
   attr_readonly :slug
+
+  validate :region_belongs_to_the_country
 
   before_validation :assign_slug, on: :create
 
@@ -79,6 +87,16 @@ class MissionBase < ApplicationRecord
   def to_s = name
 
   private
+
+  # A mesma classe de invariante de coerência que `Need` cobra entre obra e
+  # base: sem ela a base aponta para um país pela coluna e para outro pela
+  # região, e o rollup por país discorda do mapa — sem erro em lugar nenhum.
+  def region_belongs_to_the_country
+    return unless region
+    return if region.country_id == country_id
+
+    errors.add(:region, :other_country)
+  end
 
   def assign_slug
     self.slug = slug.presence || unique_slug
