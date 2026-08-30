@@ -3,6 +3,11 @@ pt-BR:
   app:
     name: Legacy
     preview_title: Legacy — Preview de componente
+  assignment_statuses:
+    cancelled: Cancelada
+    completed: Concluída
+    confirmed: Confirmada
+    in_progress: Em andamento
   base_kinds:
     church: Igreja
     clinic: Clínica
@@ -14,6 +19,12 @@ pt-BR:
     active: Ativa
     inactive: Inativa
     pending: Pendente
+  candidacy_statuses:
+    approved: Aprovada
+    rejected: Recusada
+    screening: Em triagem
+    submitted: Enviada
+    withdrawn: Retirada
   default_sensitivities:
     confidential: Confidencial
     public: Pública
@@ -157,6 +168,12 @@ pt-BR:
     paused: Parada
     surveying: Levantamento
     urgent: Urgente
+  rejection_reasons:
+    missing_credential: Sem registro profissional verificado
+    missing_skill: Sem a habilidade pedida
+    need_closed: Necessidade já atendida
+    no_availability: Sem disponibilidade na janela
+    other: Outro motivo
   roles:
     admin: Administrador
     member: Membro

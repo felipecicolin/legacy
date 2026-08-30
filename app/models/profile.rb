@@ -50,6 +50,9 @@ class Profile < ApplicationRecord
                                           inverse_of: :coordinator, dependent: :restrict_with_error
   has_many :deployment_memberships, class_name: "DeploymentMember", dependent: :destroy,
                                     inverse_of: :profile
+  has_many :candidacies, dependent: :destroy, inverse_of: :profile
+  has_many :decided_candidacies, class_name: "Candidacy", foreign_key: :decided_by_id,
+                                 inverse_of: :decided_by, dependent: :restrict_with_error
 
   # `legal_name` fora do `inspect`, que é o que vai para a linha de log de
   # exceção e para o rastreador de erros. Espelha o que `Sensitive` faz com a

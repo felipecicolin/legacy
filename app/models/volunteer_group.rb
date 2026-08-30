@@ -7,6 +7,7 @@ class VolunteerGroup < ApplicationRecord
   belongs_to :organization
   belongs_to :coordinator, class_name: "Profile", inverse_of: :coordinated_volunteer_groups
   has_many :volunteer_engagements, dependent: :restrict_with_error
+  has_many :candidacies, dependent: :destroy
 
   enum :group_status, { forming: 0, available: 1, engaged: 2, disbanded: 3 }, validate: true, prefix: true
 

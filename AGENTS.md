@@ -541,6 +541,14 @@ GPS dentro.
 - **Só `corporate` exige grupo**, e os outros exigem que ele seja nulo.
 - **Convite não ocupa vaga; quem voltou ocupa.** A contagem responde "quantos
   lugares foram comprometidos".
+- **O abatimento tem porta única e travada:** `Need#fulfill` e `Need#release`
+  usam `with_lock`, e `fulfilled_quantity` é derivado da soma com `CHECK` no
+  banco. `NeedFulfillment` é o **único** polimórfico do repositório — três
+  origens genuinamente distintas, nenhuma delas "a" dona.
+- **Alocar põe a pessoa na equipe da obra no mesmo callback.** Dois caminhos
+  produziriam voluntário alocado que não aparece na equipe.
+- **`relation.blank?` é `true` para relation vazia.** Para perguntar "existe
+  escopo?", use `unless scope` — `blank?` erra calado no caso comum.
 
 ## Autorização — fechada por padrão
 
