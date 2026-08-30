@@ -19,6 +19,8 @@ class Organization < ApplicationRecord
   # operava. Quem opera pode mudar — e uma base sem operador declarado é
   # estado legítimo, ao contrário de uma base sem país.
   has_many :mission_bases, dependent: :nullify, inverse_of: :organization
+  has_many :volunteer_groups, dependent: :restrict_with_error
+  has_many :volunteer_engagements, dependent: :nullify
 
   has_rich_text :description
   has_one_attached :logo

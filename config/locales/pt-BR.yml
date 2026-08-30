@@ -18,10 +18,39 @@ pt-BR:
     confidential: Confidencial
     public: Pública
     restricted: Restrita
+  deployment_statuses:
+    cancelled: Cancelado
+    closed: Fechado
+    completed: Concluído
+    open: Aberto
+    planning: Em planejamento
+    travelling: Em viagem
+  engagement_areas:
+    communication: Divulgação
+    construction: Obra
+    education: Educação
+    logistics: Logística
+    office: Escritório
+  engagement_models:
+    corporate: Corporativo ou educacional
+    office_fixed: Escritório fixo
+    project_permanent: Permanente nas obras
+    project_spot: Pontual nas obras
+  engagement_statuses:
+    active: Ativo
+    applied: Inscrito
+    completed: Concluído
+    paused: Pausado
+    screening: Em triagem
   from_levels:
     confidential: Confidencial
     public: Pública
     restricted: Restrita
+  group_statuses:
+    available: Disponível
+    disbanded: Desfeito
+    engaged: Engajado
+    forming: Em formação
   home:
     show:
       signed_in_as: Você entrou como %{email}.
@@ -38,6 +67,29 @@ pt-BR:
   layouts:
     application:
       sign_out: Sair
+  member_roles:
+    lead: Liderança
+    logistics: Logística
+    medical: Saúde
+    technical: Técnica
+    volunteer: Voluntariado
+  member_statuses:
+    cancelled: Cancelada
+    confirmed: Confirmada
+    invited: Convidada
+    returned: Retornou
+    travelling: Em viagem
+  need_kinds:
+    equipment: Equipamento
+    funding: Recursos
+    material: Material
+    skill: Habilidade
+    team: Equipe
+  need_statuses:
+    cancelled: Cancelada
+    fulfilled: Atendida
+    open: Aberta
+    partially_fulfilled: Parcialmente atendida
   organization_kinds:
     church: Igreja
     company: Empresa
@@ -145,6 +197,11 @@ pt-BR:
     confidential: Confidencial
     public: Pública
     restricted: Restrita
+  urgencies:
+    critical: Crítica
+    high: Alta
+    low: Baixa
+    normal: Normal
   verification_statuses:
     expired: Expirada
     pending: Pendente

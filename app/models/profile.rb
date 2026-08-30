@@ -42,6 +42,15 @@ class Profile < ApplicationRecord
   has_many :project_participations, dependent: :destroy, inverse_of: :profile
   has_many :projects, through: :project_participations
 
+  # `restrict_with_error` no engajamento e na coordenação de grupo: os dois
+  # descrevem compromisso assumido com uma organização, e apagar a pessoa não
+  # pode apagar em silêncio o vínculo que alguém do outro lado está contando.
+  has_many :volunteer_engagements, dependent: :restrict_with_error, inverse_of: :profile
+  has_many :coordinated_volunteer_groups, class_name: "VolunteerGroup", foreign_key: :coordinator_id,
+                                          inverse_of: :coordinator, dependent: :restrict_with_error
+  has_many :deployment_memberships, class_name: "DeploymentMember", dependent: :destroy,
+                                    inverse_of: :profile
+
   # `legal_name` fora do `inspect`, que é o que vai para a linha de log de
   # exceção e para o rastreador de erros. Espelha o que `Sensitive` faz com a
   # coordenada, e pelo mesmo motivo: o `serializable_hash` abaixo cobre a

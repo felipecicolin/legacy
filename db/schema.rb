@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_30_160200) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_30_170200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -78,6 +78,36 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_160200) do
     t.index ["verification_status", "expires_on"], name: "index_credentials_on_verification_status_and_expires_on"
   end
 
+  create_table "deployment_members", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "deployment_id", null: false
+    t.integer "member_role", null: false
+    t.integer "member_status", default: 0, null: false
+    t.bigint "profile_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["deployment_id", "profile_id"], name: "index_deployment_members_on_deployment_id_and_profile_id", unique: true
+    t.index ["profile_id"], name: "index_deployment_members_on_profile_id"
+  end
+
+  create_table "deployments", force: :cascade do |t|
+    t.integer "capacity"
+    t.bigint "cost_per_person_cents"
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "BRL", null: false
+    t.date "departs_on", null: false
+    t.integer "deployment_status", default: 0, null: false
+    t.bigint "mission_base_id", null: false
+    t.string "name", null: false
+    t.bigint "project_id"
+    t.date "returns_on", null: false
+    t.datetime "updated_at", null: false
+    t.index ["mission_base_id", "deployment_status"], name: "index_deployments_on_mission_base_id_and_deployment_status"
+    t.index ["project_id"], name: "index_deployments_on_project_id"
+    t.check_constraint "capacity IS NULL OR capacity > 0", name: "deployments_capacity_is_positive"
+    t.check_constraint "cost_per_person_cents IS NULL OR cost_per_person_cents >= 0", name: "deployments_cost_not_negative"
+    t.check_constraint "returns_on >= departs_on", name: "deployments_returns_after_it_departs"
+  end
+
   create_table "memberships", force: :cascade do |t|
     t.datetime "accepted_at"
     t.datetime "created_at", null: false
@@ -112,6 +142,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_160200) do
     t.index ["slug"], name: "index_mission_bases_on_slug", unique: true
     t.check_constraint "people_served IS NULL OR people_served >= 0", name: "mission_bases_people_served_not_negative"
     t.check_constraint "sensitivity_level <> 2 OR NULLIF(btrim(address::text), ''::text) IS NULL AND NULLIF(btrim(latitude::text), ''::text) IS NULL AND NULLIF(btrim(longitude::text), ''::text) IS NULL", name: "mission_bases_confidential_has_no_location"
+  end
+
+  create_table "needs", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "BRL", null: false
+    t.bigint "estimated_value_cents"
+    t.integer "fulfilled_quantity", default: 0, null: false
+    t.bigint "mission_base_id", null: false
+    t.integer "need_kind", null: false
+    t.integer "need_status", default: 0, null: false
+    t.date "needed_by"
+    t.bigint "project_id"
+    t.integer "quantity", default: 1, null: false
+    t.integer "sensitivity_level", default: 1, null: false
+    t.bigint "skill_id"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.integer "urgency", default: 1, null: false
+    t.index ["mission_base_id", "need_status"], name: "index_needs_on_mission_base_id_and_need_status"
+    t.index ["need_kind", "need_status", "urgency"], name: "index_needs_on_need_kind_and_need_status_and_urgency"
+    t.index ["project_id", "need_status"], name: "index_needs_on_project_id_and_need_status"
+    t.index ["skill_id"], name: "index_needs_on_skill_id"
+    t.check_constraint "estimated_value_cents IS NULL OR estimated_value_cents >= 0", name: "needs_estimated_value_not_negative"
+    t.check_constraint "fulfilled_quantity >= 0 AND fulfilled_quantity <= quantity", name: "needs_fulfilled_within_quantity"
+    t.check_constraint "quantity > 0", name: "needs_quantity_is_positive"
   end
 
   create_table "organizations", force: :cascade do |t|
@@ -481,14 +536,57 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_160200) do
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
+  create_table "volunteer_engagements", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.date "ended_on"
+    t.integer "engagement_area", null: false
+    t.integer "engagement_model", null: false
+    t.integer "engagement_status", default: 0, null: false
+    t.bigint "organization_id"
+    t.bigint "profile_id", null: false
+    t.date "started_on", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "volunteer_group_id"
+    t.integer "weekly_hours"
+    t.index ["engagement_model", "engagement_area", "engagement_status"], name: "idx_on_engagement_model_engagement_area_engagement__c56218c508"
+    t.index ["organization_id"], name: "index_volunteer_engagements_on_organization_id"
+    t.index ["profile_id", "engagement_status"], name: "idx_on_profile_id_engagement_status_8c05c156e4"
+    t.index ["volunteer_group_id"], name: "index_volunteer_engagements_on_volunteer_group_id"
+    t.check_constraint "ended_on IS NULL OR ended_on >= started_on", name: "volunteer_engagements_end_after_it_starts"
+    t.check_constraint "weekly_hours IS NULL OR weekly_hours >= 1 AND weekly_hours <= 168", name: "volunteer_engagements_weekly_hours_within_a_week"
+  end
+
+  create_table "volunteer_groups", force: :cascade do |t|
+    t.date "available_from"
+    t.date "available_until"
+    t.bigint "coordinator_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "expected_size"
+    t.integer "group_status", default: 0, null: false
+    t.string "name", null: false
+    t.bigint "organization_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["coordinator_id"], name: "index_volunteer_groups_on_coordinator_id"
+    t.index ["organization_id", "group_status"], name: "index_volunteer_groups_on_organization_id_and_group_status"
+    t.check_constraint "available_until IS NULL OR available_from IS NULL OR available_until >= available_from", name: "volunteer_groups_window_ends_after_it_starts"
+    t.check_constraint "expected_size IS NULL OR expected_size > 0", name: "volunteer_groups_expected_size_is_positive"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "credentials", "profiles"
+  add_foreign_key "deployment_members", "deployments"
+  add_foreign_key "deployment_members", "profiles"
+  add_foreign_key "deployments", "mission_bases"
+  add_foreign_key "deployments", "projects", on_delete: :nullify
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "profiles"
   add_foreign_key "mission_bases", "countries"
   add_foreign_key "mission_bases", "organizations", on_delete: :nullify
   add_foreign_key "mission_bases", "regions"
+  add_foreign_key "needs", "mission_bases"
+  add_foreign_key "needs", "projects"
+  add_foreign_key "needs", "skills"
   add_foreign_key "profile_skills", "profiles"
   add_foreign_key "profile_skills", "skills"
   add_foreign_key "profiles", "users"
@@ -515,4 +613,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_160200) do
   add_foreign_key "solid_queue_recurring_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "staff_roles", "users"
+  add_foreign_key "volunteer_engagements", "organizations", on_delete: :nullify
+  add_foreign_key "volunteer_engagements", "profiles"
+  add_foreign_key "volunteer_engagements", "volunteer_groups"
+  add_foreign_key "volunteer_groups", "organizations"
+  add_foreign_key "volunteer_groups", "profiles", column: "coordinator_id"
 end

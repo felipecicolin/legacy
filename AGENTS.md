@@ -114,6 +114,13 @@ que ela cai é um projeto; mantê-la é um hábito.
 
 ## Testes
 
+- **Trait de factory nunca repete um valor de enum, e associação dentro de
+  trait é sempre `nome { association :nome }`.** O FactoryBot gera uma trait
+  por valor de enum, e um nome pelado dentro de uma trait resolve para a trait
+  homônima antes de virar associação — a fixture sai com a FK nula, o modelo
+  fica inválido, e o erro aponta para a validação. Ver
+  [`docs/mobilization.md`](docs/mobilization.md).
+
 - **Correção de bug: escreva primeiro o teste que falha.** Ele tem de falhar
   antes do fix e passar depois. Um teste escrito depois do fix prova que o
   código faz o que faz, não que o bug foi consertado.
@@ -517,6 +524,22 @@ GPS dentro.
 - **Seed de desenvolvimento define, `db/seeds.rb` invoca.** Arquivo em
   `db/seeds/development/` só declara um módulo com `load!` — carregá-lo não
   pode gravar. Idempotente, determinístico, datas relativas a hoje.
+
+## Mobilização — necessidade, voluntariado e envio
+
+> O raciocínio de cada decisão: [`docs/mobilization.md`](docs/mobilization.md).
+
+- **`Need` tem duas chaves REAIS**, não polimorfismo: `mission_base`
+  obrigatória e `project` opcional. E quando há obra, a base tem de ser a mesma
+  — senão os dois rollups discordam sem erro nenhum. `Deployment` idem.
+- **`need_status` é derivado** de `fulfilled_quantity` versus `quantity`, com
+  `CHECK` no banco. `cancelled` é a única exceção: cancelar é decisão humana.
+- **Duas camadas de voluntariado, e as duas existem.** `VolunteerEngagement` é
+  o vínculo com a organização; `ProjectParticipation` é a presença numa obra.
+  Dois dos quatro modelos **não passam por obra nenhuma**.
+- **Só `corporate` exige grupo**, e os outros exigem que ele seja nulo.
+- **Convite não ocupa vaga; quem voltou ocupa.** A contagem responde "quantos
+  lugares foram comprometidos".
 
 ## Autorização — fechada por padrão
 

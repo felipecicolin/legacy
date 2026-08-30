@@ -40,6 +40,10 @@ acrescenta nada. Então:
 - [i18n](i18n.md) — o que a `rails-i18n` traduz e o que sobrou para nós, os
   formatos pt-BR e o raciocínio por trás de cada um, onde cada chave mora, a
   convenção de rótulo de enum e o guarda que a cobra.
+- [Mobilização — necessidade, voluntariado e envio](mobilization.md) — por que a
+  necessidade tem duas chaves reais em vez de um polimorfismo, por que o
+  voluntariado tem duas camadas e o que a fusão apagaria, e por que não há
+  documento de viagem.
 - [Campo — base, obra e avanço](field.md) — por que base e obra são coisas
   diferentes e o que a fusão quebraria, como a sensibilidade desce sem nunca
   afrouxar, por que o código da obra é coluna gerada, por que o avanço é log de
