@@ -9,6 +9,10 @@ A segunda das três dashes. Ela responde, obra por obra: em que pé está o
 cronograma, quanto do orçamento já foi executado, quanto a obra arrecadou, e
 para quando é a entrega.
 
+Os quatro números que ela lê de uma obra saem do `ProjectAccounting`, e não do
+painel: quem sabe orçar, gastar e arrecadar é a obra — o painel só arruma na
+tela. É a mesma razão de `Project#reach_for` existir do lado do investidor.
+
 Nenhuma coluna nova. Tudo já existia — `Project` guarda as quatro datas e o
 avanço, `Budget`/`BudgetLine` o orçado, `Expense` o gasto, `Campaign` o
 arrecadado. O que faltava era juntar.
