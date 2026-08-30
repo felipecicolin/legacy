@@ -199,6 +199,13 @@ Proporção também é token — `aspect-wide`, `aspect-photo`, `aspect-tile` �
 `spec/system/image_frame_spec.rb`. Ver
 [`docs/design-system/image-frame.md`](docs/design-system/image-frame.md).
 
+**Tela de autenticação não usa o `AppShellComponent`:** as três telas de acesso
+declaram `layout "authentication"`, que renderiza a `AuthLayoutComponent` —
+imagem à esquerda, formulário à direita, e o formulário **antes** do painel no
+DOM. Layout novo herda o banner de dado simulado, o partial de flash e o
+`<main id="main-content">`, ou perde os três em silêncio. Ver
+[`docs/design-system/auth-layout.md`](docs/design-system/auth-layout.md).
+
 Se falta um token, **adicione o token**, não uma exceção. E mantenha os
 vocabulários separados: `success`/`warning`/`destructive` dizem *estado*;
 `category-1`…`category-4` dizem *qual coisa* um item é. Sem essa separação o

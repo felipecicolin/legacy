@@ -1,0 +1,28 @@
+<%# O <head> é um só, compartilhado pelos dois layouts. Duplicá-lo custaria
+    caro: a ordem do actiontext antes do tailwind e o `stylesheet_link_tag
+    "tailwind"` ao lado do `:app` são duas armadilhas que falham em silêncio —
+    a página sobe sem uma única utility e nada reclama. Com uma cópia só, a
+    próxima correção alcança as duas telas. %>
+<title><%= content_for(:title) || t("app.name") %></title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Legacy">
+<meta name="mobile-web-app-capable" content="yes">
+<%= csrf_meta_tags %>
+<%= csp_meta_tag %>
+
+<%# `content_for`, e não `yield :head`: yield com símbolo só resolve em layout,
+    e num partial devolveria vazio sem levantar erro. %>
+<%= content_for(:head) %>
+
+<link rel="icon" href="/icon.png" type="image/png">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon.png">
+
+<%# O actiontext.css entra ANTES do tailwind: as duas folhas trazem regra sem
+    camada para `trix-editor`, e sem camada quem vence é a ordem. As
+    sobreposições com token do projeto estão em app/assets/tailwind/. %>
+<%= stylesheet_link_tag "actiontext", "data-turbo-track": "reload" %>
+<%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+<%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+<%= javascript_importmap_tags %>

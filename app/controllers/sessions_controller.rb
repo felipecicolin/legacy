@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 class SessionsController < ApplicationController
+  # Fora do AppShellComponent: o shell é a moldura de quem já entrou, e
+  # quem chega aqui não tem para onde navegar. Ver docs/design-system/auth-layout.md.
+  layout "authentication"
+
   allow_unauthenticated_access only: %i[new create]
 
   # Entrar e sair não agem sobre registro de ninguém: a sessão é do navegador.

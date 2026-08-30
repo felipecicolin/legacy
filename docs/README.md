@@ -25,6 +25,10 @@ acrescenta nada. Então:
 - [Moldura de imagem](design-system/image-frame.md) — por que a proporção é
   reservada antes de a imagem existir, os tokens de enquadramento, os três
   estados do anexo, e a evidência que obrigou a instalar o Active Storage.
+- [Layout de autenticação](design-system/auth-layout.md) — por que as telas de
+  acesso não usam o shell da aplicação, o que um layout novo perde em silêncio,
+  por que a ordem do DOM é o inverso da ordem da tela, e como a foto entra no
+  lugar do apoio.
 - [Biblioteca de componentes](design-system/components.md) — a composição do
   shell responsivo, os estados sem conteúdo, a tabela dupla e as regras de
   acessibilidade compartilhadas pelos componentes de fundação.

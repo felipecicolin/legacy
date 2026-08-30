@@ -1,0 +1,30 @@
+<%= tag.div(**html_attributes) do %>
+  <div class="flex w-full min-w-0 flex-col desktop:w-1/2">
+    <header class="flex items-center gap-2 px-6 pt-8 text-section text-foreground tablet:px-10">
+      <%= render IconComponent.new(name: "building", size: :md) %>
+      <span><%= t(".brand") %></span>
+    </header>
+
+    <main id="main-content" class="flex min-w-0 flex-1 items-center justify-center px-6 py-10 tablet:px-10">
+      <div class="w-full max-w-md"><%= content %></div>
+    </main>
+  </div>
+
+  <%# `hidden desktop:block`: abaixo de 1024px a coluna do formulário fica com
+      a tela inteira. Um painel decorativo espremido em 380px empurra o
+      formulário para baixo da dobra e não mostra imagem nenhuma. %>
+  <aside class="relative hidden w-1/2 shrink-0 desktop:block">
+    <% if illustration? %>
+      <%= illustration %>
+    <% else %>
+      <%# `bg-accent` com `text-accent-foreground`: é um par declarado no
+          tokens.css, medido em 8.91 pelo spec de contraste. Combinar dois
+          tokens que não formam par deixaria o contraste sem ninguém medindo. %>
+      <div class="absolute inset-0 flex flex-col items-center justify-center gap-3
+                  bg-accent p-10 text-center text-accent-foreground">
+        <%= render IconComponent.new(name: "image", size: :xl) %>
+        <p class="text-body"><%= t(".placeholder") %></p>
+      </div>
+    <% end %>
+  </aside>
+<% end %>

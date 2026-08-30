@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <%= render "layouts/head" %>
+  </head>
+
+  <body class="bg-background text-foreground">
+    <%# Autenticação não passa pelo AppShellComponent: o shell é a moldura de
+        quem já entrou — gaveta de navegação, cabeçalho e uma coluna de no
+        máximo 7xl. A tela de acesso quer a largura inteira e não tem para
+        onde navegar. A marca de dado simulado e o flash continuam aqui, na
+        coluna do formulário: é o layout que garante que nenhuma tela precise
+        lembrar dos dois. %>
+    <%= render AuthLayoutComponent.new do %>
+      <%= render SimulatedDataBannerComponent.new(classes: "mb-6") %>
+      <%= render "shared/flash" %>
+      <%= yield %>
+    <% end %>
+  </body>
+</html>
