@@ -236,7 +236,11 @@ herb, nove regras customizadas em `.herb/rules/*.mjs`:
 
 `icon-name-must-exist` é a principal defesa contra alucinação de UI: ela lê
 `app/assets/images/icons/*.svg` e reprova qualquer
-`IconComponent.new(name: "…")` que aponte para arquivo inexistente.
+`IconComponent.new(name: "…")` que aponte para arquivo inexistente — **e
+também o nome que viaja como prop de outro componente**
+(`EmptyStateComponent.new(icon: "…")`). A segunda forma existe porque a
+primeira não bastou: por esse caminho um nome inventado passou pelo linter e
+só quebrou na renderização.
 
 ---
 

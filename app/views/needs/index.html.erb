@@ -9,7 +9,7 @@
   <% else %>
     <%# Sem habilidade cadastrada não há casamento possível, e dizer isso é
         diferente de mostrar lista vazia. %>
-    <%= render EmptyStateComponent.new(icon: "user", title: t(".no_skills_title"),
+    <%= render EmptyStateComponent.new(icon: "users", title: t(".no_skills_title"),
                                        description: t(".no_skills_description"), classes: "mt-3") %>
   <% end %>
 </section>

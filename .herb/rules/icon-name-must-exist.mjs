@@ -19,7 +19,14 @@ import {
 import { Location } from "@herb-tools/core"
 
 const ICONS_DIR = "app/assets/images/icons"
-const CALL = /IconComponent\.new\(\s*name:\s*["':]([\w-]+)["']?/g
+// Duas formas, e a segunda existe porque a primeira não bastou: o nome do
+// ícone também viaja como PROP de outro componente
+// (`EmptyStateComponent.new(icon: "user")`), e por esse caminho um nome
+// inventado passou pelo linter e só quebrou em runtime, na renderização.
+const CALLS = [
+  /IconComponent\.new\(\s*name:\s*["':]([\w-]+)["']?/g,
+  /\w+Component\.new\([^)]*?\bicon:\s*["':]([\w-]+)["']?/g,
+]
 
 let cachedCatalog = null
 
@@ -42,6 +49,11 @@ class IconNameVisitor extends BaseSourceRuleVisitor {
     const catalog = loadCatalog()
     if (catalog.size === 0) return
 
+    for (const pattern of CALLS) this.checkPattern(source, pattern, catalog)
+  }
+
+  checkPattern(source, CALL, catalog) {
+    CALL.lastIndex = 0
     let match
     while ((match = CALL.exec(source)) !== null) {
       const name = match[1]
