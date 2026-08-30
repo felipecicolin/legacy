@@ -54,11 +54,21 @@ RSpec.describe Assignment do
 
     # Necessidade de base não tem obra: é o caso normal da necessidade que
     # existe sem obra ativa, e alocar nela não põe ninguém em equipe nenhuma.
-    it "creates no participation for a need that hangs from a base" do
-      base_need = create(:need, mission_base: mission_base, project: nil)
-      create(:assignment, need: base_need, candidacy: create(:candidacy, need: base_need))
+    context "with a need that hangs from a base" do
+      let(:base_need) { create(:need, mission_base: mission_base, project: nil) }
+      let(:assignment) { create(:assignment, need: base_need, candidacy: create(:candidacy, need: base_need)) }
 
-      expect(ProjectParticipation.count).to eq(0)
+      it "creates no participation" do
+        assignment
+
+        expect(ProjectParticipation.count).to eq(0)
+      end
+
+      # E cancelar não procura equipe nenhuma para desfazer.
+      it "cancels without looking for a team to leave" do
+        expect { assignment.update!(assignment_status: :cancelled) }
+          .to change { base_need.reload.need_status }.to("open")
+      end
     end
 
     # Quem participa da obra é pessoa: candidatura de grupo abate a

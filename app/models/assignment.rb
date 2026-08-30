@@ -64,13 +64,19 @@ class Assignment < ApplicationRecord
   end
 
   def leave_the_project
-    participation_scope&.where(participation_role: PARTICIPATION_ROLE)&.destroy_all
+    scope = participation_scope
+    return unless scope
+
+    scope.where(participation_role: PARTICIPATION_ROLE).destroy_all
   end
 
   # `nil` quando falta obra ou candidato individual: candidatura de grupo não
   # produz participação, porque quem participa da obra é pessoa.
+  #
+  # `candidacy.profile` sem `&.`: a candidatura é obrigatória, e este método só
+  # roda em callback — num registro que já passou pelas validações.
   def participation_scope
-    profile = candidacy&.profile
+    profile = candidacy.profile
     return if need.project_id.blank? || profile.blank?
 
     ProjectParticipation.where(project_id: need.project_id, profile_id: profile.id)
