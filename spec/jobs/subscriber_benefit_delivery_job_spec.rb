@@ -18,7 +18,7 @@ RSpec.describe SubscriberBenefitDeliveryJob do
   end
 
   it "delivers without email for a subscriber without a user" do
-    benefit = create(:subscriber_benefit, subscription: create(:subscription, subscriber: create(:organization)),
+    benefit = create(:subscriber_benefit, subscription: create(:subscription, subscriber: create(:ngo)),
                                           due_on: Date.current)
 
     expect { described_class.perform_now }.not_to change(ActionMailer::Base.deliveries, :count)

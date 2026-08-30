@@ -8,7 +8,7 @@ RSpec.describe "Volunteer view" do
   let(:password) { "s3nha-de-teste-longa" }
   let(:user) { create(:user, password: password) }
   let(:profile) { create(:profile, user: user) }
-  let(:mission_base) { create(:mission_base, :active) }
+  let(:ngo) { create(:ngo, :active) }
 
   def sign_in(as = user)
     post session_path, params: { email_address: as.email_address, password: password }
@@ -48,7 +48,7 @@ RSpec.describe "Volunteer view" do
     end
 
     it "shows a need that asks for a skill the person has" do
-      wanted = create(:need, mission_base: mission_base, need_kind: :skill, skill: skill)
+      wanted = create(:need, ngo: ngo, need_kind: :skill, skill: skill)
 
       get needs_path
 
@@ -57,8 +57,8 @@ RSpec.describe "Volunteer view" do
 
     # A que ele não pode ver não aparece nem como negada.
     it "leaves out a need the person cannot reach" do
-      hidden_base = create(:mission_base, :active, country: create(:country, high_risk: true))
-      hidden = create(:need, mission_base: hidden_base, need_kind: :skill, skill: skill, title: "Escondida")
+      hidden_base = create(:ngo, :active, country: create(:country, high_risk: true))
+      hidden = create(:need, ngo: hidden_base, need_kind: :skill, skill: skill, title: "Escondida")
 
       get needs_path
 
@@ -67,7 +67,7 @@ RSpec.describe "Volunteer view" do
   end
 
   describe "a need that asks for a professional registration" do
-    let(:gated) { create(:need, :skilled, mission_base: mission_base, requires_professional_registration: true) }
+    let(:gated) { create(:need, :skilled, ngo: ngo, requires_professional_registration: true) }
 
     before do
       profile
@@ -96,7 +96,7 @@ RSpec.describe "Volunteer view" do
   # É o caso de corrida do abatimento chegando à interface: a vaga acabou entre
   # a renderização do formulário e o envio.
   describe "a need whose last slot went while the form was open" do
-    let(:need) { create(:need, mission_base: mission_base, quantity: 1) }
+    let(:need) { create(:need, ngo: ngo, quantity: 1) }
 
     before do
       profile
@@ -127,7 +127,7 @@ RSpec.describe "Volunteer view" do
     # A rota `new` serve o mesmo formulário sozinho, para o frame poder
     # recarregá-lo sem trazer a página inteira junto.
     it "is served on its own by the new route" do
-      need = create(:need, mission_base: mission_base)
+      need = create(:need, ngo: ngo)
 
       get new_need_candidacy_path(need)
 
@@ -135,7 +135,7 @@ RSpec.describe "Volunteer view" do
     end
 
     it "is wrapped in its own turbo frame" do
-      need = create(:need, mission_base: mission_base)
+      need = create(:need, ngo: ngo)
 
       get need_path(need)
 
@@ -150,7 +150,7 @@ RSpec.describe "Volunteer view" do
     end
 
     it "shows up in the person's list afterwards" do
-      need = create(:need, mission_base: mission_base)
+      need = create(:need, ngo: ngo)
 
       post need_candidacy_path(need), params: { candidacy: { motivation: "<div>Quero servir.</div>" } }
       get needs_path

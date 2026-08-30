@@ -1,4 +1,4 @@
-<%= render PageHeaderComponent.new(title: need.title, subtitle: need.mission_base.name) do |header| %>
+<%= render PageHeaderComponent.new(title: need.title, subtitle: need.ngo.name) do |header| %>
   <% header.with_breadcrumb(label: t(".breadcrumb"), href: needs_path) %>
   <% header.with_breadcrumb(label: need.title) %>
 <% end %>

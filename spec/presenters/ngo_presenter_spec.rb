@@ -2,12 +2,12 @@
 
 require "rails_helper"
 
-RSpec.describe MissionBasePresenter do
+RSpec.describe NgoPresenter do
   let(:country) { create(:country) }
-  let(:mission_base) { create(:mission_base, :located, country: country) }
+  let(:ngo) { create(:ngo, :located, country: country) }
 
   def presenter_for(clearance)
-    described_class.new(mission_base, Visibility::Context.new(clearance: clearance))
+    described_class.new(ngo, Visibility::Context.new(clearance: clearance))
   end
 
   describe "#precise_location" do
@@ -19,20 +19,20 @@ RSpec.describe MissionBasePresenter do
 
     it "answers the pair to a reader who reaches it" do
       expect(presenter_for(:restricted).precise_location)
-        .to eq([mission_base.latitude, mission_base.longitude])
+        .to eq([ngo.latitude, ngo.longitude])
     end
 
     # Base sem coordenada registrada é o caso comum, e ele não pode virar um
     # par de nulos no HTML.
     it "answers nothing when the coordinate was never recorded" do
-      mission_base.update!(latitude: nil, longitude: nil)
+      ngo.update!(latitude: nil, longitude: nil)
 
       expect(presenter_for(:restricted).precise_location).to be_nil
     end
   end
 
   describe "#photo_caption" do
-    let(:project) { create(:project, mission_base: mission_base) }
+    let(:project) { create(:project, ngo: ngo) }
     let(:photographer) { create(:profile, display_name: "Ana R.") }
     let(:photo) { create(:project_photo, project: project, taken_by: photographer) }
 
@@ -51,14 +51,14 @@ RSpec.describe MissionBasePresenter do
 
   describe "#gallery" do
     it "groups the photos by the project they belong to" do
-      project = create(:project, mission_base: mission_base)
+      project = create(:project, ngo: ngo)
       photo = create(:project_photo, project: project)
 
       expect(presenter_for(:restricted).gallery).to eq(project.id => [photo])
     end
 
     it "answers nothing for a base whose projects have no photo" do
-      create(:project, mission_base: mission_base)
+      create(:project, ngo: ngo)
 
       expect(presenter_for(:restricted).gallery).to be_empty
     end

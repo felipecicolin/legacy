@@ -14,7 +14,7 @@ class ProjectParticipation < ApplicationRecord
   # Os nomes não são `role` e `status` porque o rótulo de UI sai de `<enum no
   # plural>.<valor>` (docs/i18n.md), e `roles.*` já é o vocabulário de
   # `Membership` — papel numa organização e papel numa obra são coisas
-  # diferentes e não dividem balde. Mesma razão de `Organization#organization_kind`.
+  # diferentes e não dividem balde. Mesma razão de `Ngo#ngo_kind`.
   enum :participation_role, { coordinator: 0, technical_lead: 1, volunteer: 2, local_host: 3, observer: 4 },
        validate: true
 

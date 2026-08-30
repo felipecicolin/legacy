@@ -357,28 +357,32 @@ A pessoa é o `Profile`. Três regras:
 - **`display_name` é armazenado, não derivado.** Corrigir o nome legal não pode
   reescrever o histórico já exibido.
 
-## Organizações e vínculos
+## ONGs e vínculos
 
-> Os nomes dos enums, as três camadas da regra do owner e o que `delete_all`
-> não alcança: [`docs/organizations.md`](docs/organizations.md).
+> A fusão, os nomes dos enums, as três camadas da regra do owner e o que
+> `delete_all` não alcança: [`docs/ngos.md`](docs/ngos.md).
 
-A instituição é a `Organization`; o vínculo com uma pessoa é o `Membership`.
-Quatro regras:
+A instituição **e o lugar** são a mesma coisa: a `Ngo`. O vínculo com uma
+pessoa é o `Membership`. Cinco regras:
 
+- **Não existe base missionária.** `MissionBase` e `Organization` eram duas
+  linhas para a mesma realidade local; a `Ngo` é a única. Quem apontava para a
+  base aponta para ela — `Need`, `Project`, `Campaign` e `Deployment`.
 - **Papel é contexto.** Ele mora no `Membership`, nunca numa coluna em
   `profiles`.
-- **Organização nasce `pending`, e quem lista é `Organization.visible`.** Não
-  aprovada não aparece em busca e não recebe doação.
+- **ONG nasce `pending` E `restricted`, e as duas coisas são independentes.**
+  `Ngo.visible` responde pelo estado (vitrine); `visible_to` responde pela
+  sensibilidade (alcance do leitor). Estar ativa não abre o registro — abrir é
+  `promote_visibility!`.
 - **`slug` nasce do nome e é imutável** (`attr_readonly`) — URL pública que
   quebra é dívida permanente.
-- **Uma organização não perde o `owner` que tem.** Remover, rebaixar *ou mover
-  para outra organização* o último reprova; a cascata da própria organização é
-  a única isenta.
+- **Uma ONG não perde o `owner` que tem.** Remover, rebaixar *ou mover para
+  outra ONG* o último reprova; a cascata da própria ONG é a única isenta.
 
 E uma regra de vocabulário que vale para qualquer enum novo: **se o namespace
 de rótulo (`<enum no plural>.*`) já existe com outro sentido, o enum ganha nome
-próprio** — foi por isso que as colunas aqui são `organization_kind` e
-`organization_status`, e não `kind` e `status`.
+próprio** — foi por isso que as colunas aqui são `ngo_kind` e `ngo_status`, e
+não `kind` e `status`.
 
 ## Pagamentos
 
@@ -509,16 +513,16 @@ não num módulo. O writer do `has_one_attached` mora em
 incluído depois perde a disputa **sem erro nenhum**, com a foto subindo com o
 GPS dentro.
 
-## Campo — base, obra e avanço
+## Campo — ONG, obra e avanço
 
 > O raciocínio de cada decisão: [`docs/field.md`](docs/field.md).
 
-- **Base não é obra.** A base é lugar durável e acumula obras; a obra é
-  episódica. `Need` aponta para a base por FK obrigatória e para a obra por FK
+- **ONG não é obra.** A ONG é lugar durável e acumula obras; a obra é
+  episódica. `Need` aponta para a ONG por FK obrigatória e para a obra por FK
   opcional — necessidade sem obra é o caso normal, não a exceção.
-- **A sensibilidade desce e só APERTA:** país → base → obra. Base em país
+- **A sensibilidade desce e só APERTA:** país → ONG → obra. ONG em país
   `public` não nasce `public`; abrir é `promote_visibility!`. O piso da obra em
-  relação à base vale sempre, não só na criação.
+  relação à ONG vale sempre, não só na criação.
 - **`Project#code` é coluna gerada pelo banco**, sobre um `serial`. Sequence
   avulsa **não é dumpada** no `db/schema.rb`, e o banco de teste nasce do
   schema: presa à coluna, ela sobrevive.

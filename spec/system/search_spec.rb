@@ -4,14 +4,14 @@ require "rails_helper"
 
 RSpec.describe "Search screen" do
   let(:country) { create(:country) }
-  let(:mission_base) { create(:mission_base, :active, country: country, name: "Base do Vale Verde") }
+  let(:ngo) { create(:ngo, :active, country: country, name: "Base do Vale Verde") }
 
   def body_fits?
     page.evaluate_script("document.body.scrollWidth <= document.documentElement.clientWidth")
   end
 
   before do
-    mission_base.promote_visibility!(level: :public, author: create(:user), justification: "vitrine")
+    ngo.promote_visibility!(level: :public, author: create(:user), justification: "vitrine")
   end
 
   # Sem recarregar a página: o formulário aponta para o frame, e é o Turbo que
@@ -20,7 +20,7 @@ RSpec.describe "Search screen" do
     visit search_path
     fill_in "query", with: "vale"
 
-    expect(page).to have_css("#search_results", text: mission_base.name)
+    expect(page).to have_css("#search_results", text: ngo.name)
   end
 
   it "keeps the term in the field after the frame comes back" do
@@ -30,7 +30,7 @@ RSpec.describe "Search screen" do
   end
 
   it "fits the viewport at phone, tablet and desktop widths" do
-    create_list(:project, 3, mission_base: mission_base)
+    create_list(:project, 3, ngo: ngo)
 
     aggregate_failures do
       [375, 768, 1440].each do |width|

@@ -4,7 +4,7 @@
   <% if dashboard.candidacies.any? %>
     <%= render TableComponent.new(rows: dashboard.candidacies, caption: t(".caption"), classes: "mt-3") do |table| %>
       <% table.with_column(header: t(".need")) { |candidacy| candidacy.need.title } %>
-      <% table.with_column(header: t(".base")) { |candidacy| candidacy.need.mission_base.name } %>
+      <% table.with_column(header: t(".ngo")) { |candidacy| candidacy.need.ngo.name } %>
       <% table.with_column(header: t(".status")) { |candidacy| candidacy.candidacy_status_label } %>
       <% table.with_column(header: t(".reason")) { |candidacy| candidacy.rejection_reason_label } %>
     <% end %>

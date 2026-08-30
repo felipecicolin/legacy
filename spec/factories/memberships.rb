@@ -3,7 +3,7 @@
 FactoryBot.define do
   factory :membership do
     profile
-    organization
+    ngo
     role { :member }
 
     # `accepted_at` fica nulo por padrão porque é assim que um convite nasce.

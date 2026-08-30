@@ -5,18 +5,18 @@
     <% if view_mode == "table" %>
       <%= render TableComponent.new(rows: records, caption: t(".caption"), classes: "mt-3") do |table| %>
         <% table.with_column(header: t(".name")) { |base| base.name } %>
-        <% table.with_column(header: t(".kind")) { |base| base.base_kind_label } %>
+        <% table.with_column(header: t(".kind")) { |base| base.ngo_kind_label } %>
         <% table.with_column(header: t(".country")) { |base| base.country.name } %>
       <% end %>
     <% else %>
       <div class="mt-3 grid gap-4 tablet:grid-cols-2 desktop:grid-cols-3">
         <% records.each do |base| %>
           <%= render CardComponent.new(variant: "outlined") do %>
-            <a class="font-medium text-foreground hover:text-primary" href="<%= mission_base_path(base.slug) %>">
+            <a class="font-medium text-foreground hover:text-primary" href="<%= ngo_path(base.slug) %>">
               <%= base.name %>
             </a>
             <p class="text-label text-muted-foreground">
-              <%= base.base_kind_label %> · <%= base.country.name %>
+              <%= base.ngo_kind_label %> · <%= base.country.name %>
             </p>
           <% end %>
         <% end %>

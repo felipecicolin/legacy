@@ -3,9 +3,9 @@
   <%= render SelectComponent.new(name: :status, label: t(".status"), include_blank: t(".any"),
                                  selected: search.filters.status,
                                  choices: Project.statuses.keys.map { |v| [t(v, scope: :statuses), v] }) %>
-  <%= render SelectComponent.new(name: :base_kind, label: t(".base_kind"), include_blank: t(".any"),
-                                 selected: search.filters.base_kind,
-                                 choices: MissionBase.base_kinds.keys.map { |v| [t(v, scope: :base_kinds), v] }) %>
+  <%= render SelectComponent.new(name: :ngo_kind, label: t(".ngo_kind"), include_blank: t(".any"),
+                                 selected: search.filters.ngo_kind,
+                                 choices: Ngo.ngo_kinds.keys.map { |v| [t(v, scope: :ngo_kinds), v] }) %>
   <%= render SelectComponent.new(name: :country_id, label: t(".country"), include_blank: t(".any"),
                                  selected: search.filters.country_id,
                                  choices: search.filterable_countries.map { |c| [c.name, c.id] }) %>

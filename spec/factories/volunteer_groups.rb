@@ -2,7 +2,7 @@
 
 FactoryBot.define do
   factory :volunteer_group do
-    organization
+    ngo
     coordinator factory: :profile
     sequence(:name) { |n| "Turma da Construtora #{n}" }
 

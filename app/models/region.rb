@@ -12,7 +12,7 @@ class Region < ApplicationRecord
 
   # Mesma direção do país: a região existe porque há obra nela, então
   # apagá-la com base apontando é erro, não limpeza.
-  has_many :mission_bases, dependent: :restrict_with_error, inverse_of: :region
+  has_many :ngos, dependent: :restrict_with_error, inverse_of: :region
 
   # O nome da região é dado, e não chave de locale como o do país: ele varia
   # com o idioma local da equipe em campo, e não existe lista fechada dele.

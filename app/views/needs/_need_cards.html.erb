@@ -10,7 +10,7 @@
           <%= need.need_kind_label %> · <%= need.urgency_label %>
         </p>
         <p class="text-label text-muted-foreground">
-          <%= need.mission_base.location_label(visibility) %>
+          <%= need.ngo.location_label(visibility) %>
           <% if need.needed_by %> · <%= t(".by_date", date: l(need.needed_by)) %><% end %>
         </p>
         <p class="mt-2 font-mono text-label text-foreground">

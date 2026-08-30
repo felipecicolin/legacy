@@ -16,7 +16,7 @@
 
   <% if search.any_result? %>
     <%= render "searches/projects", records: search.groups.fetch(:projects), view_mode: view_mode %>
-    <%= render "searches/mission_bases", records: search.groups.fetch(:mission_bases), view_mode: view_mode %>
+    <%= render "searches/ngos", records: search.groups.fetch(:ngos), view_mode: view_mode %>
     <%= render "searches/countries", countries: search.groups.fetch(:countries), search: search %>
   <% else %>
     <%= render "searches/empty", search: search %>

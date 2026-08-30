@@ -64,9 +64,10 @@ acrescenta nada. Então:
   vez de uma tabela por papel, por que o nome público é armazenado e não
   derivado, e como o nome legal é impedido de sair por serialização.
 
-- [Organizações e vínculos](organizations.md) — por que dois enums fogem do
+- [ONGs e vínculos](ngos.md) — por que a instituição e o lugar viraram um
+  modelo só, por que dois enums fogem do
   nome que a issue pedia, por que o slug é imutável e ganha sufixo de
-  desempate, as três camadas que impedem uma organização de perder o dono que
+  desempate, as três camadas que impedem uma ONG de perder o dono que
   tem — inclusive quando o vínculo é movido para outra —, e o que a remoção em
   massa ainda alcança.
 

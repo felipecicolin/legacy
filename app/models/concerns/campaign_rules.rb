@@ -19,24 +19,24 @@ module CampaignRules
   end
 
   def project_belongs_to_base
-    return if project.blank? || project.mission_base_id == mission_base_id
+    return if project.blank? || project.ngo_id == ngo_id
 
-    errors.add(:project, :wrong_mission_base)
+    errors.add(:project, :wrong_ngo)
   end
 
   def inherit_base_sensitivity
-    return unless mission_base && own_rank && own_rank < base_rank
+    return unless ngo && own_rank && own_rank < base_rank
 
-    self.sensitivity_level = mission_base.sensitivity_level
+    self.sensitivity_level = ngo.sensitivity_level
   end
 
   def not_less_restrictive_than_base
-    return unless mission_base && own_rank && own_rank < base_rank
+    return unless ngo && own_rank && own_rank < base_rank
 
-    errors.add(:sensitivity_level, :below_mission_base)
+    errors.add(:sensitivity_level, :below_ngo)
   end
 
-  def base_rank = Sensitive::LEVELS.fetch(mission_base.sensitivity_level.to_sym)
+  def base_rank = Sensitive::LEVELS.fetch(ngo.sensitivity_level.to_sym)
 
   def own_rank = Sensitive::LEVELS[sensitivity_level&.to_sym]
 end

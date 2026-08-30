@@ -1,29 +1,23 @@
-<%# locals: (mission_base:, presenter:) %>
+<%# locals: (ngo:, presenter:) %>
 <dl class="mt-3 grid grid-cols-2 gap-3 tablet:grid-cols-4">
   <div>
     <dt class="text-label text-muted-foreground"><%= t(".kind") %></dt>
-    <dd class="text-foreground"><%= mission_base.base_kind_label %></dd>
+    <dd class="text-foreground"><%= ngo.ngo_kind_label %></dd>
   </div>
   <div>
     <dt class="text-label text-muted-foreground"><%= t(".status") %></dt>
-    <dd class="text-foreground"><%= mission_base.base_status_label %></dd>
+    <dd class="text-foreground"><%= ngo.ngo_status_label %></dd>
   </div>
-  <% if mission_base.organization %>
-    <div>
-      <dt class="text-label text-muted-foreground"><%= t(".operator") %></dt>
-      <dd class="text-foreground"><%= mission_base.organization.name %></dd>
-    </div>
-  <% end %>
-  <% if mission_base.established_on %>
+  <% if ngo.established_on %>
     <div>
       <dt class="text-label text-muted-foreground"><%= t(".established") %></dt>
-      <dd class="text-foreground"><%= l(mission_base.established_on, format: :long) %></dd>
+      <dd class="text-foreground"><%= l(ngo.established_on, format: :long) %></dd>
     </div>
   <% end %>
-  <% if mission_base.people_served %>
+  <% if ngo.people_served %>
     <div>
       <dt class="text-label text-muted-foreground"><%= t(".people_served") %></dt>
-      <dd class="font-mono text-foreground"><%= number_with_delimiter(mission_base.people_served) %></dd>
+      <dd class="font-mono text-foreground"><%= number_with_delimiter(ngo.people_served) %></dd>
     </div>
   <% end %>
   <%# A coordenada só existe no HTML para quem alcança o registro. Quem não

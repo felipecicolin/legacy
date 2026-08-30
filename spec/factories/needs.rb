@@ -2,14 +2,14 @@
 
 FactoryBot.define do
   factory :need do
-    mission_base
+    ngo
     sequence(:title) { |n| "Telhas cerâmicas #{n}" }
     need_kind { :material }
 
     # A necessidade da BASE é o default, e não a da obra: é o caso que
     # justifica base e obra serem tabelas diferentes.
     trait :for_project do
-      project { association :project, mission_base: mission_base }
+      project { association :project, ngo: ngo }
     end
 
     # `skill { association ... }` e não `skill` pelado: `skill` É um valor do

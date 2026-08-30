@@ -2,7 +2,7 @@
 
 FactoryBot.define do
   factory :project do
-    mission_base
+    ngo
     sequence(:title) { |n| "Reforma do telhado #{n}" }
 
     # `code` não entra: é coluna gerada pelo banco, e escrevê-la reprova no

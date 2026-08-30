@@ -1,7 +1,7 @@
 # Arrecadação
 
 Arrecadação é uma cadeia única de prestação de contas. Uma `Campaign` pertence
-a uma `MissionBase` e pode apontar para uma `Project`; `Contribution` registra
+a uma `Ngo` e pode apontar para uma `Project`; `Contribution` registra
 o lançamento em dinheiro, `InKindDonation` registra o valor estimado de um bem
 ou serviço, e `Receipt` congela o comprovante da contribuição confirmada.
 

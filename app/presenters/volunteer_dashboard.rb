@@ -22,7 +22,7 @@ class VolunteerDashboard
   # `matching`: necessidade que o voluntário não alcança não aparece nem como
   # negada.
   def matched_needs
-    Need.matching(@profile).visible_to(@context.visibility).includes(:mission_base, :skill)
+    Need.matching(@profile).visible_to(@context.visibility).includes(:ngo, :skill)
   end
 
   # Sem habilidade cadastrada não há casamento possível, e a tela precisa dizer
@@ -31,15 +31,15 @@ class VolunteerDashboard
 
   def open_needs(filters)
     filters.apply_to_needs(Need.visible_to(@context.visibility).need_status_open)
-           .includes(:mission_base, :skill).by_priority
+           .includes(:ngo, :skill).by_priority
   end
 
   def candidacies
-    @profile.candidacies.includes(need: :mission_base).order(created_at: :desc)
+    @profile.candidacies.includes(need: :ngo).order(created_at: :desc)
   end
 
   def assignments
-    Assignment.where(candidacy: candidacies).includes(need: :mission_base).order(starts_on: :desc)
+    Assignment.where(candidacy: candidacies).includes(need: :ngo).order(starts_on: :desc)
   end
 
   # Envio é logística, e a lista é a dos que ainda vão partir. Só os que vão
@@ -50,8 +50,8 @@ class VolunteerDashboard
   # decisão registrada em docs/mobilization.md.
   def open_deployments
     Deployment.deployment_status_open.upcoming
-              .where(mission_base: MissionBase.visible_to(@context.visibility))
-              .includes(:mission_base)
+              .where(ngo: Ngo.visible_to(@context.visibility))
+              .includes(:ngo)
   end
 
   def engagements

@@ -4,14 +4,14 @@ require "rails_helper"
 
 RSpec.describe Search::Filters do
   let(:country) { create(:country) }
-  let(:mission_base) { create(:mission_base, :active, country: country) }
+  let(:ngo) { create(:ngo, :active, country: country) }
 
   def filtered_projects(**params)
     described_class.from(params).apply_to_projects(Project.all)
   end
 
   def filtered_bases(**params)
-    described_class.from(params).apply_to_mission_bases(MissionBase.all)
+    described_class.from(params).apply_to_ngos(Ngo.all)
   end
 
   # A URL é escrita por gente. Um `?status=demolida` colado errado devolve a
@@ -19,19 +19,19 @@ RSpec.describe Search::Filters do
   # "não existe nada".
   describe "a value that is not in the vocabulary" do
     it "ignores an unknown project status" do
-      create(:project, mission_base: mission_base)
+      create(:project, ngo: ngo)
 
       expect(filtered_projects(status: "demolida").count).to eq(1)
     end
 
     it "ignores an unknown base kind" do
-      mission_base
+      ngo
 
-      expect(filtered_bases(base_kind: "castelo").count).to eq(1)
+      expect(filtered_bases(ngo_kind: "castelo").count).to eq(1)
     end
 
     it "reads an unparsable progress as no floor at all" do
-      create(:project, mission_base: mission_base)
+      create(:project, ngo: ngo)
 
       expect(filtered_projects(min_progress: "muito").count).to eq(1)
     end
@@ -39,39 +39,39 @@ RSpec.describe Search::Filters do
 
   describe "the filters that do apply" do
     it "keeps only the projects in the status asked for" do
-      create(:project, mission_base: mission_base)
-      paused = create(:project, mission_base: mission_base)
+      create(:project, ngo: ngo)
+      paused = create(:project, ngo: ngo)
       paused.update_column(:status, Project.statuses.fetch("paused"))
 
       expect(filtered_projects(status: "paused")).to contain_exactly(paused)
     end
 
     it "keeps only the projects at or above the progress floor" do
-      create(:project, mission_base: mission_base)
-      advanced = create(:project, mission_base: mission_base)
+      create(:project, ngo: ngo)
+      advanced = create(:project, ngo: ngo)
       advanced.update_column(:physical_progress, 60)
 
       expect(filtered_projects(min_progress: "50")).to contain_exactly(advanced)
     end
 
     it "keeps only the projects of bases in the country asked for" do
-      wanted = create(:project, mission_base: mission_base)
+      wanted = create(:project, ngo: ngo)
       create(:project)
 
       expect(filtered_projects(country_id: country.id)).to contain_exactly(wanted)
     end
 
     it "keeps only the bases of the kind asked for" do
-      school = create(:mission_base, base_kind: :school)
-      mission_base
+      school = create(:ngo, ngo_kind: :school)
+      ngo
 
-      expect(filtered_bases(base_kind: "school")).to contain_exactly(school)
+      expect(filtered_bases(ngo_kind: "school")).to contain_exactly(school)
     end
 
     it "keeps only the bases in the country asked for" do
-      create(:mission_base)
+      create(:ngo)
 
-      expect(filtered_bases(country_id: country.id)).to contain_exactly(mission_base)
+      expect(filtered_bases(country_id: country.id)).to contain_exactly(ngo)
     end
   end
 
@@ -83,28 +83,28 @@ RSpec.describe Search::Filters do
     end
 
     it "keeps only the needs of the kind asked for" do
-      wanted = create(:need, mission_base: mission_base, need_kind: :team)
-      create(:need, mission_base: mission_base, need_kind: :material)
+      wanted = create(:need, ngo: ngo, need_kind: :team)
+      create(:need, ngo: ngo, need_kind: :material)
 
       expect(filtered_needs(status: "team")).to contain_exactly(wanted)
     end
 
     it "keeps only the needs of the urgency asked for" do
-      wanted = create(:need, mission_base: mission_base, urgency: :critical)
-      create(:need, mission_base: mission_base, urgency: :low)
+      wanted = create(:need, ngo: ngo, urgency: :critical)
+      create(:need, ngo: ngo, urgency: :low)
 
       expect(filtered_needs(urgency: "critical")).to contain_exactly(wanted)
     end
 
     it "keeps only the needs whose base is in the country asked for" do
-      wanted = create(:need, mission_base: mission_base)
+      wanted = create(:need, ngo: ngo)
       create(:need)
 
       expect(filtered_needs(country_id: country.id)).to contain_exactly(wanted)
     end
 
     it "ignores a kind that is not in the vocabulary" do
-      create(:need, mission_base: mission_base)
+      create(:need, ngo: ngo)
 
       expect(filtered_needs(status: "vontade").count).to eq(1)
     end

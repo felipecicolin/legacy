@@ -1,15 +1,58 @@
-# Organizações e vínculos
+# ONGs e vínculos
 
-> Modelos: [`Organization`](../app/models/organization.rb) ·
+> Modelos: [`Ngo`](../app/models/ngo.rb) ·
 > [`Membership`](../app/models/membership.rb)
-> · Specs: [`spec/models/organization_spec.rb`](../spec/models/organization_spec.rb)
+> · Specs: [`spec/models/ngo_spec.rb`](../spec/models/ngo_spec.rb)
 > · [`spec/models/membership_spec.rb`](../spec/models/membership_spec.rb)
 > · Complemento: [Identidade — `Profile`](identity.md)
 
-Igreja, empresa, ONG e agência missionária entram na plataforma como
-**organização**. Pessoas se ligam a ela por um `Membership`, que carrega o
-papel. É por aqui que uma igreja financia uma obra e envia uma equipe, e é o
-que permite que a mesma pessoa represente dois lados sem virar duas pessoas.
+Igreja, escola, moradia, clínica, empresa e associação entram na plataforma
+como **ONG**. Pessoas se ligam a ela por um `Membership`, que carrega o papel.
+É por aqui que uma igreja financia uma obra e envia uma equipe, e é o que
+permite que a mesma pessoa represente dois lados sem virar duas pessoas.
+
+## A fusão: por que não existe mais base missionária
+
+Até esta mudança havia duas tabelas para a mesma realidade. `Organization` era
+a instituição — nome, CNPJ, site, quem manda nela — e `MissionBase` era o
+lugar — endereço, coordenada, quantas pessoas atende, qual país. A base
+apontava para a organização por uma FK opcional chamada "operadora".
+
+Isso fazia sentido enquanto a plataforma descrevia operação **internacional**,
+onde uma agência daqui opera uma base lá. Numa operação **local** as duas são
+a mesma linha: a ONG é a instituição e é o lugar. Manter as duas tabelas
+custava três coisas concretas:
+
+1. **Dois cadastros para uma coisa só.** Criar uma ONG significava criar uma
+   organização e depois uma base apontando para ela, e nada obrigava a segunda
+   a existir — uma organização sem base era um cadastro que não atende ninguém.
+2. **Duas respostas para "quem pode ver isto".** A organização respondia pelo
+   estado de aprovação; a base, pela sensibilidade. A mesma pergunta tinha dois
+   caminhos, e eles divergiam.
+3. **O papel apontava para o lado errado.** `Membership` ligava a pessoa à
+   organização, mas quem tem obra, necessidade e envio era a base. Um `owner`
+   não era dono de nada que aparecesse em tela.
+
+O que a fusão **preservou**, e é o ponto: as duas perguntas continuam
+separadas, só que agora sobre a mesma linha. `ngo_status` responde "isto já é
+vitrine"; `sensitivity_level` responde "quem alcança isto". Estar `active` não
+abre o registro — a ONG nasce `restricted` como a base nascia, e abrir continua
+sendo `promote_visibility!` com autor e justificativa.
+
+E o que ela **descartou**: a FK "organização operadora" da base. Depois da
+fusão ela apontaria de ONG para ONG, e não existe operação de uma ONG por
+outra num modelo local — quem opera é quem é.
+
+### O vocabulário que sobrou
+
+`ngo_kind` é a união dos dois enums menos o que perdeu sentido. Saíram
+`mission_base` (a entidade É o lugar), `ngo` (a entidade É a ONG) e
+`mission_agency` (não há agência num modelo local); os três caem em
+`association`. Ficaram `church`, `school`, `housing`, `clinic` e `company`.
+
+`ngo_status` junta `approved` e `active`, que eram o mesmo estado com dois
+nomes, e mantém `suspended` e `inactive` separados: ONG que encerrou atividade
+não é ONG punida, e colapsar as duas apagaria o motivo da diferença.
 
 O [`Profile`](identity.md) continua sendo quem a pessoa é. Papel é **contexto**,
 e contexto mora no vínculo: nenhuma coluna em `profiles` diz "esta pessoa é
@@ -18,7 +61,7 @@ dona de alguma coisa".
 ## Os nomes dos enums, e por que dois deles fogem da issue
 
 A issue #20 especifica `kind` e `status` como colunas. Aqui elas se chamam
-`organization_kind` e `organization_status`, e a razão é o
+`ngo_kind` e `ngo_status`, e a razão é o
 [vocabulário de enum](i18n.md#enum-na-ui): o rótulo de um enum é a chave
 `<enum no plural>.<valor>`, num espaço **compartilhado por todos os modelos**.
 
@@ -41,7 +84,7 @@ O `docs/i18n.md` já previa a saída e nomeia o remédio — `project_status` e
 `invoice_status`, cada um com o seu `<enum>s.*`. É o que está feito.
 
 **O custo é só o nome da coluna.** Os escopos e predicados de enum saem do
-*valor*, não do nome do enum: `approved?`, `Organization.approved` e
+*valor*, não do nome do enum: `approved?`, `Ngo.approved` e
 `scope :visible, -> { approved }` continuam escritos exatamente como a issue
 pede.
 
@@ -89,7 +132,7 @@ validação de unicidade existe para a segunda tentativa virar erro de formulár
 
 Organização não aprovada não aparece em busca e não recebe doação. O default da
 coluna é `pending`, e o escopo `visible` é a única porta que decide o que é
-listável. Ele existe em vez de um `where(organization_status: :approved)` solto
+listável. Ele existe em vez de um `where(ngo_status: :approved)` solto
 em cada consulta justamente para que a política tenha um lugar só quando
 mudar — e para que "esqueci de filtrar" seja visível na leitura do código.
 
@@ -117,7 +160,7 @@ promete, `effective_role` é o que ele concede.
 > o último falha.
 
 O enunciado é sobre **perda**, e não sobre existência: nada obriga uma
-organização a nascer com dono. `Organization.create!` sem nenhum `Membership`
+organização a nascer com dono. `Ngo.create!` sem nenhum `Membership`
 passa em todas as camadas abaixo, porque não há vínculo para elas olharem —
 quem cria uma organização e não cria a posse junto fica com uma órfã, e o
 lugar de fechar isso é o fluxo de cadastro (#23 em diante), não o modelo.
@@ -184,7 +227,7 @@ apagar a própria coisa possuída. O Rails marca cada dependente com
 `destroyed_by_association`, e o callback pergunta pela classe:
 
 ```ruby
-destroyed_by_association&.active_record == Organization
+destroyed_by_association&.active_record == Ngo
 ```
 
 A versão curta — `destroyed_by_association.present?` — é o furo. A cascata que

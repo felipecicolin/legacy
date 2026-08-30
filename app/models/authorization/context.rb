@@ -46,8 +46,8 @@ module Authorization
 
     # Papel desta pessoa NESTA organização, ou `nil`. É a pergunta que as
     # policies fazem, e ela não vai ao banco: a resposta já está no contexto.
-    def role_in(organization)
-      memberships.find { |membership| membership.organization_id == organization.id }&.role&.to_sym
+    def role_in(ngo)
+      memberships.find { |membership| membership.ngo_id == ngo.id }&.role&.to_sym
     end
 
     # A ponte para a visibilidade. As duas perguntas são diferentes — "pode

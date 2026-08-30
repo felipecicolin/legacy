@@ -5,38 +5,38 @@
 # A política de sensibilidade é do `Sensitive` e a de identidade é do
 # `ProfilePresenter`; o que mora aqui é a composição das duas para uma tela —
 # quais seções existem, e com que granularidade. Ver docs/field.md.
-class MissionBasePresenter
-  def initialize(mission_base, context)
-    @mission_base = mission_base
+class NgoPresenter
+  def initialize(ngo, context)
+    @ngo = ngo
     @context = context
   end
 
   # País sempre, região só para quem alcança o nível do registro. Quem responde
   # é o concern; aqui só se escolhe o contexto.
-  def location = @mission_base.location_label(@context)
+  def location = @ngo.location_label(@context)
 
   # Coordenada não é dado de tela: ela some do HTML inteiro quando o leitor não
   # alcança o registro. Um `confidential` sequer a persiste — esta guarda cobre
   # o `restricted` visto por quem só alcança `public`.
   def precise_location
-    return unless @context.can_see_precise_location?(@mission_base)
-    return if @mission_base.latitude.blank? || @mission_base.longitude.blank?
+    return unless @context.can_see_precise_location?(@ngo)
+    return if @ngo.latitude.blank? || @ngo.longitude.blank?
 
-    [@mission_base.latitude, @mission_base.longitude]
+    [@ngo.latitude, @ngo.longitude]
   end
 
   # Todas as obras, inclusive concluídas, em ordem cronológica: é o histórico
   # que responde "esta base recebeu três obras em cinco anos". Ordenar por
   # estado esconderia justamente isso.
   def project_history
-    @mission_base.projects.order(:created_at, :id)
+    @ngo.projects.order(:created_at, :id)
   end
 
   # Só as necessidades DA BASE — as que não pertencem a obra nenhuma. É o
   # cenário que motivou separar base de obra, e misturá-las com as das obras
   # apagaria a distinção que esta tela existe para provar.
   def standing_needs
-    @mission_base.needs.where(project_id: nil).need_status_open.by_priority
+    @ngo.needs.where(project_id: nil).need_status_open.by_priority
   end
 
   # Agrupada por obra, porque foto de obra sem obra é foto de lugar nenhum.

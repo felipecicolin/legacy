@@ -8,7 +8,7 @@ class Partnership < ApplicationRecord
   STATUSES = { prospect: 0, negotiating: 1, active: 2, paused: 3, ended: 4 }.freeze
   CONFIDENTIAL_RANK = Sensitive::LEVELS.fetch(:confidential)
 
-  belongs_to :organization
+  belongs_to :ngo
   belongs_to :owner, class_name: "Profile", optional: true, inverse_of: :owned_partnerships
   has_rich_text :terms
   has_many_attached :documents
@@ -20,7 +20,7 @@ class Partnership < ApplicationRecord
   scope :publicly_visible, lambda {
     active
       .where("starts_on <= ? AND (ends_on IS NULL OR ends_on >= ?)", Date.current, Date.current)
-      .joins(:organization).merge(Organization.visible)
+      .joins(:ngo).merge(Ngo.visible)
   }
   scope :visible, -> { publicly_visible }
   scope :visible_to, ->(context) { publicly_visible.where(sensitivity_level: context.allowed_levels) }
@@ -36,11 +36,11 @@ class Partnership < ApplicationRecord
   end
 
   def cash_contributions_cents
-    Contribution.confirmed.where(contributor: organization).sum(:amount_cents)
+    Contribution.confirmed.where(contributor: ngo).sum(:amount_cents)
   end
 
   def in_kind_donations_cents
-    InKindDonation.accepted_for_total.where(donor: organization).sum(:estimated_value_cents)
+    InKindDonation.accepted_for_total.where(donor: ngo).sum(:estimated_value_cents)
   end
 
   def consolidated_totals
@@ -61,10 +61,10 @@ class Partnership < ApplicationRecord
 
   private
 
+  # Antes da fusão a pergunta atravessava duas tabelas — as bases operadas pela
+  # organização —, e agora a ONG É o lugar: o país que interessa é o dela.
   def high_risk_operation?
-    return false unless organization
-
-    organization.mission_bases.joins(:country).exists?(countries: { high_risk: true })
+    ngo&.country&.high_risk?
   end
 
   def inherit_operating_country_sensitivity

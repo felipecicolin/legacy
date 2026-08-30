@@ -8,17 +8,6 @@ pt-BR:
     completed: Concluída
     confirmed: Confirmada
     in_progress: Em andamento
-  base_kinds:
-    church: Igreja
-    clinic: Clínica
-    housing: Moradia
-    mission_base: Base missionária
-    ngo: ONG
-    school: Escola
-  base_statuses:
-    active: Ativa
-    inactive: Inativa
-    pending: Pendente
   benefits:
     monthly_report:
       gift: Benefício semestral em preparação.
@@ -167,35 +156,6 @@ pt-BR:
     invited: Convidada
     returned: Retornou
     travelling: Em viagem
-  mission_bases:
-    facts:
-      coordinates: Coordenada
-      established: Em atividade desde
-      kind: Tipo
-      operator: Organização operadora
-      people_served: Pessoas atendidas
-      status: Situação
-    gallery:
-      title: Registro fotográfico
-    needs:
-      empty_description: Quando a equipe registrar o que falta, aparece aqui.
-      empty_title: Nenhuma necessidade aberta agora
-      remaining:
-        one: falta 1
-        other: faltam %{count}
-    projects:
-      caption: Obras desta base, da mais antiga para a mais recente
-      code: Código
-      empty_description: Esta base ainda não recebeu obra. As necessidades dela seguem valendo.
-      empty_title: Nenhuma obra por aqui ainda
-      progress: Avanço
-      status: Situação
-      title: Obra
-    show:
-      about: Sobre a base
-      breadcrumb: Bases
-      history: Histórico de obras
-      standing_needs: Necessidades da base
   need_kinds:
     equipment: Equipamento
     funding: Recursos
@@ -230,11 +190,11 @@ pt-BR:
       urgency: Urgência
     my_candidacies:
       assignments: Suas alocações
-      base: Base
       caption: Suas candidaturas, da mais recente para a mais antiga
       empty_description: Quando você se candidatar a uma necessidade, ela aparece aqui.
       empty_title: Você ainda não se candidatou a nada
       need: Necessidade
+      ngo: ONG
       reason: Motivo
       status: Situação
       title: Suas candidaturas
@@ -257,15 +217,46 @@ pt-BR:
       needed_by: Necessário até
       remaining: Ainda falta
       urgency: Urgência
-  organization_kinds:
+  ngo_kinds:
+    association: Associação
     church: Igreja
+    clinic: Clínica
     company: Empresa
-    mission_agency: Agência missionária
-    ngo: ONG
-  organization_statuses:
-    approved: Aprovada
+    housing: Moradia
+    school: Escola
+  ngo_statuses:
+    active: Ativa
+    inactive: Inativa
     pending: Pendente
     suspended: Suspensa
+  ngos:
+    facts:
+      coordinates: Coordenada
+      established: Em atividade desde
+      kind: Tipo
+      people_served: Pessoas atendidas
+      status: Situação
+    gallery:
+      title: Registro fotográfico
+    needs:
+      empty_description: Quando a equipe registrar o que falta, aparece aqui.
+      empty_title: Nenhuma necessidade aberta agora
+      remaining:
+        one: falta 1
+        other: faltam %{count}
+    projects:
+      caption: Obras desta ONG, da mais antiga para a mais recente
+      code: Código
+      empty_description: Esta ONG ainda não recebeu obra. As necessidades dela seguem valendo.
+      empty_title: Nenhuma obra por aqui ainda
+      progress: Avanço
+      status: Situação
+      title: Obra
+    show:
+      about: Sobre a ONG
+      breadcrumb: ONGs
+      history: Histórico de obras
+      standing_needs: Necessidades da ONG
   origins:
     event: Evento
     one_off: Pontual
@@ -368,33 +359,33 @@ pt-BR:
     empty:
       no_match_description: Ajuste o termo ou limpe os filtros.
       no_match_title: Nada corresponde a essa busca
-      nothing_yet_description: Assim que houver base e obra cadastradas, elas aparecem aqui.
+      nothing_yet_description: Assim que houver ONG e obra cadastradas, elas aparecem aqui.
       nothing_yet_title: Ainda não há o que buscar
     filters:
       any: Qualquer
-      base_kind: Tipo de base
+      ngo_kind: Tipo de ONG
       country: País
       min_progress: Avanço mínimo
       status: Situação da obra
-    mission_bases:
-      caption: Bases que correspondem à busca
+    ngos:
+      caption: ONGs que correspondem à busca
       country: País
       kind: Tipo
-      name: Base
+      name: ONG
       title:
-        one: 1 base
-        other: "%{count} bases"
+        one: 1 ONG
+        other: "%{count} ONGs"
     projects:
-      base: Base
       caption: Obras que correspondem à busca
       code: Código
       name: Obra
+      ngo: ONG
       status: Situação
       title:
         one: 1 obra
         other: "%{count} obras"
     show:
-      subtitle: Obra, base ou país — os três na mesma caixa.
+      subtitle: Obra, ONG ou país — os três na mesma caixa.
       title: Buscar
     view_toggle:
       count:

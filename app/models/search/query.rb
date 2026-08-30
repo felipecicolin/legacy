@@ -12,7 +12,7 @@ module Search
     # passam por `visible_to`, e é isso que faz uma obra confidencial não
     # aparecer nem como "sem permissão" — a busca não pode virar oráculo.
     def groups
-      { projects: projects, mission_bases: mission_bases, countries: countries }
+      { projects: projects, ngos: ngos, countries: countries }
     end
 
     def any_result? = groups.any? { |_type, records| records.any? }
@@ -37,17 +37,17 @@ module Search
 
     private
 
-    def visible_bases = MissionBase.visible_to(context.visibility).visible
+    def visible_bases = Ngo.visible_to(context.visibility).visible
 
     def projects
       Project.visible_to(context.visibility)
              .then { |scope| filters.apply_to_projects(scope) }
              .then { |scope| matching(scope, :title) }
-             .includes(:mission_base).order(:code)
+             .includes(:ngo).order(:code)
     end
 
-    def mission_bases
-      visible_bases.then { |scope| filters.apply_to_mission_bases(scope) }
+    def ngos
+      visible_bases.then { |scope| filters.apply_to_ngos(scope) }
                    .then { |scope| matching(scope, :name) }
                    .includes(:country).order(:name)
     end

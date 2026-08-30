@@ -11,15 +11,23 @@ pt-BR:
         verification_status: Situação da verificação
       membership:
         accepted_at: Aceito em
-        organization: Organização
+        ngo: ONG
         profile: Pessoa
         role: Papel
-      organization:
+      ngo:
+        address: Endereço
+        country: País
+        established_on: Em atividade desde
+        latitude: Latitude
         legal_document: CNPJ ou equivalente
+        longitude: Longitude
         name: Nome
-        organization_kind: Tipo
-        organization_status: Situação
-        slug: Endereço
+        ngo_kind: Tipo
+        ngo_status: Situação
+        people_served: Pessoas atendidas
+        region: Região
+        sensitivity_level: Visibilidade
+        slug: Endereço público
         website: Site
       staff_role:
         staff_level: Nível
@@ -35,7 +43,7 @@ pt-BR:
         approved_report_is_immutable: Relatório aprovado não é editado. A correção é um relatório novo.
         before_start: não pode ser anterior à data de início.
         below_campaign: A atividade não pode ser menos restrita que a campanha.
-        below_mission_base: A obra não pode ser menos restrita que a base a que pertence.
+        below_ngo: A obra não pode ser menos restrita que a ONG a que pertence.
         below_operating_country: A parceria não pode ser menos restrita que o país atendido.
         below_project: A despesa não pode ser menos restrita que a obra.
         campaign_required: Evento pago precisa de uma campanha de destino.
@@ -49,7 +57,7 @@ pt-BR:
         immutable: Este orçamento aprovado não pode ser alterado.
         in_progress_without_coordinator: Uma obra não entra em execução sem coordenação.
         inactive: O plano de assinatura está inativo.
-        last_owner: A organização precisa de pelo menos um proprietário.
+        last_owner: A ONG precisa de pelo menos um proprietário.
         missing_credential: precisa de registro profissional verificado para esta necessidade.
         not_accepting_contributions: Esta campanha não está recebendo contribuições.
         not_confirmed: O recibo exige uma contribuição confirmada.
@@ -57,14 +65,14 @@ pt-BR:
         not_delivered: A doação em espécie ainda não foi entregue.
         not_open: Este evento não está aberto para inscrições.
         one_candidate_only: A candidatura é de uma pessoa ou de um grupo, nunca dos dois.
-        other_country: precisa pertencer ao mesmo país da base.
-        other_mission_base: precisa pertencer à mesma base desta necessidade.
+        other_country: precisa pertencer ao mesmo país da ONG.
         other_need: precisa ser de uma candidatura à mesma necessidade.
+        other_ngo: precisa pertencer à mesma ONG desta necessidade.
         past_requires_held: Evento iniciado no passado precisa estar realizado.
         promotion_requires_justification: Reduzir a restrição exige autor e justificativa registrados.
         regression_explanation_required: A redução do avanço precisa de explicação.
         too_large: não pode passar de %{limit} MB.
         transition_not_allowed: Esta obra não pode passar do estado atual para esse.
         unsupported_picture: precisa ser uma imagem JPEG, PNG ou WebP de verdade.
-        wrong_mission_base: A obra precisa pertencer à base da campanha.
+        wrong_ngo: A obra precisa pertencer à ONG da campanha.
         wrong_project: A linha orçamentária precisa pertencer à mesma obra.

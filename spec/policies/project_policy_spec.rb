@@ -6,7 +6,7 @@ RSpec.describe ProjectPolicy do
   let(:user) { create(:user) }
   let(:profile) { create(:profile, user:) }
   let(:context) { Authorization::Context.for(user) }
-  let(:project) { create(:organization, organization_status: :approved) }
+  let(:project) { create(:ngo, ngo_status: :active) }
 
   def public_record(code)
     record = SensitiveTestRecord.create!(code:)

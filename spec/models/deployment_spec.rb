@@ -3,36 +3,36 @@
 require "rails_helper"
 
 RSpec.describe Deployment do
-  let(:mission_base) { create(:mission_base) }
+  let(:ngo) { create(:ngo) }
 
   describe "where a deployment goes" do
     # Envio para levantar uma base ainda sem obra aberta é o caso normal, não a
     # exceção — a mesma separação que `Need` faz.
     it "accepts a deployment to a base with no project" do
-      expect(build(:deployment, mission_base: mission_base, project: nil)).to be_valid
+      expect(build(:deployment, ngo: ngo, project: nil)).to be_valid
     end
 
     it "accepts a deployment to a project of its own base" do
-      project = create(:project, mission_base: mission_base)
+      project = create(:project, ngo: ngo)
 
-      expect(build(:deployment, mission_base: mission_base, project: project)).to be_valid
+      expect(build(:deployment, ngo: ngo, project: project)).to be_valid
     end
 
     it "refuses a project that belongs to another base" do
-      expect(build(:deployment, mission_base: mission_base, project: create(:project))).not_to be_valid
+      expect(build(:deployment, ngo: ngo, project: create(:project))).not_to be_valid
     end
   end
 
   describe "the travel dates" do
     it "refuses a return before the departure" do
-      deployment = build(:deployment, mission_base: mission_base,
+      deployment = build(:deployment, ngo: ngo,
                                       departs_on: Date.current, returns_on: Date.current.yesterday)
 
       expect(deployment).not_to be_valid
     end
 
     it "refuses a return before the departure in the database too" do
-      deployment = create(:deployment, mission_base: mission_base)
+      deployment = create(:deployment, ngo: ngo)
       corrupt = "update deployments set returns_on = departs_on - 1 where id = #{deployment.id}"
 
       expect { described_class.connection.execute(corrupt) }
@@ -44,7 +44,7 @@ RSpec.describe Deployment do
     # Capacidade é do avião e da casa, não uma sugestão: passar dela é
     # descobrir na véspera que falta cama para duas pessoas.
     it "refuses more confirmed people than seats" do
-      deployment = create(:deployment, mission_base: mission_base, capacity: 1)
+      deployment = create(:deployment, ngo: ngo, capacity: 1)
       create_list(:profile, 2).each do |profile|
         create(:deployment_member, deployment: deployment, profile: profile, member_status: :confirmed)
       end
@@ -54,7 +54,7 @@ RSpec.describe Deployment do
 
     # Convite não ocupa vaga — é convite, não confirmação.
     it "does not count an invitation against the seats" do
-      deployment = create(:deployment, mission_base: mission_base, capacity: 1)
+      deployment = create(:deployment, ngo: ngo, capacity: 1)
       create(:deployment_member, deployment: deployment)
 
       expect(deployment.reload.seats_left).to eq(1)
@@ -63,24 +63,24 @@ RSpec.describe Deployment do
     # Quem já foi e voltou continua tendo ocupado a vaga: a contagem responde
     # "quantos lugares foram comprometidos".
     it "keeps counting someone who already returned" do
-      deployment = create(:deployment, mission_base: mission_base, capacity: 2)
+      deployment = create(:deployment, ngo: ngo, capacity: 2)
       create(:deployment_member, deployment: deployment, member_status: :returned)
 
       expect(deployment.reload.seats_left).to eq(1)
     end
 
     it "answers nothing when the capacity was never declared" do
-      expect(create(:deployment, mission_base: mission_base, capacity: nil).seats_left).to be_nil
+      expect(create(:deployment, ngo: ngo, capacity: nil).seats_left).to be_nil
     end
 
     it "refuses a deployment with room for nobody" do
-      expect(build(:deployment, mission_base: mission_base, capacity: 0)).not_to be_valid
+      expect(build(:deployment, ngo: ngo, capacity: 0)).not_to be_valid
     end
   end
 
   describe "the members" do
     it "keeps one row per person on a deployment" do
-      deployment = create(:deployment, mission_base: mission_base)
+      deployment = create(:deployment, ngo: ngo)
       profile = create(:profile)
       create(:deployment_member, deployment: deployment, profile: profile)
 
@@ -99,16 +99,16 @@ RSpec.describe Deployment do
 
   describe ".upcoming" do
     it "lists the deployments still to come, closest first" do
-      later = create(:deployment, mission_base: mission_base, departs_on: 3.months.from_now.to_date,
+      later = create(:deployment, ngo: ngo, departs_on: 3.months.from_now.to_date,
                                   returns_on: 4.months.from_now.to_date)
-      sooner = create(:deployment, mission_base: mission_base, departs_on: 1.week.from_now.to_date,
+      sooner = create(:deployment, ngo: ngo, departs_on: 1.week.from_now.to_date,
                                    returns_on: 2.weeks.from_now.to_date)
 
       expect(described_class.upcoming).to eq([sooner, later])
     end
 
     it "leaves out a deployment that already departed" do
-      create(:deployment, mission_base: mission_base, departs_on: 1.week.ago.to_date,
+      create(:deployment, ngo: ngo, departs_on: 1.week.ago.to_date,
                           returns_on: Date.current)
 
       expect(described_class.upcoming).to be_empty
@@ -117,13 +117,13 @@ RSpec.describe Deployment do
 
   it "refuses a negative cost and a currency that is not a three letter code" do
     aggregate_failures do
-      expect(build(:deployment, mission_base: mission_base, cost_per_person_cents: -1)).not_to be_valid
-      expect(build(:deployment, mission_base: mission_base, currency: "REAIS")).not_to be_valid
+      expect(build(:deployment, ngo: ngo, cost_per_person_cents: -1)).not_to be_valid
+      expect(build(:deployment, ngo: ngo, currency: "REAIS")).not_to be_valid
     end
   end
 
   it "translates the status to pt-BR and interpolates as its name" do
-    deployment = build(:deployment, mission_base: mission_base, name: "Envio de campo", deployment_status: :travelling)
+    deployment = build(:deployment, ngo: ngo, name: "Envio de campo", deployment_status: :travelling)
 
     aggregate_failures do
       expect(deployment.deployment_status_label).to eq("Em viagem")

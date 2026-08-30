@@ -4,7 +4,7 @@ require "rails_helper"
 
 RSpec.describe "Search" do
   let(:country) { create(:country) }
-  let(:mission_base) { create(:mission_base, :active, country: country, name: "Base do Vale Verde") }
+  let(:ngo) { create(:ngo, :active, country: country, name: "Base do Vale Verde") }
 
   def open_public(base)
     base.promote_visibility!(level: :public, author: create(:user), justification: "vitrine")
@@ -20,7 +20,7 @@ RSpec.describe "Search" do
       get search_path(query: "escondida")
       without_it = [response.status, response.body]
 
-      create(:mission_base, :active, country: create(:country, high_risk: true), name: "Base Escondida")
+      create(:ngo, :active, country: create(:country, high_risk: true), name: "Base Escondida")
       get search_path(query: "escondida")
 
       expect([response.status, response.body]).to eq(without_it)
@@ -28,18 +28,18 @@ RSpec.describe "Search" do
   end
 
   describe "the state in the URL" do
-    before { open_public(mission_base) }
+    before { open_public(ngo) }
 
     it "reproduces the search from the query string alone" do
       get search_path(query: "vale")
 
-      expect(response.body).to include(mission_base.name)
+      expect(response.body).to include(ngo.name)
     end
 
     it "keeps a filter that was applied" do
-      get search_path(query: "vale", base_kind: "school")
+      get search_path(query: "vale", ngo_kind: "school")
 
-      expect(response.body).not_to include(mission_base.name)
+      expect(response.body).not_to include(ngo.name)
     end
 
     it "opens without a term at all" do
@@ -47,13 +47,13 @@ RSpec.describe "Search" do
 
       aggregate_failures do
         expect(response).to have_http_status(:ok)
-        expect(response.body).to include(mission_base.name)
+        expect(response.body).to include(ngo.name)
       end
     end
   end
 
   describe "the presentation the reader chose" do
-    before { open_public(mission_base) }
+    before { open_public(ngo) }
 
     it "starts as a table" do
       get search_path(query: "vale")
