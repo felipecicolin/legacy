@@ -76,26 +76,38 @@
           <% end %>
         </p>
         <% unless presenter.stages.empty? %>
-          <ol class="mt-5 space-y-5">
-            <% presenter.stages.each do |stage| %>
-              <li>
-                <div class="mb-2 flex items-baseline justify-between gap-3">
-                  <span class="text-body font-semibold text-foreground"><%= stage.name %></span>
-                  <span class="text-sm font-semibold text-foreground tabular-nums"><%= number_to_percentage(stage.physical_progress, precision: 0) %></span>
+          <%# Uma barra segmentada, e não quatro soltas: a contribuição de cada
+              etapa SOMA o total ponderado logo acima, e barras separadas
+              escondiam justamente essa relação. Os tons vêm de `category-*`,
+              que é o vocabulário de "qual coisa é esta" — nunca o de estado. %>
+          <% tones = %w[bg-category-1 bg-category-2 bg-category-3 bg-category-4] %>
+          <div class="mt-4 flex h-3 w-full overflow-hidden rounded-full bg-muted">
+            <% presenter.stages.each_with_index do |stage, position| %>
+              <span class="block h-full <%= tones[position % tones.size] %>"
+                    style="width: <%= presenter.phase_contribution(stage) %>%"></span>
+            <% end %>
+          </div>
+
+          <dl class="mt-5 grid gap-x-8 gap-y-4 tablet:grid-cols-2">
+            <% presenter.stages.each_with_index do |stage, position| %>
+              <div class="min-w-0">
+                <div class="flex items-baseline gap-2">
+                  <span class="size-2.5 shrink-0 rounded-full <%= tones[position % tones.size] %>"
+                        aria-hidden="true"></span>
+                  <dt class="min-w-0 flex-1 truncate text-body font-medium text-foreground">
+                    <%= stage.name %>
+                  </dt>
+                  <dd class="shrink-0 text-body font-semibold text-foreground tabular-nums">
+                    <%= number_to_percentage(stage.physical_progress, precision: 0) %>
+                  </dd>
                 </div>
-                <%# Medidor sem rótulo: o nome da etapa e o percentual já estão
-                    na linha acima, e a barra repetia os dois. %>
-                <div class="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                  <span class="block h-full rounded-full bg-primary"
-                        style="width: <%= stage.physical_progress %>%"></span>
-                </div>
-                <p class="mt-2 text-label text-muted-foreground">
+                <dd class="ml-4 text-sm text-muted-foreground">
                   <%= t(".phases.weight", weight: stage.weight,
                          contribution: number_to_percentage(presenter.phase_contribution(stage), precision: 1)) %>
-                </p>
-              </li>
+                </dd>
+              </div>
             <% end %>
-          </ol>
+          </dl>
         <% end %>
       </section>
 
