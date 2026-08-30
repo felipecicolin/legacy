@@ -46,6 +46,9 @@ pt-BR:
     photo_alt: Foto do andamento da obra
     reporter: Responsável pelo relatório
     title: Linha do tempo de relatórios
+    workers:
+      one: 1 pessoa em obra
+      other: "%{count} pessoas em obra"
   section_navigation: Navegação da obra
   simulated: DADO SIMULADO — sem valor financeiro real
   team:

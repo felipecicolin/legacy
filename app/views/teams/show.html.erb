@@ -1,58 +1,73 @@
 <%= render PageHeaderComponent.new(title: t(".title"), subtitle: t(".subtitle")) %>
 
 <% if dashboard.on_a_team? %>
-  <%# Duas por linha no desktop: o cartão é alto e um por linha faz a
-      terceira obra cair abaixo da dobra sem necessidade. %>
   <div class="mt-6 grid gap-4 desktop:grid-cols-2">
     <% dashboard.boards.each do |board| %>
-      <%= render CardComponent.new(class: "p-5") do %>
-        <div class="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+      <%= render CardComponent.new(class: "flex flex-col gap-5 p-5") do %>
+        <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <%# Metadado antes do título, e menor: quem varre a lista procura o
-                nome da obra, não o código dela. %>
-            <p class="text-sm text-muted-foreground">
+            <p class="truncate text-sm text-muted-foreground">
               <span class="tabular-nums"><%= board.project.code %></span>
               · <%= board.project.ngo.name %> · <%= board.role %>
             </p>
-            <h2 class="text-section text-foreground"><%= board.project.title %></h2>
+            <h2 class="mt-0.5 text-section text-foreground">
+              <%= link_to board.project.title, project_path(board.project.code),
+                          class: "underline-offset-4 hover:underline" %>
+            </h2>
           </div>
           <%= render StatusBadgeComponent.new(status: board.project.status, size: :sm) %>
         </div>
 
-        <dl class="mt-5 grid gap-4 tablet:grid-cols-3">
-          <div>
-            <dt class="text-sm font-medium text-muted-foreground"><%= t(".planned_start") %></dt>
-            <dd class="mt-0.5 text-foreground tabular-nums">
-              <%= board.project.planned_start_on ? l(board.project.planned_start_on) : t(".undefined") %>
-            </dd>
+        <%# Uma métrica principal, e não três iguais: o avanço é o que responde
+            "como vai a obra". O resto é contexto dela. %>
+        <div>
+          <div class="flex items-baseline justify-between gap-3">
+            <span class="text-sm font-medium text-muted-foreground"><%= t(".progress") %></span>
+            <span class="text-2xl font-semibold tracking-tight text-foreground tabular-nums">
+              <%= number_to_percentage(board.project.physical_progress, precision: 0) %>
+            </span>
           </div>
-          <div>
-            <dt class="text-sm font-medium text-muted-foreground"><%= t(".actual_start") %></dt>
-            <dd class="mt-0.5 text-foreground tabular-nums">
-              <%= board.project.actual_start_on ? l(board.project.actual_start_on) : t(".not_started") %>
-            </dd>
+          <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
+            <div class="h-full rounded-full bg-primary"
+                 style="width: <%= board.project.physical_progress %>%"></div>
           </div>
-          <div>
+        </div>
+
+        <%# Três medidas compactas: cada uma um número curto e um traço fino.
+            Barra cheia com par valor/meta por extenso, três vezes por cartão,
+            vira ruído — o olho para de distinguir qual é qual. %>
+        <dl class="mt-auto grid grid-cols-3 gap-4 border-t border-border pt-4">
+          <div class="min-w-0">
             <dt class="text-sm font-medium text-muted-foreground"><%= t(".delivery") %></dt>
-            <dd class="mt-0.5 font-semibold text-foreground tabular-nums">
+            <dd class="mt-1 truncate font-semibold text-foreground tabular-nums">
               <%= board.project.planned_end_on ? l(board.project.planned_end_on) : t(".undefined") %>
             </dd>
+            <% if board.project.planned_end_on %>
+              <dd class="text-sm text-muted-foreground">
+                <%= t(".in_time", time: distance_of_time_in_words(Date.current, board.project.planned_end_on)) %>
+              </dd>
+            <% end %>
           </div>
-        </dl>
 
-        <%# As três barras juntas e separadas do resto por uma divisória: elas
-            respondem a mesma pergunta — quanto de quanto — e lê-las lado a
-            lado é o que mostra prazo, gasto e caixa desalinhados. %>
-        <div class="mt-5 space-y-5 border-t border-border pt-5">
-          <%= render ProgressBarComponent.new(kind: "physical", value: board.project.physical_progress) %>
-          <%# Empilhadas: com o cartão em meia largura, o par valor/meta lado a
-              lado quebraria no meio do número. %>
-          <%# O componente recebe REAIS, não centavos. %>
-          <%= render ProgressBarComponent.new(kind: "spending", value: board.spent_cents / 100.0,
-                                              target: board.budgeted_cents / 100.0) %>
-          <%= render ProgressBarComponent.new(kind: "funding", value: board.raised_cents / 100.0,
-                                              target: board.goal_cents / 100.0) %>
-        </div>
+          <% [[t(".budget"), board.spent_cents, board.budgeted_cents, "bg-warning"],
+              [t(".raised"), board.raised_cents, board.goal_cents, "bg-accent"]].each do |label, value, target, tone| %>
+            <div class="min-w-0">
+              <dt class="text-sm font-medium text-muted-foreground"><%= label %></dt>
+              <dd class="mt-1 font-semibold text-foreground tabular-nums">
+                <%= number_to_percentage(share_percentage(value, target), precision: 0) %>
+              </dd>
+              <%# Só o absoluto: o percentual logo acima já diz a razão, e
+                  repetir "de R$ Y" só produz truncamento. %>
+              <dd class="truncate text-sm text-muted-foreground tabular-nums">
+                <%= money_rounded_from_cents(value) %>
+              </dd>
+              <dd class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                <span class="block h-full rounded-full <%= tone %>"
+                      style="width: <%= share_percentage(value, target) %>%"></span>
+              </dd>
+            </div>
+          <% end %>
+        </dl>
       <% end %>
     <% end %>
   </div>

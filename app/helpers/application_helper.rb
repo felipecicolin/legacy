@@ -25,4 +25,18 @@ module ApplicationHelper
   def money_from_cents(cents)
     number_to_currency(cents.to_i / 100.0)
   end
+
+  # Sem centavos: num cartão comparativo os dois últimos dígitos nunca mudam a
+  # decisão e roubam a largura de que o rótulo precisa.
+  def money_rounded_from_cents(cents)
+    number_to_currency(cents.to_i / 100.0, precision: 0)
+  end
+
+  # Percentual de um par valor/meta, protegido contra meta zerada — que é
+  # legítima aqui: obra sem orçamento aprovado ainda não tem denominador.
+  def share_percentage(value, target)
+    return 0 if target.to_i.zero?
+
+    ((value.to_f / target) * 100).clamp(0, 100).round
+  end
 end

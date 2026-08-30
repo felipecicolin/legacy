@@ -500,12 +500,13 @@ pt-BR:
       empty_title: Seu perfil ainda não existe
       title: Sua obra
     show:
-      actual_start: Início real
+      budget: Orçamento
       delivery: Entrega prevista
       empty_description: Assim que você entrar na equipe de uma obra, ela aparece aqui com cronograma e orçamento.
       empty_title: Você ainda não está em nenhuma obra
-      not_started: Não iniciada
-      planned_start: Início previsto
+      in_time: em %{time}
+      progress: Avanço físico
+      raised: Arrecadado
       subtitle: Cronograma, orçamento e arrecadação de cada obra em que você trabalha.
       title: Suas obras
       undefined: A definir

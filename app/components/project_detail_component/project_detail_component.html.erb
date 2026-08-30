@@ -102,14 +102,31 @@
           <% if presenter.reports.empty? %>
             <p class="mt-5 text-body text-muted-foreground"><%= t(".reports.empty") %></p>
           <% else %>
-            <ol class="mt-5 space-y-8 border-l border-border pl-5">
+            <ol class="mt-5 space-y-8 border-l-2 border-border pl-5">
               <% presenter.reports.each do |report| %>
                 <li class="relative min-w-0">
-                  <span class="absolute -left-7 top-1 h-3 w-3 rounded-full bg-primary" aria-hidden="true"></span>
-                  <div class="flex flex-wrap items-baseline justify-between gap-2">
-                    <time class="font-mono text-sm text-muted-foreground" datetime="<%= report.reported_on.iso8601 %>">
-                      <%= l(report.reported_on) %>
-                    </time>
+                  <%# O ponto cobre a espessura do trilho, senão ele aparece
+                      atravessando a bolinha. %>
+                  <span class="absolute -left-6 top-1.5 size-2.5 rounded-full bg-primary ring-4 ring-card"
+                        aria-hidden="true"></span>
+                  <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                    <div class="flex items-baseline gap-3">
+                      <time class="text-sm font-medium text-foreground tabular-nums"
+                            datetime="<%= report.reported_on.iso8601 %>">
+                        <%= l(report.reported_on) %>
+                      </time>
+                      <%# O percentual de cada entrada é o que transforma uma
+                          lista de textos em linha do tempo de execução. %>
+                      <span class="rounded-full bg-primary-soft px-2 py-0.5 text-xs font-semibold
+                                   text-primary tabular-nums">
+                        <%= number_to_percentage(report.physical_progress, precision: 0) %>
+                      </span>
+                      <% if report.workers_on_site %>
+                        <span class="text-sm text-muted-foreground tabular-nums">
+                          <%= t(".reports.workers", count: report.workers_on_site) %>
+                        </span>
+                      <% end %>
+                    </div>
                     <span class="text-sm text-muted-foreground">
                       <%= t(".reports.by", name: presenter.report_author(report,
                                                                          role_label: t(".reports.reporter"))) %>

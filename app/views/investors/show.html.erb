@@ -25,8 +25,15 @@
     <% if dashboard.active_stakes.any? %>
       <%= render TableComponent.new(rows: dashboard.active_stakes, caption: t(".projects_caption"),
                                     classes: "mt-3") do |table| %>
-        <% table.with_column(header: t(".code")) { |stake| stake.project.code } %>
-        <% table.with_column(header: t(".project")) { |stake| stake.project.title } %>
+        <% table.with_column(header: t(".code")) do |stake| %>
+          <span class="tabular-nums"><%= stake.project.code %></span>
+        <% end %>
+        <%# A obra é o destino natural desta linha: quem financia quer ver o
+            que a fatia dele virou. %>
+        <% table.with_column(header: t(".project")) do |stake| %>
+          <%= link_to stake.project.title, project_path(stake.project.code),
+                      class: "font-medium text-foreground underline-offset-4 hover:underline" %>
+        <% end %>
         <% table.with_column(header: t(".ngo")) { |stake| stake.project.ngo.name } %>
         <% table.with_column(header: t(".status")) do |stake| %>
           <%= render StatusBadgeComponent.new(status: stake.project.status, size: :sm) %>
