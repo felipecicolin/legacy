@@ -124,6 +124,16 @@ RSpec.describe "Volunteer view" do
       sign_in
     end
 
+    # A rota `new` serve o mesmo formulário sozinho, para o frame poder
+    # recarregá-lo sem trazer a página inteira junto.
+    it "is served on its own by the new route" do
+      need = create(:need, mission_base: mission_base)
+
+      get new_need_candidacy_path(need)
+
+      expect(response.body).to include(I18n.t("candidacies.form.title"))
+    end
+
     it "is wrapped in its own turbo frame" do
       need = create(:need, mission_base: mission_base)
 
