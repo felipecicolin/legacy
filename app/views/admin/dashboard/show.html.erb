@@ -42,6 +42,15 @@
   <% end %>
 </section>
 
+<section class="col-span-full mb-8">
+  <h2 class="mb-4 text-section text-foreground"><%= t(".funding_by_country_title") %></h2>
+
+  <%= render TableComponent.new(rows: @dashboard.funding_by_country, caption: t(".funding_by_country_title")) do |table| %>
+    <% table.with_column(header: t(".country_column")) { |row| row.country_name } %>
+    <% table.with_column(header: t(".amount_column"), align: :right) { |row| row.amount_label } %>
+  <% end %>
+</section>
+
 <section class="col-span-full">
   <h2 class="mb-4 text-section text-foreground"><%= t(".recent_activity_title") %></h2>
 

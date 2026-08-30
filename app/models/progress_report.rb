@@ -55,6 +55,13 @@ class ProgressReport < ApplicationRecord
     [I18n.l(reported_on), reported_by.display_name].join(" · ")
   end
 
+  # Mesmo motivo de `Project#cover_photo`: escolhe em Ruby sobre a associação
+  # já pré-carregada, para o painel do administrador (#50) não pagar uma
+  # consulta por relatório.
+  def cover_photo
+    project_photos.min_by { |photo| [photo.photo_category_before_type_cast, photo.position, photo.id] }
+  end
+
   private
 
   # Vazio inclui `<div><br></div>`, que é o que o Trix envia quando ninguém

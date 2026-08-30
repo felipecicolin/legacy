@@ -226,6 +226,20 @@ RSpec.describe Project do
     end
   end
 
+  describe "#primary_campaign" do
+    it "picks the most recently created active or reached campaign" do
+      project = create(:project)
+      create(:campaign, :closed, project: project, mission_base: project.mission_base)
+      recent = create(:campaign, project: project, mission_base: project.mission_base)
+
+      expect(project.reload.primary_campaign).to eq(recent)
+    end
+
+    it "returns nil without any campaign" do
+      expect(create(:project).primary_campaign).to be_nil
+    end
+  end
+
   # A validação pega o formulário; o CHECK pega seed, console e SQL cru.
   it "refuses a progress outside the range in the database too" do
     project = create(:project)

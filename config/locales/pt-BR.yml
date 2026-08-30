@@ -5,14 +5,19 @@ pt-BR:
       show:
         active_projects: Obras ativas
         active_volunteers: Voluntários ativos
+        amount_column: Arrecadado
         average_progress_column: Progresso médio
         country_column: País
         country_distribution_title: Distribuição por país
         critical_need_alert:
           one: "%{count} necessidade crítica vencendo"
           other: "%{count} necessidades críticas vencendo"
+        funding_by_country_title: Arrecadação por país
         in_progress_empty_title: Nenhuma obra em andamento
         in_progress_title: Obras em andamento
+        past_due_subscription_alert:
+          one: "%{count} assinatura com pagamento pendente"
+          other: "%{count} assinaturas com pagamento pendente"
         paused_project_alert:
           one: "%{count} obra parada há mais de 15 dias"
           other: "%{count} obras paradas há mais de 15 dias"
@@ -23,6 +28,9 @@ pt-BR:
         recent_activity_title: Atividade recente
         region_column: Região
         region_unspecified: Sem região definida
+        stalled_candidacy_alert:
+          one: "%{count} candidatura parada em triagem"
+          other: "%{count} candidaturas paradas em triagem"
         title: Painel do administrador
         urgent_project_alert:
           one: "%{count} obra urgente"

@@ -165,4 +165,19 @@ RSpec.describe ProgressReport do
 
     expect(report.caption).to eq("12/03/2026 · Ana Souza")
   end
+
+  describe "#cover_photo" do
+    it "picks the photo with the lowest category, then position" do
+      report = create(:progress_report, project: project)
+      create(:project_photo, project: project, progress_report: report, photo_category: :after, position: 0)
+      earliest = create(:project_photo, project: project, progress_report: report, photo_category: :before,
+                                        position: 0)
+
+      expect(report.reload.cover_photo).to eq(earliest)
+    end
+
+    it "returns nil without any photo" do
+      expect(create(:progress_report, project: project).cover_photo).to be_nil
+    end
+  end
 end

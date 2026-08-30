@@ -238,12 +238,18 @@ própria obra com outro nome. A chave de agrupamento é `[country_id, region_id]
 lido direto de `mission_bases` (não de `regions`), porque `region_id` é
 opcional e nulo não pode juntar bases de países diferentes no mesmo grupo.
 
-**O que o agregado soma hoje: contagem de obras e progresso físico médio, só.**
-A soma de dinheiro arrecadado — o "R$ 240.000" do exemplo lá em cima — espera
-`Campaign#raised_cents` (issue #39, Arrecadação, ainda não existe). Quando
-existir, entra como mais uma coluna agregada na mesma consulta; a estrutura
-(agrupar sobre `hidden_from`, suprimir grupo pequeno, resolver nome de país e
-região em duas queries à parte) não muda.
+**O que este agregado soma: contagem de obras e progresso físico médio, por
+região.** O "R$ 240.000" do exemplo lá em cima — dinheiro arrecadado — não
+mora aqui: `Campaign` (#39) já chegou com o próprio mecanismo de agregado,
+`Campaign.aggregate_by_country`, com o mesmo piso de k-anonimato (mínimo de
+três campanhas) mas na granularidade de **país**, não de região — e sem
+depender de `Visibility::Context`, porque `for_aggregate` já filtra por
+`MissionBase.visible` e `active`. `Admin::DashboardPresenter#funding_by_country`
+consome esse método direto, como uma segunda tabela na tela ("Arrecadação por
+país"), ao lado desta. Duas granularidades diferentes, duas fontes diferentes
+— tentar fundir as duas num `Row` só faria uma delas mentir sobre a outra
+(um valor de país repetido em cada linha de região daquele país pareceria um
+valor *por região* que não é).
 
 A defesa contra o **ataque do complemento** — subtrair os grupos publicados do
 total geral para reconstruir o grupo suprimido — fica de fora de propósito.

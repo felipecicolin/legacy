@@ -7,11 +7,16 @@ RSpec.describe Admin::DashboardPresenter do
   let(:mission_base) { create(:mission_base) }
 
   describe "#tiles" do
-    it "returns four tiles, with the funding one pending" do
-      tiles = described_class.new(visibility).tiles
+    it "returns four tiles, none pending" do
+      expect(described_class.new(visibility).tiles.map(&:pending)).to eq([false, false, false, false])
+    end
 
-      expect(tiles.map(&:pending)).to eq([false, false, false, true])
-      expect(tiles.last).to have_attributes(value: nil, icon: "chart-bar")
+    it "sums confirmed contributions to visible campaigns this month" do
+      campaign = create(:campaign)
+      create(:contribution, :confirmed, campaign: campaign, amount_cents: 18_400)
+      create(:contribution, campaign: campaign, amount_cents: 50_000)
+
+      expect(described_class.new(visibility).tiles.last).to have_attributes(value: "R$ 184,00", icon: "chart-bar")
     end
 
     it "counts active work, excluding completed projects" do
@@ -73,6 +78,42 @@ RSpec.describe Admin::DashboardPresenter do
 
       expect(described_class.new(restricted).alerts).to be_empty
     end
+
+    it "flags a past-due subscription with no campaign, general platform support" do
+      create(:subscription, status: :past_due)
+
+      alert = described_class.new(visibility).alerts.find { |a| a.href == "/campanhas" }
+
+      expect(alert.title).to eq("1 assinatura com pagamento pendente")
+    end
+
+    it "flags a candidacy stalled in screening for more than 7 days, not a recent one" do
+      need = create(:need, mission_base: mission_base)
+      create(:candidacy, need: need, candidacy_status: :screening, updated_at: 10.days.ago)
+      create(:candidacy, need: create(:need, mission_base: mission_base), candidacy_status: :submitted)
+
+      alert = described_class.new(visibility).alerts.find { |a| a.title.include?("triagem") }
+
+      expect(alert.title).to eq("1 candidatura parada em triagem")
+    end
+  end
+
+  describe "#funding_by_country" do
+    it "shows the country's total once at least three campaigns raised there" do
+      country = create(:country)
+      create_confirmed_campaigns(country: country, count: 3, amount_cents: 10_000)
+
+      row = described_class.new(visibility).funding_by_country.first
+
+      expect(row).to have_attributes(country_name: country.name, amount_label: "R$ 300,00")
+    end
+
+    it "omits a country with fewer than three campaigns" do
+      campaign = create(:campaign)
+      create(:contribution, :confirmed, campaign: campaign, amount_cents: 10_000)
+
+      expect(described_class.new(visibility).funding_by_country).to be_empty
+    end
   end
 
   describe "#active_projects" do
@@ -82,6 +123,18 @@ RSpec.describe Admin::DashboardPresenter do
       urgent = create(:project, mission_base: mission_base, status: :urgent)
 
       expect(described_class.new(visibility).active_projects).to eq([urgent, surveying])
+    end
+
+    # `with_attached_*` (via `image_attachment: :blob` no `includes`) é o que
+    # sustenta isto: sem ele, cada card pagaria uma consulta a mais por foto.
+    it "costs the same number of queries with few projects and with many" do
+      create_projects_with_photos(3)
+      few = measure_active_projects_queries
+
+      create_projects_with_photos(9)
+      many = measure_active_projects_queries
+
+      expect(many).to eq(few)
     end
   end
 
@@ -103,5 +156,31 @@ RSpec.describe Admin::DashboardPresenter do
 
       expect(described_class.new(visibility).country_rollup).to eq([])
     end
+  end
+
+  def create_confirmed_campaigns(country:, count:, amount_cents:)
+    count.times do |index|
+      campaign = create(:campaign, mission_base: create(:mission_base, :active, country: country))
+      create(:contribution, :confirmed, campaign: campaign, amount_cents: amount_cents,
+                                        provider_reference: "SIM-#{index}")
+    end
+  end
+
+  def create_projects_with_photos(count)
+    count.times { create(:project_photo, project: create(:project, mission_base: mission_base)) }
+  end
+
+  def measure_active_projects_queries
+    count_queries do
+      described_class.new(visibility).active_projects.each { |project| touch_cover_photo(project) }
+    end
+  end
+
+  def touch_cover_photo(project)
+    photo = project.cover_photo
+    return unless photo
+
+    photo.image.attached?
+    photo.image.blob.filename
   end
 end
