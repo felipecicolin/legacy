@@ -1,0 +1,18 @@
+<%# locals: (gallery:, presenter:) %>
+<% if gallery.any? %>
+  <section class="mt-6">
+    <h2 class="text-lg font-semibold text-foreground"><%= t(".title") %></h2>
+    <% presenter.project_history.each do |project| %>
+      <% photos = gallery[project.id] %>
+      <% next if photos.blank? %>
+      <h3 class="mt-4 text-label text-muted-foreground"><%= project.code %> · <%= project.title %></h3>
+      <div class="mt-2 grid gap-4 tablet:grid-cols-2 desktop:grid-cols-3">
+        <% photos.each do |photo| %>
+          <%= render ImageFrameComponent.new(attachment: photo.image, alt: photo.caption.to_s) do |frame| %>
+            <% frame.with_caption { presenter.photo_caption(photo) } %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  </section>
+<% end %>

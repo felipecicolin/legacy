@@ -90,6 +90,35 @@ pt-BR:
     invited: Convidada
     returned: Retornou
     travelling: Em viagem
+  mission_bases:
+    facts:
+      coordinates: Coordenada
+      established: Em atividade desde
+      kind: Tipo
+      operator: Organização operadora
+      people_served: Pessoas atendidas
+      status: Situação
+    gallery:
+      title: Registro fotográfico
+    needs:
+      empty_description: Quando a equipe registrar o que falta, aparece aqui.
+      empty_title: Nenhuma necessidade aberta agora
+      remaining:
+        one: falta 1
+        other: faltam %{count}
+    projects:
+      caption: Obras desta base, da mais antiga para a mais recente
+      code: Código
+      empty_description: Esta base ainda não recebeu obra. As necessidades dela seguem valendo.
+      empty_title: Nenhuma obra por aqui ainda
+      progress: Avanço
+      status: Situação
+      title: Obra
+    show:
+      about: Sobre a base
+      breadcrumb: Bases
+      history: Histórico de obras
+      standing_needs: Necessidades da base
   need_kinds:
     equipment: Equipamento
     funding: Recursos

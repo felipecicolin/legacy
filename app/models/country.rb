@@ -52,8 +52,16 @@ class Country < ApplicationRecord
   # interpolação dentro da chave. As ~250 entradas são invisíveis para o
   # scanner do i18n-tasks, e quem responde por elas é
   # `spec/models/vocabulary/catalog_spec.rb` — ver config/i18n-tasks.yml.erb.
+  # `default:` com o próprio código, e não uma chave que falta.
+  #
+  # Todo país CURADO tem rótulo — `spec/models/vocabulary/catalog_spec.rb`
+  # compara os dois lados e reprova qualquer um sem. O que este default cobre é
+  # o país que não veio da curadoria: a faixa de uso privado do ISO 3166-1
+  # (XA–XZ), que é o que fixture e seed de desenvolvimento usam para não
+  # nomear país real em dado fictício. Sem ele a tela exibe
+  # "Translation missing" para quem abrir a demo.
   def name
-    I18n.t(iso_code.downcase, scope: :countries)
+    I18n.t(iso_code.downcase, scope: :countries, default: iso_code)
   end
 
   private

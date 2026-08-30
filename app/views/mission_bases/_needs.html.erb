@@ -1,0 +1,21 @@
+<%# locals: (needs:) %>
+<% if needs.any? %>
+  <ul class="mt-3 space-y-3">
+    <% needs.each do |need| %>
+      <li class="border-b border-border pb-3 last:border-0 last:pb-0">
+        <a class="font-medium text-foreground hover:text-primary" href="<%= need_path(need) %>">
+          <%= need.title %>
+        </a>
+        <p class="text-label text-muted-foreground">
+          <%= need.need_kind_label %> · <%= need.urgency_label %> ·
+          <%= t(".remaining", count: need.remaining_quantity) %>
+        </p>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <%# Estado vazio da SEÇÃO, nunca da página: base sem obra e sem necessidade
+      aberta continua sendo uma base com história, descrição e galeria. %>
+  <%= render EmptyStateComponent.new(icon: "clock", title: t(".empty_title"),
+                                     description: t(".empty_description"), classes: "mt-3") %>
+<% end %>
