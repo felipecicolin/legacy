@@ -58,16 +58,18 @@ RSpec.describe Assignment do
       let(:base_need) { create(:need, mission_base: mission_base, project: nil) }
       let(:assignment) { create(:assignment, need: base_need, candidacy: create(:candidacy, need: base_need)) }
 
-      it "creates no participation" do
-        assignment
+      before { assignment }
 
+      it "creates no participation" do
         expect(ProjectParticipation.count).to eq(0)
       end
 
-      # E cancelar não procura equipe nenhuma para desfazer.
+      # E cancelar não procura equipe nenhuma para desfazer. O `before` importa:
+      # com a alocação criada dentro do `expect`, ela abateria e estornaria na
+      # mesma medição, e o exemplo passaria a não observar mudança nenhuma.
       it "cancels without looking for a team to leave" do
         expect { assignment.update!(assignment_status: :cancelled) }
-          .to change { base_need.reload.need_status }.to("open")
+          .to change { base_need.reload.need_status }.from("fulfilled").to("open")
       end
     end
 

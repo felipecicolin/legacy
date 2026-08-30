@@ -126,18 +126,18 @@ RSpec.describe NeedFulfillment do
   # Ao ATUALIZAR, o que este mesmo registro já abatia não conta contra ele:
   # sem isso, subir uma alocação de 1 para 2 numa necessidade de 2 vagas
   # reprovaria por "3 de 2".
+  #
+  # Pela porta (`fulfill`), e não por `need_fulfillments.create!`: só ela
+  # recontabiliza, e sem a recontagem a necessidade ainda acha que tem tudo
+  # livre — o exemplo mediria um teto que não existe.
   describe "changing a fulfillment that is already counted" do
-    it "raises the quantity within what is left" do
-      fulfillment = need.need_fulfillments.create!(source: create(:assignment), quantity: 1,
-                                                   fulfilled_at: Time.current)
+    subject(:fulfillment) { need.fulfill(source: create(:assignment), quantity: 1) }
 
+    it "raises the quantity within what is left" do
       expect(fulfillment.update(quantity: 3)).to be(true)
     end
 
     it "still refuses to go past the ceiling" do
-      fulfillment = need.need_fulfillments.create!(source: create(:assignment), quantity: 1,
-                                                   fulfilled_at: Time.current)
-
       expect(fulfillment.update(quantity: 4)).to be(false)
     end
   end
