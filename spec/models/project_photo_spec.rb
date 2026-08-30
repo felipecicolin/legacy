@@ -48,10 +48,36 @@ RSpec.describe ProjectPhoto do
       expect(photo_with(StringIO.new("%PDF-1.7"), content_type: "application/pdf")).not_to be_valid
     end
 
-    it "refuses a file above the size limit" do
+    # A libvips ABRE um GIF sem reclamar, então o scrubber não recusa: quem
+    # recusa é a whitelist. É o caso que separa as duas peneiras — uma responde
+    # "isto não é imagem", a outra responde "isto não é um formato que servimos".
+    it "refuses a real picture in a format outside the whitelist" do
+      exotic = photo_with(StringIO.new(GeotaggedPhoto.bytes), content_type: "image/gif")
+
+      expect(exotic.tap(&:valid?).errors.details[:image].pluck(:error)).to include(:unsupported_picture)
+    end
+
+    # A recusa acontece ANTES do anexo: o arquivo grande demais nem chega ao
+    # `ExifScrubber`, que decodificaria e reescreveria a imagem inteira.
+    it "refuses a file above the size limit without ever decoding it" do
       heavy = photo_with(StringIO.new("x" * (described_class::MAX_BYTE_SIZE + 1)), content_type: "image/jpeg")
 
-      expect(heavy.tap(&:valid?).errors[:image].join).to include("12 MB")
+      aggregate_failures do
+        expect(heavy.tap(&:valid?).errors[:image].join).to include("12 MB")
+        expect(heavy.image).not_to be_attached
+      end
+    end
+
+    # A medição adiantada depende de o anexável responder `size`, e nem toda
+    # forma responde: a de hash — que é justamente a que o `ExifScrubber`
+    # devolve — tem o `size` de um Hash. A checagem sobre o blob é a rede.
+    it "falls back to the stored size when the attachable cannot be measured up front" do
+      stub_const("#{described_class}::MAX_BYTE_SIZE", 100)
+      photo = build(:project_photo, project: project,
+                                    image: { io: StringIO.new(GeotaggedPhoto.bytes), filename: "obra.jpg",
+                                             content_type: "image/jpeg" })
+
+      expect(photo.tap(&:valid?).errors.details[:image].pluck(:error)).to include(:too_large)
     end
 
     it "refuses a record with no picture at all" do
