@@ -39,11 +39,34 @@ module DevelopmentSeeds
 
     module_function
 
+    NEEDS = [
+      { base: "vale-verde", title: "Telhas cerâmicas", need_kind: :material, quantity: 400, urgency: :high },
+      { base: "vale-verde", title: "Engenharia estrutural", need_kind: :skill, quantity: 1, urgency: :critical },
+      { base: "escola-aurora", title: "Equipe de mutirão", need_kind: :team, quantity: 12, urgency: :normal },
+      { base: "clinica-do-porto", title: "Recursos para acabamento", need_kind: :funding, quantity: 1,
+        urgency: :low },
+    ].freeze
+
     def load!
       countries = COUNTRIES.index_by { |entry| entry.fetch(:iso_code) }.transform_values { |e| upsert_country(e) }
       bases = BASES.index_by { |entry| entry.fetch(:slug) }
                    .transform_values { |entry| upsert_base(entry, countries) }
       PROJECTS.each { |entry| upsert_project(entry, bases) }
+      NEEDS.each { |entry| upsert_need(entry, bases) }
+    end
+
+    # A necessidade da BASE, e não da obra: é o caso que justifica base e obra
+    # serem tabelas diferentes, e o seed precisa mostrá-lo já na primeira carga.
+    def upsert_need(entry, bases)
+      base = bases.fetch(entry.fetch(:base))
+      need = base.needs.find_or_initialize_by(title: entry.fetch(:title))
+      need.assign_attributes(entry.except(:base))
+      need.skill = structural_skill if entry.fetch(:need_kind) == :skill
+      need.save!
+    end
+
+    def structural_skill
+      Skill.find_by(key: "structural") || Skill.first
     end
 
     def upsert_country(entry)

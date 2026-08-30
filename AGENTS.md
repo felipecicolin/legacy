@@ -518,6 +518,22 @@ GPS dentro.
   `db/seeds/development/` só declara um módulo com `load!` — carregá-lo não
   pode gravar. Idempotente, determinístico, datas relativas a hoje.
 
+## Mobilização — necessidade, voluntariado e envio
+
+> O raciocínio de cada decisão: [`docs/mobilization.md`](docs/mobilization.md).
+
+- **`Need` tem duas chaves REAIS**, não polimorfismo: `mission_base`
+  obrigatória e `project` opcional. E quando há obra, a base tem de ser a mesma
+  — senão os dois rollups discordam sem erro nenhum. `Deployment` idem.
+- **`need_status` é derivado** de `fulfilled_quantity` versus `quantity`, com
+  `CHECK` no banco. `cancelled` é a única exceção: cancelar é decisão humana.
+- **Duas camadas de voluntariado, e as duas existem.** `VolunteerEngagement` é
+  o vínculo com a organização; `ProjectParticipation` é a presença numa obra.
+  Dois dos quatro modelos **não passam por obra nenhuma**.
+- **Só `corporate` exige grupo**, e os outros exigem que ele seja nulo.
+- **Convite não ocupa vaga; quem voltou ocupa.** A contagem responde "quantos
+  lugares foram comprometidos".
+
 ## Autorização — fechada por padrão
 
 > Vocabulário, matriz de papéis e o raciocínio de cada decisão:

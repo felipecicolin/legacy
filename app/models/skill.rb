@@ -7,6 +7,7 @@ class Skill < ApplicationRecord
 
   has_many :profile_skills, dependent: :destroy, inverse_of: :skill
   has_many :profiles, through: :profile_skills
+  has_many :needs, dependent: :restrict_with_error
 
   validates :key, :category, presence: true
   validates :key, uniqueness: true

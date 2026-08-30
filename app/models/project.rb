@@ -31,6 +31,8 @@ class Project < ApplicationRecord
 
   belongs_to :mission_base
   has_many :progress_reports, dependent: :destroy
+  has_many :needs, dependent: :destroy
+  has_many :deployments, dependent: :nullify
   has_many :site_surveys, dependent: :destroy
   has_many :project_participations, dependent: :destroy
   has_many :participants, through: :project_participations, source: :profile

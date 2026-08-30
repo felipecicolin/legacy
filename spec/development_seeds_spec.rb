@@ -18,12 +18,20 @@ RSpec.describe DevelopmentSeeds do
   # violação de índice único.
   it "loads twice without duplicating anything" do
     load_seeds
-    counts = -> { [MissionBase.count, Project.count, ProjectParticipation.count] }
+    counts = -> { [MissionBase.count, Project.count, ProjectParticipation.count, Need.count] }
     first = counts.call
 
     load_seeds
 
     expect(counts.call).to eq(first)
+  end
+
+  # A necessidade da BASE, sem obra, é o caso que justifica base e obra serem
+  # tabelas diferentes — e o seed precisa mostrá-lo já na primeira carga.
+  it "seeds a need that hangs from a base with no project" do
+    load_seeds
+
+    expect(Need.where(project_id: nil)).to be_present
   end
 
   it "covers the five states of the design system" do
