@@ -42,6 +42,10 @@ RSpec.describe DevelopmentSeeds do
 
   # A base confidencial existe para NÃO aparecer: é o teste visual da política
   # de sensibilidade, e sem uma base aberta ao lado não haveria contraste.
+  #
+  # A propriedade, e não a contagem: uma camada nova no seed muda os números e
+  # não muda o que importa — que os três níveis enxergam conjuntos diferentes,
+  # cada um contendo o anterior, e que o anônimo enxerga alguma coisa.
   it "answers a different set of bases to each level of clearance" do
     load_seeds
 
@@ -49,15 +53,25 @@ RSpec.describe DevelopmentSeeds do
       MissionBase.visible_to(Visibility::Context.new(clearance: clearance)).count
     end
 
-    expect(counts).to eq([1, 3, 4])
+    aggregate_failures do
+      expect(counts).to eq(counts.sort)
+      expect(counts.uniq.size).to eq(3)
+      expect(counts.first).to be_positive
+    end
   end
 
   # Abrir uma base passa pela porta de verdade, que exige autor e
   # justificativa — e a segunda carga não pode registrar a promoção de novo.
-  it "records the disclosure once, however many times it runs" do
+  # O que se mede é a IDEMPOTÊNCIA, não quantas bases o seed abre hoje.
+  it "records each disclosure once, however many times it runs" do
     load_seeds
+    first = SensitivityChange.count
+
     load_seeds
 
-    expect(SensitivityChange.count).to eq(1)
+    aggregate_failures do
+      expect(first).to be_positive
+      expect(SensitivityChange.count).to eq(first)
+    end
   end
 end
