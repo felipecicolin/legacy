@@ -1,7 +1,8 @@
 # Dash do investidor
 
 > Regra curta no [`AGENTS.md`](../AGENTS.md). Aqui está o porquê.
-> Presenter: [`InvestorDashboard`](../app/presenters/investor_dashboard.rb)
+> Presenters: [`InvestorDashboard`](../app/presenters/investor_dashboard.rb) ·
+> [`FundedProjects`](../app/presenters/funded_projects.rb)
 > · Spec: [`spec/presenters/investor_dashboard_spec.rb`](../spec/presenters/investor_dashboard_spec.rb)
 > · Complemento: [Visibilidade](visibility.md) · [Arrecadação](funding.md)
 
@@ -85,6 +86,14 @@ divergiria do primeiro na primeira vez que alguém mexesse em um deles.
 existe só para isso. Número menor sem explicação não se lê como "há algo
 protegido aqui": se lê como conta errada, e a pessoa vai procurar o dinheiro que
 sumiu.
+
+## Duas classes, e não uma
+
+O painel responde "quanto e quantos"; o `FundedProjects` responde "em quais".
+A segunda pergunta tem estado próprio — o que é visível, o que virou agregado,
+quanto entrou em cada obra — e mantê-la no painel fazia dele duas classes
+empilhadas numa. A matemática da fatia não está em nenhum dos dois:
+`Project#reach_for` mora na obra, porque quem sabe a meta e a estimativa é ela.
 
 ## O aporte sem obra
 

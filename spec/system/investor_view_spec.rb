@@ -45,8 +45,8 @@ RSpec.describe "Investor view screen" do
     visit investor_path
 
     aggregate_failures do
-      [:invested, :active_projects, :people_reached, :multiplier].each do |metric|
-        expect(page).to have_content(I18n.t(metric, scope: "investors.show"))
+      %i[invested active_projects people_reached multiplier].each do |metric|
+        expect(page).to have_text(I18n.t(metric, scope: "investors.show"))
       end
     end
   end

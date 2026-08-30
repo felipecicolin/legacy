@@ -33,11 +33,9 @@ RSpec.describe ProgressBarComponent, type: :component do
   it "reads spending against a budget in its own colour and words" do
     render_inline(described_class.new(kind: "spending", value: 233_000, target: 385_000))
 
-    aggregate_failures do
-      expect(page.find("[role='progressbar']")["aria-label"]).to eq("Orçamento executado")
-      expect(page).to have_text("R$ 233.000,00 de R$ 385.000,00")
-      expect(page).to have_css("[role='progressbar'] .bg-warning")
-    end
+    expect(page.find("[role='progressbar']")["aria-label"]).to eq("Orçamento executado")
+    expect(page).to have_text("R$ 233.000,00 de R$ 385.000,00")
+    expect(page).to have_css("[role='progressbar'] .bg-warning")
   end
 
   it "rejects a progress kind outside the component contract" do

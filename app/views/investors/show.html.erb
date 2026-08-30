@@ -61,7 +61,7 @@
         a prestação de contas continua, e a obra não vira alvo. %>
     <% if dashboard.hidden_disclosable? %>
       <p class="mt-3 text-body text-muted-foreground">
-        <%= t(".hidden_aggregate", count: dashboard.hidden.count,
+        <%= t(".hidden_aggregate", count: dashboard.hidden.project_count,
                                    amount: money_from_cents(dashboard.hidden.contributed_cents),
                                    reach: number_with_delimiter(dashboard.hidden.attributed_reach)) %>
       </p>

@@ -91,7 +91,7 @@ RSpec.describe InvestorDashboard do
   describe "a project the reader cannot reach" do
     # Três é o piso do agregado de campanha, e é o mesmo aqui: um agregado de
     # uma obra só descreveria justamente a obra que o nível esconde.
-    before { described_class::MINIMUM_AGGREGATE_COUNT.times { funded_project(home: confidential_ngo) } }
+    before { FundedProjects::MINIMUM_AGGREGATE_COUNT.times { funded_project(home: confidential_ngo) } }
 
     it "never appears itemised" do
       expect(dashboard.stakes).to be_empty
@@ -100,8 +100,8 @@ RSpec.describe InvestorDashboard do
     it "is folded into the totals as an anonymised aggregate" do
       aggregate_failures do
         expect(dashboard).to be_hidden_disclosable
-        expect(dashboard.people_reached).to eq(3_750 * described_class::MINIMUM_AGGREGATE_COUNT)
-        expect(dashboard.active_count).to eq(described_class::MINIMUM_AGGREGATE_COUNT)
+        expect(dashboard.people_reached).to eq(3_750 * FundedProjects::MINIMUM_AGGREGATE_COUNT)
+        expect(dashboard.active_count).to eq(FundedProjects::MINIMUM_AGGREGATE_COUNT)
       end
     end
   end

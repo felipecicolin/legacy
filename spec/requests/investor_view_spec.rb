@@ -51,7 +51,7 @@ RSpec.describe "Investor view" do
   # A obra que o leitor não alcança não aparece nem pelo nome: a prestação de
   # contas vira agregado, e a obra não vira alvo.
   it "replaces a project it cannot reach with an anonymised line" do
-    InvestorDashboard::MINIMUM_AGGREGATE_COUNT.times do
+    FundedProjects::MINIMUM_AGGREGATE_COUNT.times do
       home = create(:ngo, :active, country: create(:country, high_risk: true))
       project = create(:project, ngo: home, funding_target_cents: 100_000, estimated_annual_reach: 15_000)
       create(:contribution, :confirmed, campaign: create(:campaign, ngo: home, project: project),

@@ -173,10 +173,7 @@ RSpec.describe Ngo do
       country = create(:country)
       located = create(:ngo, country: country, region: create(:region, country: country, name: "Vale"))
 
-      aggregate_failures do
-        expect(located.country_label).to eq(country.name)
-        expect(located.region_label).to eq("Vale")
-      end
+      expect([located.country_label, located.region_label]).to eq([country.name, "Vale"])
     end
 
     it "answers nothing for an ngo with no place recorded" do

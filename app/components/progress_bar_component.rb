@@ -7,12 +7,9 @@ class ProgressBarComponent < ApplicationComponent
   # "quanto de um alvo" é a mesma — e muda só a cor e o rótulo: gasto contra
   # orçamento é leitura de atenção, não de conquista.
   KIND_CONFIG = {
-    "physical" => { classes: "bg-primary", ratio: :physical_ratio,
-                    value: :physical_label, label: :physical_label },
-    "funding" => { classes: "bg-accent", ratio: :funding_ratio,
-                   value: :funding_label, label: :funding_label },
-    "spending" => { classes: "bg-warning", ratio: :funding_ratio,
-                    value: :funding_label, label: :spending_label },
+    "physical" => { classes: "bg-primary", ratio: :physical_ratio, value: :physical_label },
+    "funding" => { classes: "bg-accent", ratio: :funding_ratio, value: :funding_label },
+    "spending" => { classes: "bg-warning", ratio: :funding_ratio, value: :funding_label },
   }.freeze
 
   Attrs = Data.define(:kind, :value, :target)
@@ -43,10 +40,14 @@ class ProgressBarComponent < ApplicationComponent
     send(kind_config.fetch(:value))
   end
 
-  # `scope:` e não interpolação: o cop de i18n reprova a chave montada, e o
-  # scanner não enxergaria a chave dinâmica de qualquer forma.
+  # As três chaves escritas por extenso: `Rails/DotSeparatedKeys` recusa a
+  # opção `scope:`, o cop de i18n recusa a chave montada por interpolação, e o
+  # scanner de chave órfã só enxerga literal.
   def aria_label
-    t(kind_config.fetch(:label), scope: :progress_bar_component)
+    return t("progress_bar_component.physical_label") if @attrs.kind == "physical"
+    return t("progress_bar_component.spending_label") if @attrs.kind == "spending"
+
+    t("progress_bar_component.funding_label")
   end
 
   def percentage
