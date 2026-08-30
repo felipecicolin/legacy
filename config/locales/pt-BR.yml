@@ -3,6 +3,10 @@ pt-BR:
   app:
     name: Legacy
     preview_title: Legacy — Preview de componente
+  default_sensitivities:
+    confidential: Confidencial
+    public: Pública
+    restricted: Restrita
   from_levels:
     confidential: Confidencial
     public: Pública

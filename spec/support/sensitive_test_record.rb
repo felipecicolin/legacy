@@ -13,6 +13,12 @@ class SensitiveTestRecord < ApplicationRecord
   # mecanismos são abstratos, e é aqui que eles se encontram — a política de
   # entrega pergunta a sensibilidade do registro dono do anexo.
   attaches_scrubbed_photo :photo
+
+  # O modelo de base ainda não existe, e é dele que virá o vínculo de verdade.
+  # Aqui o vínculo serve para o spec de `Country` poder afirmar o que interessa
+  # sobre o gancho de sensibilidade: que marcar um país como `high_risk` não
+  # alcança registro já gravado NAQUELE país.
+  belongs_to :country, optional: true
 end
 
 RSpec.configure do |config|
@@ -20,6 +26,9 @@ RSpec.configure do |config|
     ActiveRecord::Base.connection_pool.with_connection do |connection|
       connection.create_table(:sensitive_test_records, force: :cascade) do |t|
         t.string :code
+        # Sem `foreign_key:`: a tabela do host nasce no `before(:suite)`, e uma
+        # FK a amarraria à ordem em que as tabelas do schema aparecem.
+        t.references :country, index: false
         t.string :country_label
         t.string :name
         t.string :region_label

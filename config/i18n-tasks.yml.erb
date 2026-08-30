@@ -23,6 +23,12 @@ data:
   write:
     - ['{activerecord,activemodel}.*', 'config/locales/models/%{locale}.yml']
     - ['{date,time,datetime,number,support,helpers,errors}.*', 'config/locales/rails.%{locale}.yml']
+    # Vocabulário curado (db/vocabulary/): ~250 países mais a taxonomia de
+    # habilidades. Arquivo próprio porque é a maior parte das chaves do
+    # projeto e nenhuma delas é texto de tela escrito à mão — misturá-las com
+    # `config/locales/%{locale}.yml` faria o arquivo de UI deixar de ser
+    # legível. Ver docs/vocabulary.md.
+    - ['{countries,skill_categories,skills}.*', 'config/locales/vocabulary/%{locale}.yml']
 <% component_dirs.each do |dir| %>
 <%   name = File.basename(dir) %>
     - ['<%= name %>.*', '<%= dir %>/<%= name %>.%{locale}.yml']
@@ -74,5 +80,16 @@ ignore_unused:
   # impossível de esconder, porque `spec/models/enum_translation_audit_spec.rb`
   # percorre os enums de todos os modelos e reprova qualquer valor SEM rótulo.
   # A checagem de "não usada" foi substituída por uma mais forte, não removida.
-  - "{kinds,statuses,verification_statuses,sensitivity_levels,from_levels,to_levels}.*"
+  - "{kinds,statuses,verification_statuses,sensitivity_levels,default_sensitivities,from_levels,to_levels}.*"
   - "{organization_kinds,organization_statuses,roles}.*"
+
+  # Vocabulário curado em db/vocabulary/. Mesma mecânica do enum: a chave é
+  # montada em tempo de execução (`I18n.t(iso_code.downcase, scope: :countries)`)
+  # e o scanner não a resolve — as ~250 entradas apareceriam todas como órfãs.
+  #
+  # E vale a mesma troca: quem responde por elas é
+  # `spec/models/vocabulary/catalog_spec.rb`, que lê os YAML de vocabulário e
+  # reprova qualquer `iso_code`, `key` ou `category` SEM rótulo. Chave nova sem
+  # tradução não passa, e rótulo sobrando também não — o spec compara os dois
+  # lados. Ver docs/vocabulary.md.
+  - "{countries,skill_categories,skills}.*"
