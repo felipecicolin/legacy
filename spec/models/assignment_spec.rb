@@ -36,7 +36,7 @@ RSpec.describe Assignment do
     it "puts them there as an active volunteer" do
       create(:assignment, need: need, candidacy: candidacy)
 
-      expect(project.project_participations.first).to be_participation_status_active
+      expect(project.project_participations.first).to be_active
     end
 
     it "takes them off the team when the assignment is cancelled" do
