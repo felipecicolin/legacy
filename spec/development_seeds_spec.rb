@@ -13,6 +13,10 @@ Rails.root.glob("db/seeds/development/*.rb").sort.each { |file| load file }
 RSpec.describe DevelopmentSeeds do
   def load_seeds = described_class.load_all!
 
+  def bases_visible_at(clearance)
+    MissionBase.visible_to(Visibility::Context.new(clearance: clearance)).count
+  end
+
   # Idempotência não é conveniência: o seed roda de novo toda vez que alguém
   # recarrega a demo, e um `create!` solto transformaria a segunda carga em
   # violação de índice único.
@@ -48,10 +52,7 @@ RSpec.describe DevelopmentSeeds do
   # cada um contendo o anterior, e que o anônimo enxerga alguma coisa.
   it "answers a different set of bases to each level of clearance" do
     load_seeds
-
-    counts = %i[public restricted confidential].map do |clearance|
-      MissionBase.visible_to(Visibility::Context.new(clearance: clearance)).count
-    end
+    counts = %i[public restricted confidential].map { |level| bases_visible_at(level) }
 
     aggregate_failures do
       expect(counts).to eq(counts.sort)
@@ -66,7 +67,6 @@ RSpec.describe DevelopmentSeeds do
   it "records each disclosure once, however many times it runs" do
     load_seeds
     first = SensitivityChange.count
-
     load_seeds
 
     aggregate_failures do
