@@ -78,9 +78,10 @@ RSpec.describe Search::Query do
   describe "with no term at all" do
     before { create(:project, mission_base: mission_base) }
 
-    # A busca vazia é a listagem: "ver tudo" não é uma tela à parte.
+    # A busca vazia é a listagem: "ver tudo" não é uma tela à parte. Uma obra,
+    # uma base e o país que a contém — o país entra porque tem base alcançável.
     it "answers everything the reader reaches" do
-      expect(search(nil).total).to eq(2)
+      expect(search(nil).groups.transform_values(&:count)).to eq(projects: 1, mission_bases: 1, countries: 1)
     end
 
     it "knows it is not searching" do

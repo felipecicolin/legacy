@@ -10,19 +10,20 @@ RSpec.describe "Search" do
     base.promote_visibility!(level: :public, author: create(:user), justification: "vitrine")
   end
 
-  # A propriedade que a issue chama de "não pode ser oráculo": a resposta para
-  # um termo que casa algo que o leitor não alcança tem de ser IDÊNTICA à de um
-  # termo que não casa nada. Comparação literal, não "parecida".
-  describe "a term that matches something the reader cannot reach" do
-    it "answers exactly like a term that matches nothing" do
-      create(:mission_base, :active, country: create(:country, high_risk: true), name: "Base Escondida")
-
+  # A propriedade que a issue chama de "não pode ser oráculo", escrita como ela
+  # é de fato verificável: a EXISTÊNCIA de um registro fora do alcance não pode
+  # mudar a resposta. Comparar dois termos diferentes não serviria — a tela
+  # devolve o termo no campo, e aí os corpos diferem pelo que a pessoa digitou,
+  # não pelo que o banco tem.
+  describe "a record the reader cannot reach" do
+    it "answers exactly as if the record were not there" do
       get search_path(query: "escondida")
-      hidden = [response.status, response.body]
+      without_it = [response.status, response.body]
 
-      get search_path(query: "termo-que-nao-casa-nada")
+      create(:mission_base, :active, country: create(:country, high_risk: true), name: "Base Escondida")
+      get search_path(query: "escondida")
 
-      expect([response.status, response.body]).to eq(hidden)
+      expect([response.status, response.body]).to eq(without_it)
     end
   end
 

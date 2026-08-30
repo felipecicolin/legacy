@@ -70,15 +70,21 @@ RSpec.describe "Platform routes" do
     expect(response).to have_http_status(:ok)
   end
 
-  it "expects declared parameters for write and search actions" do
-    user = create(:user)
-    sign_in(user)
+  it "expects declared parameters for write actions" do
+    sign_in(create(:user))
 
     post "/obras/OB-0247/progress_reports", params: {}
-    expect(response).to have_http_status(:unprocessable_content)
 
-    get "/search", params: {}
     expect(response).to have_http_status(:unprocessable_content)
+  end
+
+  # A busca sem termo é a LISTAGEM, e não um pedido malformado: "ver tudo" não
+  # é uma tela à parte. O placeholder exigia o termo; a busca de verdade (#51)
+  # abre com os filtros e sem ele. Ver docs/search.md.
+  it "opens the search with no term at all" do
+    get "/search", params: {}
+
+    expect(response).to have_http_status(:ok)
   end
 
   it "keeps the admin dashboard closed to non-staff users" do
