@@ -7,6 +7,12 @@
 # morre dentro do banco de teste, que é recriado a cada rodada.
 class SensitiveTestRecord < ApplicationRecord
   include Sensitive
+  include ScrubbedPhoto
+
+  # O host carrega a foto pelos mesmos motivos que carrega o nível: os dois
+  # mecanismos são abstratos, e é aqui que eles se encontram — a política de
+  # entrega pergunta a sensibilidade do registro dono do anexo.
+  attaches_scrubbed_photo :photo
 end
 
 RSpec.configure do |config|

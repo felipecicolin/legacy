@@ -119,9 +119,14 @@ RSpec.describe Profile do
   # única linha gravada, e o exemplo passaria sem provar que as tabelas do
   # Active Storage aguentam a inserção — que é justamente o que a migration
   # deste PR existe para garantir.
+  #
+  # A foto tem de ser uma imagem de verdade: desde a #24 o anexo passa pelo
+  # `ExifScrubber`, que recusa bytes que a libvips não abre. Um "arquivo de
+  # foto" que não é foto não tem EXIF para limpar, e aceitá-lo seria gravar
+  # metadado nenhum tendo limpado nada.
   it "carries the picture as an Active Storage attachment" do
     profile = create(:profile)
-    profile.avatar.attach(io: StringIO.new("bytes"), filename: "foto.png", content_type: "image/png")
+    profile.avatar.attach(GeotaggedPhoto.upload(filename: "foto.jpg"))
 
     expect(profile.reload.avatar).to be_attached
   end
@@ -155,5 +160,25 @@ RSpec.describe Profile do
     credential.save!
 
     expect { profile.destroy! }.to change(ActiveStorage::Attachment, :count).by(-1)
+  end
+
+  # O retrato entra pelo mesmo pipeline da foto de obra: um retrato tirado no
+  # celular numa base de país perseguido carrega a coordenada da base.
+  it "destroys the EXIF of the picture on the way in" do
+    profile = create(:profile)
+    profile.avatar.attach(GeotaggedPhoto.upload(filename: "foto.jpg"))
+
+    expect(GeotaggedPhoto.exif_fields(profile.reload.avatar.blob.download)).to be_empty
+  end
+
+  # A outra porta de log, a que não passa por serialização nenhuma: `inspect` é
+  # o que a linha de exceção e o rastreador de erros imprimem.
+  it "keeps the legal name out of inspect" do
+    profile = create(:profile, legal_name: "Maria Documento", display_name: "Maria")
+
+    aggregate_failures do
+      expect(profile.inspect).to include("[FILTERED]")
+      expect(profile.inspect).not_to include("Maria Documento")
+    end
   end
 end

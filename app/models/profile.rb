@@ -7,12 +7,40 @@
 #
 # O `User` guarda credencial e sessão; tudo que é pessoa mora aqui.
 class Profile < ApplicationRecord
+  include ScrubbedPhoto
+
   # Nome legal não sai por serialização. Ver `#serializable_hash`.
   HIDDEN_ATTRIBUTES = %w[legal_name].freeze
 
   belongs_to :user
-  has_one_attached :avatar
+
+  # A foto de perfil entra pelo mesmo pipeline das demais: "sempre e para todas
+  # as fotos" só é verdade se valer também para o único anexo que já existe.
+  # Um retrato tirado no celular numa base de país perseguido carrega a
+  # coordenada da base no EXIF, igual à foto da obra.
+  attaches_scrubbed_photo :avatar
   has_many :credentials, dependent: :destroy
+
+  # `legal_name` fora do `inspect`, que é o que vai para a linha de log de
+  # exceção e para o rastreador de erros. Espelha o que `Sensitive` faz com a
+  # coordenada, e pelo mesmo motivo: o `serializable_hash` abaixo cobre a
+  # resposta, e esta é a outra porta.
+  self.filter_attributes |= HIDDEN_ATTRIBUTES
+
+  # Papel é contexto, e o contexto mora do outro lado: nenhuma coluna aqui diz
+  # "esta pessoa é dona de alguma coisa". Ver docs/organizations.md.
+  #
+  # `dependent: :destroy` apaga os vínculos junto com a pessoa — menos quando um
+  # deles é a última posse de uma organização que continua existindo. Aí o
+  # `Membership` recusa, e apagar a pessoa reprova em vez de deixar uma
+  # organização sem dono.
+  #
+  # A recusa é silenciosa deste lado: `destroy` volta `false` e desfaz tudo, mas
+  # os erros ficam no `Membership` que recusou e `profile.errors` volta VAZIO.
+  # Quem construir a tela de exclusão de conta precisa perguntar antes — "estas
+  # organizações ficariam sem dono" — em vez de tentar apresentar o erro depois.
+  has_many :memberships, dependent: :destroy
+  has_many :organizations, through: :memberships
 
   validates :legal_name, :display_name, presence: true
 

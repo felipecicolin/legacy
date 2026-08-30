@@ -38,6 +38,12 @@ acrescenta nada. Então:
   vez de uma tabela por papel, por que o nome público é armazenado e não
   derivado, e como o nome legal é impedido de sair por serialização.
 
+- [Organizações e vínculos](organizations.md) — por que dois enums fogem do
+  nome que a issue pedia, por que o slug é imutável e ganha sufixo de
+  desempate, as três camadas que impedem uma organização de perder o dono que
+  tem — inclusive quando o vínculo é movido para outra —, e o que a remoção em
+  massa ainda alcança.
+
 - [Pagamentos](payments.md) — a fronteira que isola o provedor, por que o
   simulador é determinístico e configurável, por que a marca de origem é
   `attr_readonly`, e as duas invariantes que a CI cobra sobre o repositório
@@ -46,6 +52,13 @@ acrescenta nada. Então:
 - [Visibilidade](visibility.md) — por que obra nasce fechada, por que registro
   confidencial não *guarda* coordenada em vez de só não mostrá-la, como a
   promoção de nível é auditada, e o que sustenta o agregado anonimizado.
+
+- [Identidade contextual e política de foto](photo-policy.md) — por que quem
+  decide o nome que aparece é o recurso e não o perfil, por que o EXIF é
+  destruído na ingestão em vez de filtrado na exibição, as duas armadilhas
+  silenciosas do override de anexo, como a rota do Active Storage é
+  interceptada sem copiar o arquivo de rotas do engine, e onde cada uma
+  dessas defesas para.
 
 - [Action Text](action-text.md) — por que texto rico nasce sem anexo embutido,
   as duas camadas que cobram isso, a corrida que a barra do Trix perde se a

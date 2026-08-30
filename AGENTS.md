@@ -339,6 +339,29 @@ A pessoa é o `Profile`. Três regras:
 - **`display_name` é armazenado, não derivado.** Corrigir o nome legal não pode
   reescrever o histórico já exibido.
 
+## Organizações e vínculos
+
+> Os nomes dos enums, as três camadas da regra do owner e o que `delete_all`
+> não alcança: [`docs/organizations.md`](docs/organizations.md).
+
+A instituição é a `Organization`; o vínculo com uma pessoa é o `Membership`.
+Quatro regras:
+
+- **Papel é contexto.** Ele mora no `Membership`, nunca numa coluna em
+  `profiles`.
+- **Organização nasce `pending`, e quem lista é `Organization.visible`.** Não
+  aprovada não aparece em busca e não recebe doação.
+- **`slug` nasce do nome e é imutável** (`attr_readonly`) — URL pública que
+  quebra é dívida permanente.
+- **Uma organização não perde o `owner` que tem.** Remover, rebaixar *ou mover
+  para outra organização* o último reprova; a cascata da própria organização é
+  a única isenta.
+
+E uma regra de vocabulário que vale para qualquer enum novo: **se o namespace
+de rótulo (`<enum no plural>.*`) já existe com outro sentido, o enum ganha nome
+próprio** — foi por isso que as colunas aqui são `organization_kind` e
+`organization_status`, e não `kind` e `status`.
+
 ## Pagamentos
 
 > A fronteira, o simulador determinístico e a marca de dado simulado:
@@ -413,6 +436,30 @@ Texto rico é `has_rich_text`, com Trix e Active Storage por trás. Quatro regra
   `vendor/javascript/`.** Ela já serve do próprio domínio e é travada pela
   `actiontext`. A cópia é UMD: `import "trix"`, nunca
   `import Trix from "trix"`.
+
+## Foto e identidade contextual
+
+> Por quê, armadilhas e limites:
+> [`docs/photo-policy.md`](docs/photo-policy.md).
+
+- **Anexo de foto entra por `attaches_scrubbed_photo`**, nunca por
+  `has_one_attached` direto. O EXIF é destruído na ingestão — os bytes com GPS
+  não chegam ao storage. Blob pronto e signed id são **recusados**: não há como
+  limpar o que já foi armazenado.
+- **Quem decide se uma pessoa aparece pelo nome é o recurso ao lado dela**, não
+  o perfil: `ProfilePresenter#name_for(context)`, com `subject:` obrigatório. O
+  rótulo de papel chega traduzido de quem chama — papel é vocabulário de #20,
+  #21 e #31.
+- **Arquivo é servido por controller que autoriza.** As rotas do Active Storage
+  são interceptadas em `config/routes.rb`; os nomes continuam sendo os do
+  engine. Não use `blob.url` nem redirecione para o serviço: a URL assinada não
+  passa por autorização nenhuma.
+
+**Armadilha:** o override do writer de anexo tem de ser definido na **classe**,
+não num módulo. O writer do `has_one_attached` mora em
+`GeneratedAssociationMethods`, um módulo incluído — e um override num módulo
+incluído depois perde a disputa **sem erro nenhum**, com a foto subindo com o
+GPS dentro.
 
 ## Banco de dados
 

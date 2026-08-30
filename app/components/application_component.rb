@@ -3,6 +3,13 @@
 class ApplicationComponent < ViewComponent::Base
   CLASS_MERGER = TailwindMerge::Merger.new
 
+  attr_reader :html_options
+
+  def initialize(**html_options)
+    super()
+    @html_options = html_options
+  end
+
   # Identificador Stimulus do controller do componente. Espelha a chave que o
   # `pin_all_from "app/javascript/controllers", under: "controllers"` produz
   # para `app/javascript/controllers/<nome>_component_controller.js`, para o

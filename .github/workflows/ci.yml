@@ -120,6 +120,10 @@ jobs:
         if: ${{ !cancelled() }}
         run: bin/herb_lint
 
+      - name: Validate SVG icon catalog
+        if: ${{ !cancelled() }}
+        run: bin/icon_lint
+
       - name: Lint Stimulus controller files
         if: ${{ !cancelled() }}
         run: bin/stimulus_lint

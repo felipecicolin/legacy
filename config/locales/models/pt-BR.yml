@@ -9,6 +9,18 @@ pt-BR:
         kind: Tipo
         number: Número
         verification_status: Situação da verificação
+      membership:
+        accepted_at: Aceito em
+        organization: Organização
+        profile: Pessoa
+        role: Papel
+      organization:
+        legal_document: CNPJ ou equivalente
+        name: Nome
+        organization_kind: Tipo
+        organization_status: Situação
+        slug: Endereço
+        website: Site
       user:
         email_address: E-mail
         password: Senha
@@ -17,4 +29,5 @@ pt-BR:
     errors:
       messages:
         confidential_precise_location: Registro confidencial não guarda coordenada nem endereço.
+        last_owner: A organização precisa de pelo menos um proprietário.
         promotion_requires_justification: Reduzir a restrição exige autor e justificativa registrados.

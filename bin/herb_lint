@@ -37,15 +37,27 @@ def herb(*args)
   [output, status]
 end
 
+BROKEN_RULE_HINT = "Uma regra que não carrega não reprova nada — e o herb sai 0 do mesmo " \
+                   "jeito.\nConserte o arquivo da regra antes de confiar neste passo."
+
+# `ERR_MODULE_NOT_FOUND` não é regra quebrada, é dependência ausente: as regras
+# importam `@herb-tools/linter`, que vem do npm. Sem esta distinção o guard
+# manda quem clonou o repositório depurar um arquivo `.mjs` que está intacto.
+MISSING_PACKAGE_HINT = "Falta o pacote que as regras importam (`@herb-tools/linter`).\n" \
+                       "Rode `npm ci` e tente de novo."
+
+def hint_for(load_errors)
+  load_errors.grep(/ERR_MODULE_NOT_FOUND/).any? ? MISSING_PACKAGE_HINT : BROKEN_RULE_HINT
+end
+
 def fail_with(expected, loaded, load_errors)
   warn ""
   warn "[ bin/herb_lint ] As regras customizadas não carregaram por inteiro."
   warn "  esperadas: #{expected} (arquivos em .herb/rules/*.mjs)"
-  warn "  carregadas: #{loaded}"
+  warn "  carregadas: #{loaded || 0}"
   load_errors.each { |line| warn "  #{line.strip}" }
   warn ""
-  warn "Uma regra que não carrega não reprova nada — e o herb sai 0 do mesmo"
-  warn "jeito. Conserte o arquivo da regra antes de confiar neste passo."
+  warn hint_for(load_errors)
   exit 1
 end
 
@@ -60,16 +72,23 @@ if expected.positive? && probe_file
   loaded = plain[/Loaded (\d+) custom rules/, 1]&.to_i
   load_errors = plain.scan(/Error loading rule file[^\n]*/)
 
+  # A ordem destas duas checagens importa. Quando NENHUMA regra carrega, o herb
+  # não chega a imprimir o banner de contagem — perguntar primeiro por ele faz o
+  # guard culpar "o formato da saída mudou" e mandar auditar o CLI, tendo em mãos
+  # o erro de carga que explica tudo. O caso comum é `node_modules` ausente.
+  fail_with(expected, loaded, load_errors) if load_errors.any?
+
   if loaded.nil?
     warn ""
     warn "[ bin/herb_lint ] O herb não imprimiu \"Loaded N custom rules\" nem em"
-    warn "modo serial (-j 1). O formato da saída mudou: sem essa linha não dá"
-    warn "para afirmar que as #{expected} regras de .herb/rules/ estão ativas."
+    warn "modo serial (-j 1), e também não relatou erro de carga. O formato da"
+    warn "saída mudou: sem essa linha não dá para afirmar que as #{expected}"
+    warn "regras de .herb/rules/ estão ativas."
     warn "Confira o CLI do @herb-tools/linter antes de confiar neste passo."
     exit 1
   end
 
-  fail_with(expected, loaded, load_errors) if load_errors.any? || loaded != expected
+  fail_with(expected, loaded, load_errors) if loaded != expected
 end
 
 output, status = herb(*ARGV)
