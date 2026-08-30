@@ -6,6 +6,9 @@ Rails.application.routes.draw do
   # porque cada pedido de recuperação é um recurso próprio.
   resource :session
   resources :passwords, param: :token
+  resources :credentials, only: [] do
+    get :document, on: :member, to: "credential_documents#show"
+  end
 
   # Entrega de arquivo passa por autorização. Estes padrões são os mesmos que o
   # engine do Active Storage declara, e é justamente esse o mecanismo: as rotas

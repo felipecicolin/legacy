@@ -12,7 +12,12 @@ pt-BR:
       signed_in_as: Você entrou como %{email}.
       title: Você está autenticado
   kinds:
+    cau: CAU
+    certificate: Certificado
     charge: Cobrança
+    crea: CREA
+    license: Licença profissional
+    other_professional: Outro registro profissional
     refund: Estorno
     schedule_recurring: Agendamento recorrente
   layouts:
@@ -81,3 +86,8 @@ pt-BR:
     confidential: Confidencial
     public: Pública
     restricted: Restrita
+  verification_statuses:
+    expired: Expirada
+    pending: Pendente
+    rejected: Rejeitada
+    verified: Verificada

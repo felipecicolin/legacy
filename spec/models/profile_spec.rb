@@ -6,6 +6,7 @@ RSpec.describe Profile do
   subject(:profile) { build(:profile) }
 
   it { is_expected.to belong_to(:user) }
+  it { is_expected.to have_many(:credentials).dependent(:destroy) }
   it { is_expected.to validate_presence_of(:legal_name) }
 
   # `validate_presence_of(:display_name)` não serve aqui: o callback de
@@ -128,6 +129,37 @@ RSpec.describe Profile do
     profile.avatar.attach(GeotaggedPhoto.upload(filename: "foto.jpg"))
 
     expect(profile.reload.avatar).to be_attached
+  end
+
+  it "blocks professional registration when its only credential is pending" do
+    profile = create(:profile)
+    create(:credential, profile: profile)
+
+    expect(profile).not_to be_valid_professional_registration
+  end
+
+  it "blocks professional registration when its verified credential is expired" do
+    profile = create(:profile)
+    create(:credential, profile: profile, verification_status: :verified, expires_on: Date.current)
+
+    expect(profile).not_to be_valid_professional_registration
+  end
+
+  it "allows professional registration with a current verified credential" do
+    profile = create(:profile)
+    create(:credential, profile: profile, verification_status: :verified)
+
+    expect(profile).to be_valid_professional_registration
+  end
+
+  it "removes credential documents when the profile is destroyed" do
+    profile = create(:profile)
+    credential = create(:credential, profile: profile)
+    credential.document.attach(io: StringIO.new("documento"), filename: "registro.pdf",
+                               content_type: "application/pdf")
+    credential.save!
+
+    expect { profile.destroy! }.to change(ActiveStorage::Attachment, :count).by(-1)
   end
 
   # O retrato entra pelo mesmo pipeline da foto de obra: um retrato tirado no

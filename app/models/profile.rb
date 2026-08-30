@@ -19,6 +19,7 @@ class Profile < ApplicationRecord
   # Um retrato tirado no celular numa base de país perseguido carrega a
   # coordenada da base no EXIF, igual à foto da obra.
   attaches_scrubbed_photo :avatar
+  has_many :credentials, dependent: :destroy
 
   # `legal_name` fora do `inspect`, que é o que vai para a linha de log de
   # exceção e para o rastreador de erros. Espelha o que `Sensitive` faz com a
@@ -62,6 +63,12 @@ class Profile < ApplicationRecord
   # devolvesse `legal_name`, bastaria um `"#{profile}"` esquecido numa
   # listagem para vazar a identidade legal de quem trabalha em país sensível.
   def to_s = display_name
+
+  # É o ponto de consulta que a futura Candidacy usa para decidir se uma
+  # necessidade que exige registro profissional pode receber esta pessoa.
+  def valid_professional_registration?
+    credentials.any?(&:valid_for_professional_registration?)
+  end
 
   # A mesma garantia para qualquer coisa que serialize: `as_json`, `to_json` e
   # todo serializer que passe por aqui.

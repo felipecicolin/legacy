@@ -52,6 +52,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_130100) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "credentials", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.date "expires_on"
+    t.date "issued_on"
+    t.integer "kind", null: false
+    t.string "issuing_body", null: false
+    t.string "number", null: false
+    t.bigint "profile_id", null: false
+    t.datetime "updated_at", null: false
+    t.integer "verification_status", default: 0, null: false
+    t.index ["profile_id", "kind"], name: "index_credentials_on_profile_id_and_kind"
+    t.index ["verification_status", "expires_on"], name: "index_credentials_on_verification_status_and_expires_on"
+  end
+
   create_table "memberships", force: :cascade do |t|
     t.datetime "accepted_at"
     t.datetime "created_at", null: false
@@ -307,6 +321,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_130100) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "credentials", "profiles"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "profiles"
   add_foreign_key "profiles", "users"
