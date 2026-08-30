@@ -4,8 +4,7 @@ require "rails_helper"
 
 RSpec.describe AnonymizedRollup do
   let(:visibility) { Visibility::Context.anonymous }
-  let(:region) { create(:region) }
-  let(:base) { create(:mission_base, region: region) }
+  let(:base) { mission_base_with_region }
 
   it "suppresses a region with fewer than 3 hidden projects" do
     create_list(:project, 2, mission_base: base)
@@ -42,11 +41,19 @@ RSpec.describe AnonymizedRollup do
   end
 
   def seed_hidden_regions(count)
-    count.times { create_hidden_projects(create(:mission_base, region: create(:region)), progresses: [0, 30, 60]) }
+    count.times { create_hidden_projects(mission_base_with_region, progresses: [0, 30, 60]) }
   end
 
   def query_count_for(region_count, rollup)
     seed_hidden_regions(region_count)
     count_queries { rollup.by_region }
+  end
+
+  # `MissionBase` valida que sua região pertence ao mesmo país da base — a
+  # fábrica de cada uma gera o país sozinha, então as duas precisam ser
+  # criadas com o país em comum, não uma independente da outra.
+  def mission_base_with_region
+    country = create(:country)
+    create(:mission_base, country: country, region: create(:region, country: country))
   end
 end
