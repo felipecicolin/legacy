@@ -11,7 +11,20 @@
         onde navegar. A marca de dado simulado e o flash continuam aqui, na
         coluna do formulário: é o layout que garante que nenhuma tela precise
         lembrar dos dois. %>
-    <%= render AuthLayoutComponent.new do %>
+    <%= render AuthLayoutComponent.new do |auth| %>
+      <%# `alt` vazio de propósito: a foto é decorativa, e descrevê-la só
+          faria o leitor de tela anunciar um canteiro de obra antes do campo
+          de e-mail. `object-cover` corta nas bordas de cima e de baixo — o
+          assunto da foto está no terço central por causa disso.
+
+          Sem `loading: "lazy"`: medido no Chrome, o telefone baixa a foto
+          mesmo com o painel em `display: none` e mesmo com o atributo. O
+          comentário que dizia o contrário seria pior que a ausência dele —
+          ver docs/design-system/auth-layout.md. %>
+      <% auth.with_illustration do %>
+        <%= image_tag "login.jpg", alt: "", class: "absolute inset-0 h-full w-full object-cover" %>
+      <% end %>
+
       <%= render SimulatedDataBannerComponent.new(classes: "mb-6") %>
       <%= render "shared/flash" %>
       <%= yield %>

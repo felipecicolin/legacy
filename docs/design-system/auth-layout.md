@@ -59,11 +59,12 @@ decisão de uma vez: um `flex-row-reverse` removido inverteria a pintura, e um
 
 ## O painel é slot, e o apoio é o padrão
 
-`renders_one :illustration`. Enquanto não há foto, o padrão é um painel
-`bg-accent` com ícone e uma linha de texto. Os dois ocupam o mesmo retângulo
-(`absolute inset-0` dentro de um `<aside class="relative">`), então trocar o
-apoio por uma imagem de verdade não muda o enquadramento da tela nem exige tocar
-neste componente:
+`renders_one :illustration`. O layout `authentication` passa a foto de
+`app/assets/images/login.jpg`; quem renderiza a `AuthLayoutComponent` sem o
+slot — o preview, por exemplo — recebe um painel `bg-accent` com ícone e uma
+linha de texto. Os dois ocupam o mesmo retângulo (`absolute inset-0` dentro de
+um `<aside class="relative">`), então a troca não mexe no enquadramento da tela
+nem exige tocar no componente:
 
 ```erb
 <%= render AuthLayoutComponent.new do |auth| %>
@@ -83,6 +84,29 @@ que ninguém mede, e que pode reprovar em AA sem nada acusar.
 Não é a `ImageFrameComponent`: ela reserva uma **proporção** e emite um
 `<figure>` com legenda. Um painel lateral quer altura cheia, que é outro
 problema.
+
+## A foto: retrato, cortada nas bordas, e sem `alt`
+
+O painel é `w-1/2 x min-h-screen`, então o alvo é retrato — 720x900 num monitor
+de 1440, 960x1080 num de 1920. A imagem entra com `object-cover`, que **corta
+em cima e embaixo**; por isso o arquivo é 3:4 (1086x1448) com o assunto no
+terço central. Ela é convertida para JPEG com metadados removidos antes de
+entrar no repositório: 2,2 MB de PNG viram 204 KB.
+
+`alt` vazio, porque a foto é decorativa. Descrevê-la faria o leitor de tela
+anunciar um canteiro de obra antes do campo de e-mail — e a decisão de a ordem
+do DOM começar pelo formulário existe justamente para isso não acontecer.
+
+**O telefone baixa a foto mesmo sem mostrá-la, e `loading="lazy"` não resolve.**
+A expectativa era a do padrão: imagem preguiçosa em `display: none` nunca
+intersecta o viewport, logo não seria pedida. Medido no Chrome a 375px, com o
+`<aside>` em `hidden` e o atributo posto, a imagem carrega assim mesmo —
+`img.complete` é `true` e `naturalWidth` é 1086. As alternativas que restam
+custam mais do que os 204 KB que economizariam: um `<picture>` só evita o
+download se o `<img>` de dentro não tiver `src`, o que é HTML inválido, e mover
+a foto para `background-image` num CSS escrito à mão esbarra na reescrita de
+URL do Propshaft — que é exatamente o que já quebra as fontes hoje. O atributo
+saiu, e fica registrado que o custo é conhecido e aceito, não esquecido.
 
 ## Por que o painel some abaixo de 1024px
 
