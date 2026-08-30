@@ -5,6 +5,11 @@ require "rails_helper"
 RSpec.describe ApplicationPolicy do
   subject(:policy) { described_class.new(Authorization::Context.anonymous, Object.new) }
 
+  let(:user) { create(:user) }
+  let(:profile) { create(:profile, user:) }
+  let(:context) { Authorization::Context.for(user) }
+  let(:anonymous) { Authorization::Context.anonymous }
+
   # O default é o contrato: uma policy nova que esqueça de escrever uma regra
   # herda RECUSA. Se este exemplo ficar verde com `true` em algum lugar, o
   # esquecimento passou a conceder acesso — que é o erro que não aparece em
@@ -34,5 +39,85 @@ RSpec.describe ApplicationPolicy do
         expect(permissive.edit?).to be(true)
       end
     end
+  end
+
+  def visible_record(code)
+    record = SensitiveTestRecord.create!(code:)
+    record.promote_visibility!(level: :public, author: create(:user), justification: "Catálogo público")
+    record
+  end
+
+  def member_policy
+    organization = create(:organization)
+    record = SensitiveTestRecord.create!(code: "PB-03")
+    record.define_singleton_method(:organization) { organization }
+    create(:membership, profile:, organization:, role: :member, accepted_at: Time.current)
+    described_class.new(context, record)
+  end
+
+  def admin_policy
+    record = SensitiveTestRecord.create!(code: "PB-04", sensitivity_level: :confidential)
+    admin = create(:user)
+    create(:staff_role, user: admin, staff_level: :admin)
+    described_class.new(Authorization::Context.for(admin), record)
+  end
+
+  def organization_visible?(status)
+    organization = create(:organization, organization_status: status)
+    described_class.new(anonymous, organization).send(:visible_record?)
+  end
+
+  it "stores the authorization context and record" do
+    record = Object.new
+    policy = described_class.new(context, record)
+
+    expect(policy).to have_attributes(context:, record:)
+  end
+
+  it "allows a signed-in page and refuses an anonymous one" do
+    expect(described_class.new(context, :page).access?).to be(true)
+    expect(described_class.new(anonymous, :page).access?).to be(false)
+  end
+
+  it "allows a public page to everyone" do
+    expect(described_class.new(anonymous, :page).public_access?).to be(true)
+  end
+
+  it "allows staff-only pages only to staff" do
+    expect(described_class.new(context, :page).staff_access?).to be(false)
+    user.staff_role = build(:staff_role, user:)
+    expect(described_class.new(Authorization::Context.for(user), :page).staff_access?).to be(true)
+    expect(described_class.new(anonymous, :page).staff_access?).to be(false)
+  end
+
+  it "hides a missing record" do
+    expect(described_class.new(context, nil).send(:visible_record?)).to be(false)
+  end
+
+  it "refuses a staff threshold without a user" do
+    expect(described_class.new(anonymous, :page).send(:staff_at_least?, :admin)).to be(false)
+  end
+
+  it "uses the viewer clearance for sensitive records" do
+    public_policy = described_class.new(anonymous, visible_record("PB-01"))
+    restricted_record = SensitiveTestRecord.create!(code: "PB-02")
+    signed_policy = described_class.new(context, restricted_record)
+
+    expect([public_policy.send(:visible_record?), signed_policy.send(:visible_record?)]).to eq([true, true])
+  end
+
+  it "uses organization approval for organization records" do
+    expect([organization_visible?(:approved), organization_visible?(:pending)]).to eq([true, false])
+  end
+
+  it "raises clearance for organization members and platform admins" do
+    expect([member_policy.send(:visible_record?), admin_policy.send(:visible_record?)]).to eq([true, true])
+  end
+
+  it "provides a default scope" do
+    records = instance_double(ActiveRecord::Relation)
+    allow(records).to receive(:all).and_return(records)
+
+    expect(described_class::Scope.new(context, records).resolve).to eq(records)
   end
 end

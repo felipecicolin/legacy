@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 
 class OrganizationPolicy < ApplicationPolicy
+  class Scope < ApplicationPolicy::Scope
+    def resolve = scope.visible
+  end
+
+  def index? = true
+
   # Quem responde pela organização. `representative` e `member` não entram:
   # representar uma empresa numa parceria não é administrar o cadastro dela.
   MANAGING_ROLES = %i[owner admin].freeze
@@ -20,6 +26,8 @@ class OrganizationPolicy < ApplicationPolicy
   # Só quem é dono, e não quem administra: `admin` de organização é papel
   # operacional, e apagar a organização apaga o vínculo de todo mundo nela.
   def destroy? = owner? || context.platform_admin?
+
+  def approve? = staff_at_least?(:curator)
 
   private
 

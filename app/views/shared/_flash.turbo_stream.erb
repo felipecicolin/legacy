@@ -1,0 +1,6 @@
+<%= turbo_stream.replace "flash" do %>
+  <div id="flash" aria-live="polite">
+    <%= render ToastComponent.new(severity: :alert, message: flash[:alert]) if flash[:alert].present? %>
+    <%= render ToastComponent.new(severity: :notice, message: flash[:notice]) if flash[:notice].present? %>
+  </div>
+<% end %>

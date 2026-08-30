@@ -49,6 +49,7 @@ module Legacy
     # A aplicação é uma demo fechada e não deve ser indexada, mesmo que um
     # robô ignore o robots.txt.
     config.action_dispatch.default_headers["X-Robots-Tag"] = "noindex"
+    config.exceptions_app = routes
 
     # NÃO coloque `app/components` em `config.assets.paths`. A receita corrente
     # para controllers Stimulus sidecar manda fazer isso, e o preço é alto: o

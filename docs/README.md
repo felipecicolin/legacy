@@ -34,6 +34,9 @@ acrescenta nada. Então:
 - [Autenticação](authentication.md) — para quem ela é, por que o app nasce
   fechado, por que sessão é linha no banco, e as duas decisões de segurança
   (não vazar quem tem conta, derrubar sessões na troca de senha).
+- [Autorização e páginas de erro](authorization.md) — papéis globais e
+  contextuais, a verificação obrigatória das policies, não enumeração de
+  recursos e flash acessível por Turbo Stream.
 - [i18n](i18n.md) — o que a `rails-i18n` traduz e o que sobrou para nós, os
   formatos pt-BR e o raciocínio por trás de cada um, onde cada chave mora, a
   convenção de rótulo de enum e o guarda que a cobra.

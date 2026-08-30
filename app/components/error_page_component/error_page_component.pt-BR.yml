@@ -1,0 +1,15 @@
+---
+pt-BR:
+  back: Voltar ao início
+  forbidden:
+    message: Você não tem permissão para acessar este conteúdo.
+    title: Acesso não permitido
+  internal_server_error:
+    message: Não foi possível concluir o pedido. Tente novamente em instantes.
+    title: Algo deu errado
+  not_found:
+    message: O conteúdo que você procura não está disponível.
+    title: Página não encontrada
+  unprocessable_entity:
+    message: Confira os dados enviados e tente novamente.
+    title: Não foi possível processar o pedido

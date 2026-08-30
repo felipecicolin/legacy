@@ -8,10 +8,29 @@
 # Recebe um `Authorization::Context`, não um `User`: o contexto já traz perfil,
 # papel de plataforma e vínculos aceitos, resolvidos uma vez por request.
 class ApplicationPolicy
+  class Scope
+    attr_reader :context, :scope
+
+    def initialize(context, scope)
+      @context = context
+      @scope = scope
+    end
+
+    def resolve = scope.all
+  end
+
+  attr_reader :context, :record
+
   def initialize(context, record)
     @context = context
     @record = record
   end
+
+  def access? = context.signed_in?
+
+  def public_access? = true
+
+  def staff_access? = context.staff?
 
   # Fechado por padrão, e o default é `false` em vez de "staff pode tudo": um
   # default permissivo faz o esquecimento de escrever a regra virar acesso
@@ -30,7 +49,18 @@ class ApplicationPolicy
 
   def destroy? = false
 
-  private
+  protected
 
-  attr_reader :context, :record
+  def staff_at_least?(level)
+    return false unless context.staff_level
+
+    StaffRole.staff_levels.fetch(context.staff_level.to_s) >= StaffRole.staff_levels.fetch(level.to_s)
+  end
+
+  def visible_record?
+    return false unless record
+    return record.approved? if record.is_a?(Organization)
+
+    record.class.visible_to(context.visibility).exists?(record.id)
+  end
 end

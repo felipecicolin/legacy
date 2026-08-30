@@ -47,6 +47,10 @@ pt-BR:
     approved: Aprovada
     pending: Pendente
     suspended: Suspensa
+  pages:
+    placeholder:
+      message: Esta área estará disponível em breve.
+      title: Área em construção
   passwords:
     create:
       sent: Se houver conta com esse e-mail, as instruções de recuperação foram enviadas.

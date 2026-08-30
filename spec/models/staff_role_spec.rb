@@ -3,6 +3,12 @@
 require "rails_helper"
 
 RSpec.describe StaffRole do
+  subject(:staff_role) { build(:staff_role) }
+
+  it { is_expected.to belong_to(:user) }
+  it { is_expected.to validate_presence_of(:staff_level) }
+  it { is_expected.to validate_uniqueness_of(:user_id) }
+
   it "refuses a level outside the enum as a validation, not an exception" do
     role = build(:staff_role).tap { |record| record.staff_level = "superuser" }
 

@@ -10,9 +10,12 @@ class PasswordsController < ApplicationController
   rate_limit to: 10, within: 3.minutes, only: :create,
              with: -> { redirect_to new_password_path, alert: t("passwords.rate_limited") }
 
-  def new; end
+  def new
+    authorize_public_page
+  end
 
   def edit
+    authorize_public_page
     return if reset_user
 
     redirect_to new_password_path, alert: t("passwords.invalid_token")
@@ -22,15 +25,18 @@ class PasswordsController < ApplicationController
   # Confirmar "este e-mail não está cadastrado" transformaria a recuperação de
   # senha num verificador de contas aberto ao público.
   def create
-    user = User.find_by(email_address: params[:email_address])
+    authorize_public_page
+    user = User.find_by(email_address: params.expect(:email_address))
     PasswordsMailer.reset(user).deliver_later if user
-    redirect_to new_session_path, notice: t(".sent")
+    flash[:notice] = t(".sent")
+    render_flash(new_session_path)
   end
 
   # Todo redirect daqui responde a um PUT, e por isso vai com 303. Num 302 o
   # fetch só troca o método para GET quando o original era POST — num PUT ele
   # preserva, e o Turbo reemitiria PUT para o destino, onde não há rota.
   def update
+    authorize_public_page
     user = reset_user
     return redirect_to(new_password_path, status: :see_other, alert: t("passwords.invalid_token")) unless user
 
@@ -47,11 +53,12 @@ class PasswordsController < ApplicationController
   # com `!` levanta `InvalidSignature`, e transformar exceção em redirect é
   # trabalho que o retorno nil já entrega.
   def reset_user
-    User.find_by_password_reset_token(params[:token])
+    User.find_by_password_reset_token(params.expect(:token))
   end
 
   def save_new_password(user)
-    unless user.update(params.permit(:password, :password_confirmation))
+    password, confirmation = params.expect(:password, :password_confirmation)
+    unless user.update(password:, password_confirmation: confirmation)
       return redirect_to(edit_password_path(params[:token]), status: :see_other,
                                                              alert: password_error_for(user))
     end

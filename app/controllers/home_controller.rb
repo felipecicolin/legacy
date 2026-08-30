@@ -8,8 +8,7 @@
 # #21 traz as rotas e os controllers de verdade. O que precisa sobreviver a
 # essas duas issues é só a rota `root`.
 class HomeController < ApplicationController
-  # Espaço reservado: não há registro para autorizar até #8 trazer o shell.
-  skip_authorization_for
-
-  def show; end
+  def show
+    authorize_page
+  end
 end

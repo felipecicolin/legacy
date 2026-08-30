@@ -9,7 +9,9 @@ class SessionsController < ApplicationController
   rate_limit to: 10, within: 3.minutes, only: :create,
              with: -> { redirect_to new_session_path, alert: t("sessions.rate_limited") }
 
-  def new; end
+  def new
+    authorize_public_page
+  end
 
   # Uma única mensagem para senha errada e para e-mail inexistente, de
   # propósito: distinguir as duas entrega ao atacante a lista de quem tem
@@ -17,7 +19,9 @@ class SessionsController < ApplicationController
   # Active Record calcula um digest descartável no ramo em que não achou
   # ninguém, justamente para o custo do bcrypt aparecer nos dois casos.
   def create
-    user = User.authenticate_by(params.permit(:email_address, :password))
+    authorize_public_page
+    email_address, password = params.expect(:email_address, :password)
+    user = User.authenticate_by(email_address:, password:)
     return redirect_to(new_session_path, alert: t(".failed")) unless user
 
     start_new_session_for user
@@ -25,6 +29,7 @@ class SessionsController < ApplicationController
   end
 
   def destroy
+    authorize_page
     terminate_session
     redirect_to new_session_path, status: :see_other
   end

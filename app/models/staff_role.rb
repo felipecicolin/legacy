@@ -23,6 +23,7 @@ class StaffRole < ApplicationRecord
   # a segunda tentativa virar erro de formulário em vez de exceção de driver, e
   # é ela que o `database_consistency` cobra ao ver o índice único.
   validates :user_id, uniqueness: true
+  validates :staff_level, presence: true
 
   def staff_level_label
     I18n.t(staff_level, scope: :staff_levels)

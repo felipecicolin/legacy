@@ -36,6 +36,17 @@ RSpec.describe "Passwords" do
       expect([response.status, response.location, flash[:notice]]).to eq(known)
     end
 
+    it "renders the flash as a Turbo Stream" do
+      post passwords_path, params: { email_address: user.email_address }, as: :turbo_stream
+
+      aggregate_failures do
+        expect(response).to have_http_status(:ok)
+        expect(response.media_type).to eq("text/vnd.turbo-stream.html")
+        expect(response.body).to include('target="flash"')
+        expect(response.body).to include('role="status"')
+      end
+    end
+
     it "blocks the eleventh request within the window" do
       10.times { post passwords_path, params: { email_address: user.email_address } }
 

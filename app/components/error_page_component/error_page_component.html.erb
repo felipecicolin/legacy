@@ -1,0 +1,11 @@
+<main class="<%= computed_classes %>">
+  <%= render CardComponent.new(variant: "elevated", class: "text-center") do %>
+    <%= render IconComponent.new(name: icon, size: :xl, label: title) %>
+    <p class="mt-4 font-mono text-sm text-muted-foreground"><%= status_code %></p>
+    <h1 class="mt-2 text-2xl font-bold text-foreground"><%= title %></h1>
+    <p class="mx-auto mt-3 max-w-prose text-muted-foreground"><%= message %></p>
+    <div class="mt-6">
+      <%= render ButtonComponent.new(label: t(".back"), href: action_path, variant: :outline) %>
+    </div>
+  <% end %>
+</main>
