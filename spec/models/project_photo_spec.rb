@@ -145,4 +145,19 @@ RSpec.describe ProjectPhoto do
 
     expect(project.project_photos.ordered).to eq([first, last])
   end
+
+  describe "#caption" do
+    it "combines the date and the photographer's name" do
+      photographer = create(:profile, display_name: "Ana Souza")
+      photo = create(:project_photo, project: project, taken_by: photographer, taken_on: Date.new(2026, 3, 12))
+
+      expect(photo.caption).to eq("12/03/2026 · Ana Souza")
+    end
+
+    it "shows only the date without a recorded photographer" do
+      photo = create(:project_photo, project: project, taken_by: nil, taken_on: Date.new(2026, 3, 12))
+
+      expect(photo.caption).to eq("12/03/2026")
+    end
+  end
 end

@@ -49,6 +49,19 @@ class ProgressReport < ApplicationRecord
     I18n.t(status, scope: :statuses)
   end
 
+  # Legenda "data e responsável" do design system, para a atividade recente
+  # do painel do administrador (#50).
+  def caption
+    [I18n.l(reported_on), reported_by.display_name].join(" · ")
+  end
+
+  # Mesmo motivo de `Project#cover_photo`: escolhe em Ruby sobre a associação
+  # já pré-carregada, para o painel do administrador (#50) não pagar uma
+  # consulta por relatório.
+  def cover_photo
+    project_photos.min_by { |photo| [photo.photo_category_before_type_cast, photo.position, photo.id] }
+  end
+
   private
 
   # Vazio inclui `<div><br></div>`, que é o que o Trix envia quando ninguém

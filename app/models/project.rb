@@ -77,6 +77,21 @@ class Project < ApplicationRecord
     I18n.t(status, scope: :statuses)
   end
 
+  # Ordena em Ruby, não com o escopo `ProjectPhoto.ordered`: quando a
+  # associação já veio pré-carregada (`includes`), aplicar um escopo nela
+  # dispara uma consulta nova por obra (painel do administrador, #50).
+  def cover_photo
+    project_photos.min_by { |photo| [photo.photo_category_before_type_cast, photo.position, photo.id] }
+  end
+
+  # Mesmo motivo de `cover_photo`: escolhe em Ruby sobre a associação já
+  # pré-carregada, para o painel do administrador (#50) não pagar uma consulta
+  # por obra. Uma obra pode ter mais de uma campanha (fundação, depois
+  # acabamento); a mais recente ainda em curso é a que representa o cartão.
+  def primary_campaign
+    campaigns.select { |campaign| campaign.status.in?(%w[active reached]) }.max_by(&:created_at)
+  end
+
   # O valor de verdade do avanço é o do relatório aprovado MAIS RECENTE, e não
   # o maior: obra tem retrabalho, e uma regressão de 62% para 55% é um fato que
   # o cache tem de refletir. A coluna existe para ordenar e filtrar sem N+1, e

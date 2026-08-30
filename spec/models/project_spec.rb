@@ -212,6 +212,34 @@ RSpec.describe Project do
     expect(build(:project, currency: "REAIS")).not_to be_valid
   end
 
+  describe "#cover_photo" do
+    it "picks the photo with the lowest category, then position" do
+      project = create(:project)
+      create(:project_photo, project: project, photo_category: :after, position: 0)
+      earliest = create(:project_photo, project: project, photo_category: :before, position: 0)
+
+      expect(project.reload.cover_photo).to eq(earliest)
+    end
+
+    it "returns nil without any photo" do
+      expect(create(:project).cover_photo).to be_nil
+    end
+  end
+
+  describe "#primary_campaign" do
+    it "picks the most recently created active or reached campaign" do
+      project = create(:project)
+      create(:campaign, :closed, project: project, mission_base: project.mission_base)
+      recent = create(:campaign, project: project, mission_base: project.mission_base)
+
+      expect(project.reload.primary_campaign).to eq(recent)
+    end
+
+    it "returns nil without any campaign" do
+      expect(create(:project).primary_campaign).to be_nil
+    end
+  end
+
   # A validação pega o formulário; o CHECK pega seed, console e SQL cru.
   it "refuses a progress outside the range in the database too" do
     project = create(:project)

@@ -1,0 +1,12 @@
+<%= tag.div(**html_attributes) do %>
+  <div class="flex items-center justify-between gap-2">
+    <span class="text-label text-muted-foreground"><%= label %></span>
+    <%= render IconComponent.new(name: icon, size: :sm, classes: "text-muted-foreground") if icon %>
+  </div>
+
+  <p class="mt-2 font-mono text-display text-foreground"><%= display_value %></p>
+
+  <% if pending_note %>
+    <p class="mt-1 text-label text-muted-foreground"><%= pending_note %></p>
+  <% end %>
+<% end %>

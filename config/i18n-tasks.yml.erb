@@ -107,3 +107,22 @@ ignore_unused:
   # tradução não passa, e rótulo sobrando também não — o spec compara os dois
   # lados. Ver docs/vocabulary.md.
   - "{countries,skill_categories,skills}.*"
+
+  # `Admin::DashboardPresenter` monta a chave a partir de um parâmetro
+  # (`I18n.t(key, scope: "admin.dashboard.show")`), pelo mesmo motivo do enum:
+  # interpolação na chave é reprovada pelo
+  # `I18n/RailsI18n/DecorateStringFormattingUsingInterpolation`. Só as nove
+  # chaves resolvidas assim entram aqui — as demais de
+  # `admin.dashboard.show.*` são chamadas literais na view
+  # (`t(".title")` etc.) e continuam cobertas pelo scanner normalmente.
+  #
+  # Conjunto fechado (tile e alerta do painel, issue #50), não enum aberto: o
+  # que sustenta isto é o spec de
+  # `spec/presenters/admin/dashboard_presenter_spec.rb`, que exercita os
+  # quatro tiles e os cinco alertas e reprova texto de tradução faltando.
+  - "admin.dashboard.show.{active_projects,active_volunteers,people_served,raised_this_month}"
+  # Pluralizada (chave tem `one`/`other`, não string solta): o scanner de
+  # "não usada" decide pelas FOLHAS, então o padrão precisa do `.*` para
+  # alcançar as duas — sem ele só a chave-mãe (que não existe sozinha) casaria.
+  - "admin.dashboard.show.{urgent_project_alert,paused_project_alert,critical_need_alert}.*"
+  - "admin.dashboard.show.{past_due_subscription_alert,stalled_candidacy_alert}.*"

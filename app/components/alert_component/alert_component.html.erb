@@ -1,0 +1,11 @@
+<% if link? %>
+  <%= link_to href, class: computed_classes, role: "alert" do %>
+    <%= render IconComponent.new(name: icon, size: :sm) %>
+    <span><%= title %></span>
+  <% end %>
+<% else %>
+  <%= tag.div class: computed_classes, role: "alert" do %>
+    <%= render IconComponent.new(name: icon, size: :sm) %>
+    <span><%= title %></span>
+  <% end %>
+<% end %>

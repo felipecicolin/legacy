@@ -1,0 +1,66 @@
+<%= render PageHeaderComponent.new(title: t(".title")) %>
+
+<% if @dashboard.alerts.any? %>
+  <div class="col-span-full mb-6 flex flex-col gap-2">
+    <% @dashboard.alerts.each do |alert| %>
+      <%= render AlertComponent.new(severity: alert.severity, title: alert.title, href: alert.href) %>
+    <% end %>
+  </div>
+<% end %>
+
+<div class="col-span-full mb-8 grid grid-cols-2 gap-4 desktop:grid-cols-4">
+  <% @dashboard.tiles.each do |tile| %>
+    <%= render MetricTileComponent.new(label: tile.label, value: tile.value, icon: tile.icon, pending: tile.pending) %>
+  <% end %>
+</div>
+
+<section class="col-span-full mb-8">
+  <h2 class="mb-4 text-section text-foreground"><%= t(".in_progress_title") %></h2>
+
+  <% if @dashboard.active_projects.any? %>
+    <div class="grid grid-cols-1 gap-4 tablet:grid-cols-2 desktop:grid-cols-3">
+      <% @dashboard.active_projects.each do |project| %>
+        <%= render "admin/dashboard/project_card", project: project %>
+      <% end %>
+    </div>
+  <% else %>
+    <%= render EmptyStateComponent.new(icon: "hard-hat", title: t(".in_progress_empty_title")) %>
+  <% end %>
+</section>
+
+<section class="col-span-full mb-8">
+  <h2 class="mb-4 text-section text-foreground"><%= t(".country_distribution_title") %></h2>
+
+  <%= render TableComponent.new(rows: @dashboard.country_rollup, caption: t(".country_distribution_title")) do |table| %>
+    <% table.with_column(header: t(".country_column")) { |row| row.country_name } %>
+    <% table.with_column(header: t(".region_column")) { |row| row.region_name || t(".region_unspecified") } %>
+    <% table.with_column(header: t(".projects_column"), align: :right) { |row| row.project_count } %>
+
+    <% table.with_column(header: t(".average_progress_column"), align: :right) do |row|
+         number_to_percentage(row.average_physical_progress, precision: 0)
+       end %>
+  <% end %>
+</section>
+
+<section class="col-span-full mb-8">
+  <h2 class="mb-4 text-section text-foreground"><%= t(".funding_by_country_title") %></h2>
+
+  <%= render TableComponent.new(rows: @dashboard.funding_by_country, caption: t(".funding_by_country_title")) do |table| %>
+    <% table.with_column(header: t(".country_column")) { |row| row.country_name } %>
+    <% table.with_column(header: t(".amount_column"), align: :right) { |row| row.amount_label } %>
+  <% end %>
+</section>
+
+<section class="col-span-full">
+  <h2 class="mb-4 text-section text-foreground"><%= t(".recent_activity_title") %></h2>
+
+  <% if @dashboard.recent_activity.any? %>
+    <div class="flex flex-col gap-3">
+      <% @dashboard.recent_activity.each do |report| %>
+        <%= render "admin/dashboard/activity_card", report: report %>
+      <% end %>
+    </div>
+  <% else %>
+    <%= render EmptyStateComponent.new(icon: "camera", title: t(".recent_activity_empty_title")) %>
+  <% end %>
+</section>

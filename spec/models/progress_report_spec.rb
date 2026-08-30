@@ -158,4 +158,26 @@ RSpec.describe ProgressReport do
   it "labels the state in pt-BR" do
     expect(build(:progress_report, :approved, project: project).status_label).to eq("Aprovado")
   end
+
+  it "combines the date and the reporter's name in the caption" do
+    reporter = create(:profile, display_name: "Ana Souza")
+    report = create(:progress_report, project: project, reported_by: reporter, reported_on: Date.new(2026, 3, 12))
+
+    expect(report.caption).to eq("12/03/2026 · Ana Souza")
+  end
+
+  describe "#cover_photo" do
+    it "picks the photo with the lowest category, then position" do
+      report = create(:progress_report, project: project)
+      create(:project_photo, project: project, progress_report: report, photo_category: :after, position: 0)
+      earliest = create(:project_photo, project: project, progress_report: report, photo_category: :before,
+                                        position: 0)
+
+      expect(report.reload.cover_photo).to eq(earliest)
+    end
+
+    it "returns nil without any photo" do
+      expect(create(:progress_report, project: project).cover_photo).to be_nil
+    end
+  end
 end
