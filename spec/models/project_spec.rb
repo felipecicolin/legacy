@@ -130,6 +130,16 @@ RSpec.describe Project do
       expect { project.valid? }.not_to raise_error
     end
 
+    # `sensitivity_level` é NOT NULL com default, então `nil` só chega por um
+    # PATCH que limpe o campo. O `&.` de `own_rank` existe para esse caminho:
+    # sem ele, a checagem de piso levantaria `NoMethodError` antes de a
+    # validação do enum ter chance de falar.
+    it "lets a cleared level be refused by the enum instead of blowing up the floor check" do
+      project = build(:project).tap { |record| record.sensitivity_level = nil }
+
+      expect { project.valid? }.not_to raise_error
+    end
+
     it "survives having no base yet, so the presence validation is the one that speaks" do
       expect(build(:project, mission_base: nil)).not_to be_valid
     end
