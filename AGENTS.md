@@ -114,6 +114,13 @@ que ela cai é um projeto; mantê-la é um hábito.
 
 ## Testes
 
+- **Trait de factory nunca repete um valor de enum, e associação dentro de
+  trait é sempre `nome { association :nome }`.** O FactoryBot gera uma trait
+  por valor de enum, e um nome pelado dentro de uma trait resolve para a trait
+  homônima antes de virar associação — a fixture sai com a FK nula, o modelo
+  fica inválido, e o erro aponta para a validação. Ver
+  [`docs/mobilization.md`](docs/mobilization.md).
+
 - **Correção de bug: escreva primeiro o teste que falha.** Ele tem de falhar
   antes do fix e passar depois. Um teste escrito depois do fix prova que o
   código faz o que faz, não que o bug foi consertado.

@@ -60,8 +60,10 @@ class VolunteerEngagement < ApplicationRecord
   # Nos dois sentidos, como no `skill` da necessidade: `corporate` sem grupo é
   # candidatura em bloco sem bloco, e grupo num modelo individual é vínculo que
   # ninguém coordena.
+  # Pelo OBJETO, e não por `volunteer_group_id`: num engajamento ainda não
+  # salvo a associação já está montada e o id ainda é nulo.
   def group_matches_the_model
-    return if engagement_model_corporate? == volunteer_group_id.present?
+    return if engagement_model_corporate? == volunteer_group.present?
 
     errors.add(:volunteer_group, engagement_model_corporate? ? :blank : :present)
   end

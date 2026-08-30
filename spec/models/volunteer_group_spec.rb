@@ -39,13 +39,13 @@ RSpec.describe VolunteerGroup do
     let(:today) { Date.current }
 
     it "finds a group whose window covers the date" do
-      covering = create(:volunteer_group, :available, available_from: today - 1, available_until: today + 1)
+      covering = create(:volunteer_group, :ready, available_from: today - 1, available_until: today + 1)
 
       expect(described_class.available_on(today)).to contain_exactly(covering)
     end
 
     it "finds a group with no window declared" do
-      open_ended = create(:volunteer_group, :available)
+      open_ended = create(:volunteer_group, :ready)
 
       expect(described_class.available_on(today)).to contain_exactly(open_ended)
     end
@@ -53,13 +53,13 @@ RSpec.describe VolunteerGroup do
     # O grupo cuja janela não cobre a data não aparece no matching, e é isso
     # que impede convidar quem já avisou que não pode.
     it "leaves out a group whose window closed before the date" do
-      create(:volunteer_group, :available, available_until: today - 1)
+      create(:volunteer_group, :ready, available_until: today - 1)
 
       expect(described_class.available_on(today)).to be_empty
     end
 
     it "leaves out a group that is not available yet" do
-      create(:volunteer_group, :available, available_from: today + 1)
+      create(:volunteer_group, :ready, available_from: today + 1)
 
       expect(described_class.available_on(today)).to be_empty
     end
@@ -80,7 +80,7 @@ RSpec.describe VolunteerGroup do
   end
 
   it "translates the status to pt-BR and interpolates as its name" do
-    group = build(:volunteer_group, :available, name: "Turma da Construtora")
+    group = build(:volunteer_group, :ready, name: "Turma da Construtora")
 
     aggregate_failures do
       expect(group.group_status_label).to eq("Disponível")

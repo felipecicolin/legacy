@@ -118,6 +118,38 @@ pessoal sensível — com retenção, acesso restrito e LGPD junto — para uma
 demonstração que **não vai enviar ninguém a lugar nenhum**. É custo sem retorno,
 e na direção errada: uma demo deve carregar *menos* dado sensível, não mais.
 
+## Uma armadilha de factory que custou uma volta de CI
+
+**O FactoryBot gera uma trait para cada valor de enum.** `Need#need_kind` tem o
+valor `skill`, então existe uma trait `:skill` que ninguém escreveu.
+
+Dentro de uma trait, um nome pelado resolve para a **trait homônima** antes de
+ser considerado associação. Então isto:
+
+```ruby
+trait :skilled do
+  need_kind { :skill }
+  skill          # ← aplica a trait :skill do enum, NÃO monta a associação
+end
+```
+
+produzia um registro com `skill_id` nulo, em silêncio. O erro aparecia na
+validação — apontando para o modelo, e não para a fixture que o montou errado.
+
+Duas regras saíram daí, e valem para todo factory deste repositório:
+
+1. **Trait não repete nome de valor de enum.** `:corporate` e `:office` viraram
+   `:in_a_group` e `:at_the_office`.
+2. **Associação dentro de trait é explícita:** `skill { association :skill }`.
+
+### E a validação pergunta pelo objeto, não pelo id
+
+O mesmo episódio expôs outra coisa: `skill_id.present?` é falso num registro
+ainda **não salvo** cuja associação já está montada. Uma validação escrita sobre
+o id reprova um registro perfeitamente válido, com uma mensagem sobre um campo
+que quem preencheu o formulário preencheu. `Need` e `VolunteerEngagement`
+perguntam pelo objeto.
+
 ## O que falta desta issue
 
 Entregues: `Need`, `VolunteerGroup`, `VolunteerEngagement`, `Deployment` e

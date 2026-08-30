@@ -8,7 +8,7 @@ RSpec.describe VolunteerEngagement do
     # existe separada de `ProjectParticipation`.
     it "creates every model without a project attached" do
       models = %i[office_fixed project_spot project_permanent corporate].map do |model|
-        traits = model == :corporate ? [:corporate] : []
+        traits = model == :corporate ? [:in_a_group] : []
         build(:volunteer_engagement, *traits, engagement_model: model).valid?
       end
 
@@ -95,7 +95,7 @@ RSpec.describe VolunteerEngagement do
   end
 
   describe "labels" do
-    subject(:engagement) { build(:volunteer_engagement, :office) }
+    subject(:engagement) { build(:volunteer_engagement, :at_the_office) }
 
     it "translates model, area and status to pt-BR" do
       aggregate_failures do

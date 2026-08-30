@@ -69,8 +69,12 @@ class Need < ApplicationRecord
   # Nos DOIS sentidos: `skill` sem habilidade é necessidade que o matching
   # nunca encontra, e `material` com habilidade é dado decorativo que a busca
   # acaba filtrando por engano.
+  # A pergunta é sobre o OBJETO, e não sobre `skill_id`: numa necessidade ainda
+  # não salva a associação já está montada e o id ainda é nulo, e perguntar
+  # pelo id reprovaria um registro perfeitamente válido — com uma mensagem
+  # sobre um campo que quem preencheu o formulário preencheu.
   def skill_matches_the_kind
-    return if need_kind_skill? == skill_id.present?
+    return if need_kind_skill? == skill.present?
 
     errors.add(:skill, need_kind_skill? ? :blank : :present)
   end

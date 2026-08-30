@@ -61,12 +61,18 @@ module DevelopmentSeeds
       base = bases.fetch(entry.fetch(:base))
       need = base.needs.find_or_initialize_by(title: entry.fetch(:title))
       need.assign_attributes(entry.except(:base))
-      need.skill = structural_skill if entry.fetch(:need_kind) == :skill
+      need.skill = curated_skill if entry.fetch(:need_kind) == :skill
       need.save!
     end
 
-    def structural_skill
-      Skill.find_by(key: "structural") || Skill.first
+    # A camada declara a dependência em vez de supor que o `db/seeds.rb` já
+    # carregou o vocabulário: quem chama `load_all!` direto — um spec, o
+    # console — não passa por lá, e a necessidade de habilidade nasceria sem
+    # habilidade. `load_vocabulary!` é idempotente.
+    def curated_skill
+      Skill.load_vocabulary! if Skill.none?
+
+      Skill.find_by(key: "structural") || Skill.first!
     end
 
     def upsert_country(entry)

@@ -12,9 +12,13 @@ FactoryBot.define do
       project { association :project, mission_base: mission_base }
     end
 
+    # `skill { association ... }` e não `skill` pelado: `skill` É um valor do
+    # enum `need_kind`, e o FactoryBot gera uma trait com esse nome — o nome
+    # pelado aplicava a trait homônima em vez de montar a associação, e o
+    # `skill_id` ficava nulo em silêncio.
     trait :skilled do
       need_kind { :skill }
-      skill
+      skill { association :skill }
     end
   end
 end
