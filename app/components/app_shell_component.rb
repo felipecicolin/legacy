@@ -4,6 +4,7 @@ class AppShellComponent < ApplicationComponent
   ACTIONS = "keydown->app-shell#trapFocus keydown.esc->app-shell#close"
 
   renders_one :navigation
+  renders_one :footer
 
   def stimulus_controller
     "app-shell"

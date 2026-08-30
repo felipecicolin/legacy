@@ -9,7 +9,7 @@
       lados. A largura de leitura é do conteúdo, não do shell. %>
   <div class="relative flex min-h-screen w-full">
     <aside id="app-shell-drawer"
-           class="fixed inset-y-0 left-0 z-40 w-72 -translate-x-full border-r border-border bg-card
+           class="fixed inset-y-0 left-0 z-40 flex w-72 -translate-x-full flex-col bg-accent text-accent-foreground
                   p-5 shadow-lg transition-transform duration-200 ease-out desktop:static desktop:translate-x-0
                   desktop:shrink-0 desktop:shadow-none"
            data-app-shell-target="drawer"
@@ -20,12 +20,18 @@
       <%# Mesma altura da barra do topo, e centrado nos dois eixos: assim o
           logotipo assenta na faixa em vez de flutuar num canto dela. %>
       <div class="mb-6 flex h-16 items-center justify-center">
-        <%= image_tag "logo.png", alt: t(".brand"), class: "h-8 w-auto" %>
+        <%= image_tag "logo.png", alt: t(".brand"), class: "h-8 w-auto brightness-0 invert" %>
       </div>
 
-      <nav aria-label="<%= t(".navigation") %>" class="flex flex-col gap-2">
+      <nav aria-label="<%= t(".navigation") %>" class="flex flex-1 flex-col gap-1">
         <%= navigation %>
       </nav>
+
+      <%# Quem está usando o sistema fica visível no pé da coluna: é a
+          convenção, e evita a dúvida de "em qual conta eu estou". %>
+      <% if footer? %>
+        <div class="mt-6 border-t border-accent-foreground/25 pt-4"><%= footer %></div>
+      <% end %>
     </aside>
 
     <div class="fixed inset-0 z-30 -translate-x-full bg-foreground/20 transition-transform duration-200

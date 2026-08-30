@@ -3,7 +3,8 @@
 <% if dashboard.investor? %>
   <dl class="mt-6 grid gap-4 tablet:grid-cols-2 desktop:grid-cols-4">
     <%= render StatCardComponent.new(label: t(".invested"),
-                                     value: money_from_cents(dashboard.invested_cents)) %>
+                                     value: money_from_cents(dashboard.invested_cents),
+                                     class: "border-primary bg-primary-soft") %>
     <%= render StatCardComponent.new(label: t(".active_projects"),
                                      value: number_with_delimiter(dashboard.active_count)) %>
     <%= render StatCardComponent.new(label: t(".people_reached"),

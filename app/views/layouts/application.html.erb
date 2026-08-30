@@ -33,14 +33,31 @@
             <%= render ButtonComponent.new(
                   variant: :ghost, size: :sm, href: path,
                   aria: { current: ("page" if here) },
-                  classes: class_names("w-full justify-start gap-3",
-                                       "bg-muted font-semibold" => here,
-                                       "opacity-60" => path == "#"),
+                  classes: class_names(
+                    "w-full justify-start gap-3 text-accent-foreground hover:bg-accent-foreground/10",
+                    "bg-accent-foreground/15 font-semibold" => here,
+                    "opacity-75" => path == "#",
+                  ),
                 ) do %>
               <%= render IconComponent.new(name: icon, size: :sm) %>
               <span><%= t(key, scope: "layouts.application.nav") %></span>
             <% end %>
           <% end %>
+        <% end %>
+      <% end %>
+      <% if authenticated? && Current.user.profile %>
+        <% shell.with_footer do %>
+          <div class="flex items-center gap-3">
+            <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary
+                         text-sm font-semibold text-primary-foreground"
+                  aria-hidden="true"><%= Current.user.profile.display_name.first %></span>
+            <span class="min-w-0">
+              <span class="block truncate font-medium"><%= Current.user.profile.display_name %></span>
+              <span class="block truncate text-sm opacity-80">
+                <%= Current.user.email_address %>
+              </span>
+            </span>
+          </div>
         <% end %>
       <% end %>
       <%= render "shared/flash" %>
