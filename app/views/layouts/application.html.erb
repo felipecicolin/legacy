@@ -5,30 +5,42 @@
   </head>
 
   <body class="bg-background text-foreground">
+    <%# "Sair" é ação, não destino: ícone no canto da barra. O nome acessível
+        vai no `aria-label` e num `sr-only` — botão só de ícone sem nome é
+        inacessível, e é o erro mais comum de barra enxuta. %>
+    <% if authenticated? %>
+      <% content_for :shell_header_actions do %>
+        <%= render ButtonComponent.new(variant: :ghost, size: :icon, href: session_path,
+                                       aria: { label: t("layouts.application.sign_out") },
+                                       data: { turbo_method: :delete }) do %>
+          <%= render IconComponent.new(name: "arrow-right", size: :sm) %>
+          <span class="sr-only"><%= t("layouts.application.sign_out") %></span>
+        <% end %>
+      <% end %>
+    <% end %>
+
     <%= render AppShellComponent.new do |shell| %>
       <% if authenticated? %>
         <% shell.with_navigation do %>
-          <%# `nav-state-active`: a localização atual tem de ser visível na
-              navegação, senão a coluna vira lista de links sem contexto. %>
-          <% { investor: investor_path, team: team_path }.each do |key, path| %>
-            <%= render ButtonComponent.new(label: t(key, scope: "layouts.application.nav"),
-                                           variant: :ghost, size: :sm, href: path,
-                                           aria: { current: ("page" if current_page?(path)) },
-                                           classes: class_names("w-full justify-start",
-                                                                "bg-muted font-semibold" => current_page?(path))) %>
+          <%# Ícone MAIS rótulo, nunca só ícone: navegação sem texto custa
+              descoberta. E o item atual fica marcado — coluna sem estado ativo
+              é lista de links sem contexto. Os quatro últimos ainda não têm
+              destino, e a opacidade menor diz isso antes do clique. %>
+          <% [[:investor, investor_path, "wallet"], [:team, team_path, "hard-hat"],
+              [:ngos, "#", "building"], [:projects, "#", "blueprint"],
+              [:campaigns, "#", "hand-heart"], [:search, "#", "search"]].each do |key, path, icon| %>
+            <% here = path != "#" && current_page?(path) %>
+            <%= render ButtonComponent.new(
+                  variant: :ghost, size: :sm, href: path,
+                  aria: { current: ("page" if here) },
+                  classes: class_names("w-full justify-start gap-3",
+                                       "bg-muted font-semibold" => here,
+                                       "opacity-60" => path == "#"),
+                ) do %>
+              <%= render IconComponent.new(name: icon, size: :sm) %>
+              <span><%= t(key, scope: "layouts.application.nav") %></span>
+            <% end %>
           <% end %>
-          <%# Destinos ainda não construídos. Ficam visíveis para a coluna
-              mostrar a forma que ela vai ter, e apontam para lugar nenhum de
-              propósito — um link que promete tela inexistente é pior. %>
-          <% %w[ngos projects campaigns search].each do |item| %>
-            <%= render ButtonComponent.new(label: t(item, scope: "layouts.application.nav"),
-                                           variant: :ghost, size: :sm, href: "#",
-                                           classes: "w-full justify-start opacity-60") %>
-          <% end %>
-          <%= render ButtonComponent.new(label: t("layouts.application.sign_out"), variant: :ghost,
-                                         size: :sm, href: session_path,
-                                         classes: "mt-4 w-full justify-start",
-                                         data: { turbo_method: :delete }) %>
         <% end %>
       <% end %>
       <%= render "shared/flash" %>

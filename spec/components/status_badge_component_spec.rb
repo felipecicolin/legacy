@@ -34,4 +34,15 @@ RSpec.describe StatusBadgeComponent, type: :component do
     expect(page).to have_css("span.#{data[:token]}", text: data[:label])
     expect(page).to have_css("span.#{data[:token]} svg")
   end
+
+  # O par de cores já era conferido pelo spec de tokens; o que ninguém conferia
+  # era se o componente RENDERIZAVA os dois. `text-label` é token do projeto e
+  # o merger não o conhece como tamanho — então ele o agrupava com cor e
+  # derrubava o `text-success-foreground`, deixando o texto herdar o preto do
+  # corpo a 2,77:1. Sem erro em lugar nenhum: só um badge ilegível.
+  it "keeps the foreground colour that the size class used to swallow" do
+    render_inline(described_class.new(status: :in_progress, size: :sm))
+
+    expect(page).to have_css("span.bg-success.text-success-foreground")
+  end
 end

@@ -10,8 +10,8 @@ class StatusBadgeComponent < ApplicationComponent
   }.freeze
 
   SIZES = {
-    sm: "px-2 py-1 text-label",
-    md: "px-2.5 py-1.5 text-label",
+    sm: "px-2 py-1 text-xs",
+    md: "px-2.5 py-1.5 text-xs",
     lg: "px-3 py-2 text-sm",
   }.freeze
 
@@ -28,8 +28,10 @@ class StatusBadgeComponent < ApplicationComponent
   end
 
   def computed_classes
-    class_merge("inline-flex items-center gap-1.5 rounded-full font-semibold", status_classes,
-                SIZES.fetch(@size), html_options[:class])
+    # A cor DEPOIS do tamanho, de propósito: `text-*` de cor e `text-*` de
+    # tamanho disputam grupo no merger, e quem chega por último sobrevive.
+    class_merge("inline-flex items-center gap-1.5 rounded-full font-semibold",
+                SIZES.fetch(@size), status_classes, html_options[:class])
   end
 
   def status_icon
