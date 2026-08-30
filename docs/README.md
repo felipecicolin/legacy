@@ -68,6 +68,10 @@ acrescenta nada. Então:
   `attr_readonly`, e as duas invariantes que a CI cobra sobre o repositório
   inteiro.
 
+- [Arrecadação](funding.md) — a cadeia de campanha, contribuição, assinatura,
+  orçamento e canais, com dinheiro em centavos, pagamento simulado,
+  idempotência e visibilidade segura.
+
 - [Vocabulário curado](vocabulary.md) — por que a lista de países e habilidades
   é YAML e não seed, por que o nome do país não é coluna, por que a curadoria de
   `high_risk` é decisão pendente da equipe, e o gancho que só aperta.

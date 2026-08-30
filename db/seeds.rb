@@ -9,6 +9,17 @@
 Country.load_vocabulary!
 Skill.load_vocabulary!
 
+# Planos são configuração do produto, não dados de teste. `find_or_create_by!`
+# deixa o seed seguro para deploys repetidos e mantém o valor curado editável.
+[
+  { key: "apoiador", amount_cents: 2_000, interval: :monthly, position: 1 },
+  { key: "parceiro", amount_cents: 5_000, interval: :monthly, position: 2 }
+].each do |attributes|
+  SubscriptionPlan.find_or_create_by!(key: attributes.fetch(:key)) do |plan|
+    plan.assign_attributes(attributes.merge(currency: "BRL", active: true))
+  end
+end
+
 # Regiões não entram aqui: carregar a subdivisão administrativa do mundo
 # inteiro é dado para manter em dia sem ninguém para reclamar quando
 # envelhecer. Região nasce junto com a obra que fica nela.

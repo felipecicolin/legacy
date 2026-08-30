@@ -394,6 +394,10 @@ webhook. Quatro regras valem daqui para frente:
   marca visível — o `SimulatedDataBannerComponent` está no layout justamente
   para nenhuma precisar lembrar.
 
+Arrecadação — campanha, contribuição, assinatura, orçamento e canais — segue
+as mesmas regras de centavos, moeda explícita, gateway simulado e visibilidade;
+o desenho e a sequência dos ciclos estão em [`docs/funding.md`](docs/funding.md).
+
 ## Visibilidade
 
 > Os três níveis, o que não se persiste e a auditoria:

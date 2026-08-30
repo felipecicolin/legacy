@@ -67,6 +67,55 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_180100) do
     t.check_constraint "quantity > 0", name: "assignments_quantity_is_positive"
   end
 
+  create_table "budget_lines", force: :cascade do |t|
+    t.bigint "budget_id", null: false
+    t.integer "category", null: false
+    t.datetime "created_at", null: false
+    t.string "description", null: false
+    t.bigint "estimated_cents", null: false
+    t.integer "position", default: 0, null: false
+    t.bigint "project_phase_id"
+    t.datetime "updated_at", null: false
+    t.index ["budget_id", "position"], name: "index_budget_lines_on_budget_id_and_position"
+    t.index ["project_phase_id"], name: "index_budget_lines_on_project_phase_id"
+    t.check_constraint "estimated_cents >= 0", name: "budget_lines_estimated_not_negative"
+  end
+
+  create_table "budgets", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "BRL", null: false
+    t.bigint "project_id", null: false
+    t.integer "status", default: 0, null: false
+    t.bigint "total_cents", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.integer "version", default: 1, null: false
+    t.index ["project_id", "version"], name: "index_budgets_on_project_id_and_version", unique: true
+    t.check_constraint "total_cents >= 0", name: "budgets_total_not_negative"
+    t.check_constraint "version > 0", name: "budgets_version_positive"
+  end
+
+  create_table "campaigns", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "BRL", null: false
+    t.date "ends_on"
+    t.bigint "goal_cents", null: false
+    t.bigint "mission_base_id", null: false
+    t.bigint "project_id"
+    t.bigint "raised_cents", default: 0, null: false
+    t.integer "sensitivity_level", default: 1, null: false
+    t.string "slug", null: false
+    t.date "starts_on", null: false
+    t.integer "status", default: 0, null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["mission_base_id", "status"], name: "index_campaigns_on_mission_base_id_and_status"
+    t.index ["project_id", "status"], name: "index_campaigns_on_project_id_and_status"
+    t.index ["slug"], name: "index_campaigns_on_slug", unique: true
+    t.check_constraint "goal_cents > 0", name: "campaigns_goal_positive"
+    t.check_constraint "raised_cents >= 0", name: "campaigns_raised_not_negative"
+    t.check_constraint "sensitivity_level >= 0 AND sensitivity_level <= 2", name: "campaigns_sensitivity_level_valid"
+  end
+
   create_table "candidacies", force: :cascade do |t|
     t.integer "candidacy_status", default: 0, null: false
     t.datetime "created_at", null: false
@@ -82,6 +131,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_180100) do
     t.index ["profile_id", "need_id"], name: "index_candidacies_on_profile_id_and_need_id", unique: true, where: "(profile_id IS NOT NULL)"
     t.index ["volunteer_group_id", "need_id"], name: "index_candidacies_on_volunteer_group_id_and_need_id", unique: true, where: "(volunteer_group_id IS NOT NULL)"
     t.check_constraint "(profile_id IS NULL) <> (volunteer_group_id IS NULL)", name: "candidacies_have_exactly_one_candidate"
+  end
+
+  create_table "contributions", force: :cascade do |t|
+    t.bigint "amount_cents", null: false
+    t.boolean "anonymous", default: false, null: false
+    t.bigint "campaign_id"
+    t.datetime "confirmed_at"
+    t.bigint "contributor_id"
+    t.string "contributor_type"
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "BRL", null: false
+    t.string "idempotency_key"
+    t.integer "origin", default: 0, null: false
+    t.string "provider_reference"
+    t.boolean "simulated", default: true, null: false
+    t.integer "status", default: 0, null: false
+    t.bigint "subscription_id"
+    t.datetime "updated_at", null: false
+    t.index ["campaign_id", "status"], name: "index_contributions_on_campaign_id_and_status"
+    t.index ["contributor_type", "contributor_id"], name: "index_contributions_on_contributor_type_and_contributor_id"
+    t.index ["idempotency_key"], name: "index_contributions_on_idempotency_key", unique: true
+    t.index ["provider_reference"], name: "index_contributions_on_provider_reference", unique: true
+    t.index ["subscription_id"], name: "index_contributions_on_subscription_id"
+    t.check_constraint "amount_cents > 0", name: "contributions_amount_positive"
   end
 
   create_table "countries", force: :cascade do |t|
@@ -138,6 +211,87 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_180100) do
     t.check_constraint "capacity IS NULL OR capacity > 0", name: "deployments_capacity_is_positive"
     t.check_constraint "cost_per_person_cents IS NULL OR cost_per_person_cents >= 0", name: "deployments_cost_not_negative"
     t.check_constraint "returns_on >= departs_on", name: "deployments_returns_after_it_departs"
+  end
+
+  create_table "event_registrations", force: :cascade do |t|
+    t.bigint "contribution_id"
+    t.datetime "created_at", null: false
+    t.bigint "event_id", null: false
+    t.bigint "profile_id", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["contribution_id"], name: "index_event_registrations_on_contribution_id", unique: true
+    t.index ["event_id", "profile_id"], name: "index_event_registrations_on_event_id_and_profile_id", unique: true
+    t.index ["profile_id"], name: "index_event_registrations_on_profile_id"
+  end
+
+  create_table "events", force: :cascade do |t|
+    t.bigint "campaign_id"
+    t.integer "capacity"
+    t.bigint "country_id"
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "BRL", null: false
+    t.datetime "ends_at"
+    t.integer "kind", null: false
+    t.string "location_name"
+    t.boolean "online", default: false, null: false
+    t.integer "sensitivity_level", default: 1, null: false
+    t.string "slug", null: false
+    t.datetime "starts_at", null: false
+    t.integer "status", default: 0, null: false
+    t.bigint "ticket_price_cents", default: 0, null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["campaign_id"], name: "index_events_on_campaign_id"
+    t.index ["country_id"], name: "index_events_on_country_id"
+    t.index ["slug"], name: "index_events_on_slug", unique: true
+    t.check_constraint "capacity IS NULL OR capacity > 0", name: "events_capacity_positive"
+    t.check_constraint "sensitivity_level >= 0 AND sensitivity_level <= 2", name: "events_sensitivity_level_valid"
+    t.check_constraint "ticket_price_cents >= 0", name: "events_ticket_price_not_negative"
+  end
+
+  create_table "expenses", force: :cascade do |t|
+    t.bigint "amount_cents", null: false
+    t.bigint "budget_line_id"
+    t.integer "category", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "BRL", null: false
+    t.date "incurred_on", null: false
+    t.bigint "project_id", null: false
+    t.bigint "recorded_by_id", null: false
+    t.integer "sensitivity_level", default: 1, null: false
+    t.boolean "simulated", default: true, null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["budget_line_id"], name: "index_expenses_on_budget_line_id"
+    t.index ["project_id", "incurred_on"], name: "index_expenses_on_project_id_and_incurred_on"
+    t.index ["recorded_by_id"], name: "index_expenses_on_recorded_by_id"
+    t.check_constraint "amount_cents > 0", name: "expenses_amount_positive"
+    t.check_constraint "sensitivity_level >= 0 AND sensitivity_level <= 2", name: "expenses_sensitivity_level_valid"
+  end
+
+  create_table "in_kind_donations", force: :cascade do |t|
+    t.bigint "campaign_id"
+    t.integer "category", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "BRL", null: false
+    t.string "decline_reason"
+    t.date "delivered_on"
+    t.bigint "donor_id", null: false
+    t.string "donor_type", null: false
+    t.bigint "estimated_value_cents"
+    t.date "expected_on"
+    t.bigint "need_id"
+    t.integer "quantity", default: 1, null: false
+    t.integer "status", default: 0, null: false
+    t.string "title", null: false
+    t.string "unit"
+    t.datetime "updated_at", null: false
+    t.index ["campaign_id"], name: "index_in_kind_donations_on_campaign_id"
+    t.index ["donor_type", "donor_id", "status"], name: "index_in_kind_donations_on_donor_type_and_donor_id_and_status"
+    t.index ["need_id", "status"], name: "index_in_kind_donations_on_need_id_and_status"
+    t.check_constraint "estimated_value_cents IS NULL OR estimated_value_cents >= 0", name: "in_kind_donations_value_not_negative"
+    t.check_constraint "quantity > 0", name: "in_kind_donations_quantity_positive"
   end
 
   create_table "memberships", force: :cascade do |t|
@@ -226,6 +380,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_180100) do
     t.string "website"
     t.index ["organization_kind", "organization_status"], name: "idx_on_organization_kind_organization_status_29282c9012"
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
+  end
+
+  create_table "partnerships", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.date "ends_on"
+    t.integer "kind", null: false
+    t.bigint "organization_id", null: false
+    t.bigint "owner_id"
+    t.integer "sensitivity_level", default: 1, null: false
+    t.date "starts_on", null: false
+    t.integer "status", default: 0, null: false
+    t.integer "tier", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["kind", "tier", "status"], name: "index_partnerships_on_kind_and_tier_and_status"
+    t.index ["organization_id", "status"], name: "index_partnerships_on_organization_id_and_status"
+    t.index ["owner_id"], name: "index_partnerships_on_owner_id"
+    t.check_constraint "sensitivity_level >= 0 AND sensitivity_level <= 2", name: "partnerships_sensitivity_level_valid"
   end
 
   create_table "payment_transactions", force: :cascade do |t|
@@ -337,6 +508,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_180100) do
     t.index ["status", "sensitivity_level"], name: "index_projects_on_status_and_sensitivity_level"
     t.check_constraint "funding_target_cents >= 0", name: "projects_funding_target_not_negative"
     t.check_constraint "physical_progress >= 0 AND physical_progress <= 100", name: "projects_physical_progress_within_range"
+  end
+
+  create_table "receipts", force: :cascade do |t|
+    t.bigint "amount_cents", null: false
+    t.bigint "contribution_id", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "BRL", null: false
+    t.datetime "issued_at", null: false
+    t.integer "issued_year", null: false
+    t.string "number", null: false
+    t.serial "sequence_number", null: false
+    t.boolean "simulated", default: true, null: false
+    t.datetime "updated_at", null: false
+    t.index ["contribution_id"], name: "index_receipts_on_contribution_id", unique: true
+    t.index ["number"], name: "index_receipts_on_number", unique: true
+    t.check_constraint "amount_cents > 0", name: "receipts_amount_positive"
   end
 
   create_table "regions", force: :cascade do |t|
@@ -574,6 +761,54 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_180100) do
     t.index ["user_id"], name: "index_staff_roles_on_user_id", unique: true
   end
 
+  create_table "subscriber_benefits", force: :cascade do |t|
+    t.text "content"
+    t.datetime "created_at", null: false
+    t.datetime "delivered_at"
+    t.date "due_on", null: false
+    t.integer "kind", null: false
+    t.text "skipped_reason"
+    t.integer "status", default: 0, null: false
+    t.bigint "subscription_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["status", "due_on"], name: "index_subscriber_benefits_on_status_and_due_on"
+    t.index ["subscription_id", "kind", "due_on"], name: "index_benefits_on_subscription_kind_due", unique: true
+  end
+
+  create_table "subscription_plans", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.bigint "amount_cents", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "BRL", null: false
+    t.integer "interval", default: 0, null: false
+    t.string "key", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["key"], name: "index_subscription_plans_on_key", unique: true
+    t.check_constraint "amount_cents > 0", name: "subscription_plans_amount_positive"
+  end
+
+  create_table "subscriptions", force: :cascade do |t|
+    t.bigint "campaign_id"
+    t.date "cancelled_on"
+    t.datetime "created_at", null: false
+    t.integer "cycles_completed", default: 0, null: false
+    t.date "next_charge_on", null: false
+    t.date "retry_on"
+    t.boolean "simulated", default: true, null: false
+    t.date "started_on", null: false
+    t.integer "status", default: 0, null: false
+    t.bigint "subscriber_id", null: false
+    t.string "subscriber_type", null: false
+    t.bigint "subscription_plan_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["campaign_id"], name: "index_subscriptions_on_campaign_id"
+    t.index ["status", "next_charge_on"], name: "index_subscriptions_on_status_and_next_charge_on"
+    t.index ["subscriber_type", "subscriber_id", "status"], name: "idx_on_subscriber_type_subscriber_id_status_83d89065ec"
+    t.index ["subscription_plan_id"], name: "index_subscriptions_on_subscription_plan_id"
+    t.check_constraint "cycles_completed >= 0", name: "subscriptions_cycles_not_negative"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email_address", null: false
@@ -622,15 +857,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_180100) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "assignments", "candidacies"
   add_foreign_key "assignments", "needs"
+  add_foreign_key "budget_lines", "budgets"
+  add_foreign_key "budgets", "projects"
+  add_foreign_key "campaigns", "mission_bases"
+  add_foreign_key "campaigns", "projects"
   add_foreign_key "candidacies", "needs"
   add_foreign_key "candidacies", "profiles"
   add_foreign_key "candidacies", "profiles", column: "decided_by_id"
   add_foreign_key "candidacies", "volunteer_groups"
+  add_foreign_key "contributions", "campaigns"
+  add_foreign_key "contributions", "subscriptions"
   add_foreign_key "credentials", "profiles"
   add_foreign_key "deployment_members", "deployments"
   add_foreign_key "deployment_members", "profiles"
   add_foreign_key "deployments", "mission_bases"
   add_foreign_key "deployments", "projects", on_delete: :nullify
+  add_foreign_key "event_registrations", "contributions", on_delete: :nullify
+  add_foreign_key "event_registrations", "events"
+  add_foreign_key "event_registrations", "profiles"
+  add_foreign_key "events", "campaigns", on_delete: :nullify
+  add_foreign_key "events", "countries"
+  add_foreign_key "expenses", "budget_lines", on_delete: :nullify
+  add_foreign_key "expenses", "profiles", column: "recorded_by_id"
+  add_foreign_key "expenses", "projects"
+  add_foreign_key "in_kind_donations", "campaigns", on_delete: :nullify
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "profiles"
   add_foreign_key "mission_bases", "countries"
@@ -640,6 +890,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_180100) do
   add_foreign_key "needs", "mission_bases"
   add_foreign_key "needs", "projects"
   add_foreign_key "needs", "skills"
+  add_foreign_key "partnerships", "organizations"
+  add_foreign_key "partnerships", "profiles", column: "owner_id", on_delete: :nullify
   add_foreign_key "profile_skills", "profiles"
   add_foreign_key "profile_skills", "skills"
   add_foreign_key "profiles", "users"
@@ -652,6 +904,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_180100) do
   add_foreign_key "project_photos", "progress_reports", on_delete: :nullify
   add_foreign_key "project_photos", "projects"
   add_foreign_key "projects", "mission_bases"
+  add_foreign_key "receipts", "contributions"
   add_foreign_key "regions", "countries"
   add_foreign_key "sensitivity_changes", "users", column: "author_id"
   add_foreign_key "sessions", "users"
@@ -666,6 +919,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_180100) do
   add_foreign_key "solid_queue_recurring_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "staff_roles", "users"
+  add_foreign_key "subscriber_benefits", "subscriptions"
+  add_foreign_key "subscriptions", "campaigns", on_delete: :nullify
+  add_foreign_key "subscriptions", "subscription_plans"
   add_foreign_key "volunteer_engagements", "organizations", on_delete: :nullify
   add_foreign_key "volunteer_engagements", "profiles"
   add_foreign_key "volunteer_engagements", "volunteer_groups"

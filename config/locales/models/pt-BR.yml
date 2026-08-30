@@ -31,21 +31,40 @@ pt-BR:
         password_digest: Senha
     errors:
       messages:
+        after_start: Deve ser posterior à data inicial.
         approved_report_is_immutable: Relatório aprovado não é editado. A correção é um relatório novo.
         before_start: não pode ser anterior à data de início.
+        below_campaign: A atividade não pode ser menos restrita que a campanha.
         below_mission_base: A obra não pode ser menos restrita que a base a que pertence.
+        below_operating_country: A parceria não pode ser menos restrita que o país atendido.
+        below_project: A despesa não pode ser menos restrita que a obra.
+        campaign_required: Evento pago precisa de uma campanha de destino.
+        capacity_reached: A capacidade deste evento foi atingida.
         closed: já foi atendida e não recebe candidatura.
         confidential_precise_location: Registro confidencial não guarda coordenada nem endereço.
+        currency_mismatch: A moeda precisa ser a mesma do recurso relacionado.
         exceeded: não comporta mais gente do que isso.
         exceeds_what_is_left: passa do que ainda falta nesta necessidade.
+        hours_required: Especialidade e serviço devem ser medidos em horas.
+        immutable: Este orçamento aprovado não pode ser alterado.
         in_progress_without_coordinator: Uma obra não entra em execução sem coordenação.
+        inactive: O plano de assinatura está inativo.
         last_owner: A organização precisa de pelo menos um proprietário.
         missing_credential: precisa de registro profissional verificado para esta necessidade.
+        not_accepting_contributions: Esta campanha não está recebendo contribuições.
+        not_confirmed: O recibo exige uma contribuição confirmada.
+        not_declined: Uma doação recusada precisa de motivo.
+        not_delivered: A doação em espécie ainda não foi entregue.
+        not_open: Este evento não está aberto para inscrições.
         one_candidate_only: A candidatura é de uma pessoa ou de um grupo, nunca dos dois.
         other_country: precisa pertencer ao mesmo país da base.
         other_mission_base: precisa pertencer à mesma base desta necessidade.
         other_need: precisa ser de uma candidatura à mesma necessidade.
+        past_requires_held: Evento iniciado no passado precisa estar realizado.
         promotion_requires_justification: Reduzir a restrição exige autor e justificativa registrados.
+        regression_explanation_required: A redução do avanço precisa de explicação.
         too_large: não pode passar de %{limit} MB.
         transition_not_allowed: Esta obra não pode passar do estado atual para esse.
         unsupported_picture: precisa ser uma imagem JPEG, PNG ou WebP de verdade.
+        wrong_mission_base: A obra precisa pertencer à base da campanha.
+        wrong_project: A linha orçamentária precisa pertencer à mesma obra.

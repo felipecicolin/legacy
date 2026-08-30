@@ -88,6 +88,10 @@ ignore_unused:
   - "{deployment_statuses,member_roles,member_statuses}.*"
   - "{candidacy_statuses,rejection_reasons,assignment_statuses}.*"
 
+  # Namespaces de enum específicos da arrecadação também são resolvidos em
+  # tempo de execução e auditados pelos specs dos respectivos modelos.
+  - "{budget_categories,categories,campaign_statuses,event_kinds,event_statuses,in_kind_categories,intervals,origins,partnership_kinds,partnership_statuses,partnership_tiers,tiers,subscription_intervals}.*"
+
   # StatusBadgeComponent não depende de um modelo ainda existente: ele recebe
   # o enum de obra em tempo de execução, e o scanner não resolve essa chave.
   # O spec do componente percorre os cinco valores e exige cada rótulo.

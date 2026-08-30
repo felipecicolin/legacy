@@ -19,12 +19,43 @@ pt-BR:
     active: Ativa
     inactive: Inativa
     pending: Pendente
+  benefits:
+    monthly_report:
+      gift: Benefício semestral em preparação.
+      no_updates: Não houve relatório aprovado neste período.
+      restricted: O andamento desta obra não está disponível para este acesso.
+      updated: 'Relatório aprovado: %{progress}% de avanço físico.'
+  budget_categories:
+    contingency: Reserva
+    equipment: Equipamento
+    labor: Mão de obra
+    logistics: Logística
+    material: Material
+    permits: Licenças
+  budgets:
+    immutable: Este orçamento aprovado não pode ser alterado.
+  campaign_statuses:
+    active: Ativa
+    closed: Encerrada
+    draft: Rascunho
+    paused: Pausada
+    reached: Atingida
   candidacy_statuses:
     approved: Aprovada
     rejected: Recusada
     screening: Em triagem
     submitted: Enviada
     withdrawn: Retirada
+  categories:
+    contingency: Reserva
+    equipment: Equipamento
+    expertise: Especialidade
+    labor: Mão de obra
+    logistics: Logística
+    material: Material
+    permits: Licenças
+    service: Serviço
+    transport: Transporte
   default_sensitivities:
     confidential: Confidencial
     public: Pública
@@ -53,6 +84,17 @@ pt-BR:
     completed: Concluído
     paused: Pausado
     screening: Em triagem
+  event_kinds:
+    campaign_launch: Lançamento de campanha
+    fundraiser: Arrecadação
+    talk: Palestra
+    workshop: Oficina
+  event_statuses:
+    cancelled: Cancelado
+    closed: Encerrado
+    draft: Rascunho
+    held: Realizado
+    published: Publicado
   from_levels:
     confidential: Confidencial
     public: Pública
@@ -66,15 +108,41 @@ pt-BR:
     show:
       signed_in_as: Você entrou como %{email}.
       title: Você está autenticado
+  in_kind_categories:
+    equipment: Equipamento
+    expertise: Especialidade
+    material: Material
+    service: Serviço
+    transport: Transporte
+  intervals:
+    monthly: Mensal
+    quarterly: Trimestral
+    yearly: Anual
   kinds:
+    campaign: Campanha
+    campaign_launch: Lançamento de campanha
     cau: CAU
     certificate: Certificado
     charge: Cobrança
     crea: CREA
+    equipment: Equipamento
+    event: Evento
+    expertise: Especialidade
+    financial: Financeira
+    fundraiser: Arrecadação
     license: Licença profissional
+    material_supplier: Fornecedor de material
+    media: Mídia
+    monthly_report: Relatório mensal
     other_professional: Outro registro profissional
     refund: Estorno
     schedule_recurring: Agendamento recorrente
+    semiannual_gift: Presente semestral
+    service: Serviço
+    store: Loja
+    talk: Palestra
+    volunteer_source: Fonte de voluntários
+    workshop: Oficina
   layouts:
     application:
       sign_out: Sair
@@ -110,6 +178,11 @@ pt-BR:
     approved: Aprovada
     pending: Pendente
     suspended: Suspensa
+  origins:
+    event: Evento
+    one_off: Pontual
+    store: Loja
+    subscription: Assinatura
   pages:
     placeholder:
       message: Esta área estará disponível em breve.
@@ -125,6 +198,23 @@ pt-BR:
     completed: Concluída
     invited: Convidada
     withdrawn: Retirada
+  partnership_kinds:
+    expertise: Especialidade
+    financial: Financeira
+    material_supplier: Fornecedor de material
+    media: Mídia
+    store: Loja
+    volunteer_source: Fonte de voluntários
+  partnership_statuses:
+    active: Ativa
+    ended: Encerrada
+    negotiating: Em negociação
+    paused: Pausada
+    prospect: Prospecção
+  partnership_tiers:
+    maintainer: Mantenedora
+    partner: Parceira
+    supporter: Apoiadora
   passwords:
     create:
       sent: Se houver conta com esse e-mail, as instruções de recuperação foram enviadas.
@@ -168,6 +258,8 @@ pt-BR:
     paused: Parada
     surveying: Levantamento
     urgent: Urgente
+  receipts:
+    simulated_mark: DADO SIMULADO — sem valor financeiro real
   rejection_reasons:
     missing_credential: Sem registro profissional verificado
     missing_skill: Sem a habilidade pedida
@@ -198,18 +290,55 @@ pt-BR:
     curator: Curadoria
     support: Suporte
   statuses:
+    accepted: Aceita
+    active: Ativa
     approved: Aprovado
+    attended: Compareceu
+    cancelled: Cancelada
+    closed: Encerrada
     completed: Concluída
+    confirmed: Confirmada
+    declined: Recusada
+    delivered: Entregue
     draft: Rascunho
+    ended: Encerrada
     failed: Falhou
+    held: Realizado
     in_progress: Em obra
+    in_transit: Em trânsito
+    negotiating: Em negociação
+    no_show: Não compareceu
+    offered: Oferecida
+    past_due: Em atraso
     paused: Parada
     pending: Pendente
+    prepared: Preparado
+    prospect: Prospecção
+    published: Publicado
+    reached: Atingida
+    recorded: Registrada
+    refunded: Estornada
     refused: Recusado
+    registered: Inscrita
+    rejected: Rejeitada
+    revised: Revisado
+    semiannual_gift: Presente semestral
+    skipped: Ignorada
     submitted: Enviado
     succeeded: Aprovado
     surveying: Levantamento
     urgent: Urgente
+  subscriber_benefits:
+    monthly_report:
+      subject: Relatório mensal da sua assinatura
+  subscription_intervals:
+    monthly: Mensal
+    quarterly: Trimestral
+    yearly: Anual
+  tiers:
+    maintainer: Mantenedora
+    partner: Parceira
+    supporter: Apoiadora
   to_levels:
     confidential: Confidencial
     public: Pública
