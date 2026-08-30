@@ -397,6 +397,8 @@ tabela — os três são projeção sobre `Contribution`/`Subscription`,
 - **Uma dash por tipo, uma rota por dash.** A mesma pessoa acumula os três, e é
   ela quem escolhe — nunca uma precedência que esconde parte do sistema sem
   avisar.
+- **A raiz despacha, não renderiza.** `HomeController` manda para a dash; a rota
+  existe porque o `after_authentication_url` cai nela, a página não.
 - **Alcance atribuído é proporcional e sobre a META**
   (`estimativa_anual × aportado ÷ meta`). Creditar a obra inteira a cada
   financiador multiplica o impacto pelo número de financiadores; dividir pelo

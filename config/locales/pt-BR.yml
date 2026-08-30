@@ -102,10 +102,6 @@ pt-BR:
     disbanded: Desfeito
     engaged: Engajado
     forming: Em formação
-  home:
-    show:
-      signed_in_as: Você entrou como %{email}.
-      title: Você está autenticado
   in_kind_categories:
     equipment: Equipamento
     expertise: Especialidade
