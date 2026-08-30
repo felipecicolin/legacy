@@ -23,3 +23,13 @@ pin_all_from "app/javascript/controllers", under: "controllers"
 pin "trix"
 pin "@rails/actiontext", to: "actiontext.esm.js"
 pin "trix_locale"
+
+# ApexCharts, servido do PRÓPRIO domínio como todo o resto: a cópia está em
+# `vendor/javascript/apexcharts.js`, baixada uma vez. Pinar para CDN
+# economizaria 560 KB do repositório e entregaria o JS da aplicação a partir de
+# um domínio que não é nosso — a mesma razão pela qual o Trix vem da gem.
+#
+# É a build ESM (`export default`), então `import ApexCharts from "apexcharts"`.
+# A UMD definiria `window.ApexCharts` e o import quebraria o grafo inteiro em
+# silêncio — a armadilha que o `trix` já custou aqui.
+pin "apexcharts"

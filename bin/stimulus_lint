@@ -15,10 +15,18 @@ METHOD_LENGTH_MAX       = 7
 CYCLOMATIC_COMPLEXITY_MAX = 5
 VALID_VALUE_TYPES       = %w[String Number Boolean Array Object].freeze
 
-# Whitelisted import path prefixes. Any other path (npm name, absolute
-# URL, etc.) is rejected — this project has no JS build pipeline so npm
-# packages can't actually load anyway.
+# Whitelisted import path prefixes. Any other path (absolute URL, bare npm
+# name with no pin) is rejected: this project has no JS build pipeline, so a
+# name the importmap does not know cannot load at all.
 ALLOWED_IMPORT_PREFIXES = %w[@hotwired/ controllers/ ./ ../].freeze
+
+# ...and whatever `config/importmap.rb` actually pins. The rule always SAID
+# "no npm packages without an importmap pin"; it just never read the importmap,
+# so a pinned package was rejected along with an unpinned one. Reading the file
+# is what makes the message true — it is not an exception, it is the rule
+# finally doing what it claims.
+PINNED_PACKAGES = File.read(File.expand_path("../config/importmap.rb", __dir__), encoding: "UTF-8")
+                      .scan(/^\s*pin\s+["']([^"']+)["']/).flatten.freeze
 
 class StimulusLint
   RULES = %i[
@@ -354,10 +362,11 @@ class StimulusLint
 
       from = m[1]
       next if ALLOWED_IMPORT_PREFIXES.any? { |prefix| from.start_with?(prefix) }
+      next if PINNED_PACKAGES.include?(from)
 
       Offense.new(path, idx + 1, "ImportWhitelist", nil,
         "import \"#{from}\" not allowed — only #{ALLOWED_IMPORT_PREFIXES.join(', ')} prefixes; " \
-        "no npm packages without an importmap pin")
+        "no npm packages without an importmap pin. Pinned: #{PINNED_PACKAGES.join(', ')}")
     end
   end
 

@@ -111,6 +111,28 @@
         <% end %>
       </section>
 
+      <%# O avanço no tempo é a única leitura desta tela que uma barra não dá:
+          barra diz onde está, série diz como chegou — se estagnou, se andou em
+          degraus, se regrediu. %>
+      <% if presenter.progress_series.length > 1 %>
+        <section class="min-w-0 border-t border-border pt-8">
+          <h2 class="mb-4 text-section text-foreground"><%= t(".progress.over_time") %></h2>
+          <div data-controller="chart"
+               data-chart-options-value="<%= {
+                 chart: { type: "area", height: 260, toolbar: { show: false },
+                          fontFamily: "inherit", animations: { enabled: false } },
+                 series: [{ name: t(".progress.over_time"), data: presenter.progress_series }],
+                 dataLabels: { enabled: false },
+                 stroke: { curve: "straight", width: 2 },
+                 fill: { type: "gradient", gradient: { opacityFrom: 0.35, opacityTo: 0.02 } },
+                 xaxis: { type: "datetime", labels: { datetimeUTC: false } },
+                 yaxis: { min: 0, max: 100, tickAmount: 4 },
+                 tooltip: { x: { format: "dd/MM/yyyy" } },
+                 grid: { borderColor: "#00000014", strokeDashArray: 4 },
+               }.to_json %>"></div>
+        </section>
+      <% end %>
+
       <section class="min-w-0 border-t border-border pt-8">
         <h2 class="mb-4 text-section text-foreground"><%= t(".reports.title") %></h2>
         <%= helpers.turbo_frame_tag "project-reports" do %>

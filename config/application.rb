@@ -51,6 +51,16 @@ module Legacy
     config.action_dispatch.default_headers["X-Robots-Tag"] = "noindex"
     config.exceptions_app = routes
 
+    # JS de terceiro servido do PRÓPRIO domínio — a mesma política do Trix, e a
+    # razão de não haver pin para CDN neste projeto. Precisa estar AQUI e não
+    # num initializer: o Propshaft monta o load path antes de
+    # `config/initializers/*` rodar, então a linha lá não tem efeito nenhum e o
+    # navegador recebe 404 sem que nada no servidor reclame.
+    #
+    # Só arquivo de nome único entra: dois disputando o mesmo caminho lógico
+    # têm vencedor que muda de máquina — `spec/propshaft/load_path_spec.rb`.
+    config.assets.paths << Rails.root.join("vendor/javascript")
+
     # NÃO coloque `app/components` em `config.assets.paths`. A receita corrente
     # para controllers Stimulus sidecar manda fazer isso, e o preço é alto: o
     # Propshaft trata TODO arquivo sob um asset path como asset, sem filtro de

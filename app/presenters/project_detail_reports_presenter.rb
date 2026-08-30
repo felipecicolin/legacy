@@ -22,6 +22,15 @@ class ProjectDetailReportsPresenter
     ProfilePresenter.new(report.reported_by, role_label:, subject: @project).name_for(@visibility)
   end
 
+  # A série do avanço no tempo, em ordem crescente — o oposto da listagem, que
+  # é decrescente porque lá o mais recente é o que interessa. Um gráfico lido
+  # da direita para a esquerda não se lê.
+  def progress_series
+    @project.progress_reports.approved.order(:reported_on)
+            .pluck(:reported_on, :physical_progress)
+            .map { |on, percentage| { x: on.iso8601, y: percentage } }
+  end
+
   def photo_caption(photo)
     [I18n.l(photo.taken_on), photo.credit_for(@visibility)].compact.join(" · ")
   end

@@ -6,7 +6,7 @@
 class ProjectDetailPresenter
   delegate :title, :code, :status, to: :project
   delegate :progress_report, :reports, :more_reports?, :next_reports_page,
-           :report_author, :photo_caption, :reports_page, to: :reports_data
+           :report_author, :photo_caption, :reports_page, :progress_series, to: :reports_data
   delegate :funding_value, :funding_target, :funding_currency, :budget_rows,
            :budget_total_cents, to: :finance_data
 

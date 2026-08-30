@@ -27,6 +27,7 @@ pt-BR:
   progress:
     direct: Avanço informado diretamente, sem relatório aprovado.
     goal: Meta de %{value}
+    over_time: Avanço ao longo do tempo
     reported: "%{date}, por %{author}"
     title: Avanço e recursos
   reports:
