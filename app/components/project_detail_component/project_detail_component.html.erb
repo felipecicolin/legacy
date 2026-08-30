@@ -16,9 +16,9 @@
     <% end %>
   <% end %>
 
-  <%# Abas no lugar da lista de âncoras: eram seis cartões de alturas
-      diferentes lado a lado, e o olho não sabia por onde começar. Uma
-      seção por vez, e a barra diz quantas existem. %>
+  <%# Três abas, não cinco: com uma seção por aba a maioria delas cabia
+      numa frase, e a barra virava índice de páginas quase vazias. Cada
+      aba responde uma pergunta inteira — como vai, quem está, quanto custou. %>
   <div class="mt-6 min-w-0" data-controller="project-tabs">
     <div role="tablist" aria-label="<%= t(".section_navigation") %>"
          class="flex gap-6 overflow-x-auto border-b border-border">
@@ -34,21 +34,7 @@
               class="shrink-0 border-b-2 border-transparent px-1 pb-3 text-body font-medium
                      text-muted-foreground transition-colors hover:text-foreground
                      aria-selected:border-primary aria-selected:font-semibold aria-selected:text-foreground">
-        <%= t(".navigation.reports") %>
-      </button>
-      <button type="button" role="tab" data-project-tabs-target="tab"
-              data-action="project-tabs#select"
-              class="shrink-0 border-b-2 border-transparent px-1 pb-3 text-body font-medium
-                     text-muted-foreground transition-colors hover:text-foreground
-                     aria-selected:border-primary aria-selected:font-semibold aria-selected:text-foreground">
-        <%= t(".navigation.team") %>
-      </button>
-      <button type="button" role="tab" data-project-tabs-target="tab"
-              data-action="project-tabs#select"
-              class="shrink-0 border-b-2 border-transparent px-1 pb-3 text-body font-medium
-                     text-muted-foreground transition-colors hover:text-foreground
-                     aria-selected:border-primary aria-selected:font-semibold aria-selected:text-foreground">
-        <%= t(".navigation.needs") %>
+        <%= t(".navigation.people") %>
       </button>
       <button type="button" role="tab" data-project-tabs-target="tab"
               data-action="project-tabs#select"
@@ -59,9 +45,11 @@
       </button>
     </div>
 
-    <div class="mt-6 min-w-0">
+    <div class="mt-8 min-w-0">
     <section role="tabpanel" data-project-tabs-target="panel" hidden
-             aria-label="<%= t(".navigation.progress") %>" class="min-w-0 space-y-6">
+             aria-label="<%= t(".navigation.progress") %>" class="min-w-0 space-y-8">
+      <section class="min-w-0">
+        <h2 class="mb-4 text-section text-foreground"><%= t(".progress.title") %></h2>
         <div class="mt-5 grid gap-6 tablet:grid-cols-2">
           <div class="min-w-0">
             <%= render ProgressBarComponent.new(kind: "physical", value: presenter.physical_progress) %>
@@ -101,7 +89,12 @@
                   <span class="text-body font-semibold text-foreground"><%= stage.name %></span>
                   <span class="text-sm font-semibold text-foreground tabular-nums"><%= number_to_percentage(stage.physical_progress, precision: 0) %></span>
                 </div>
-                <%= render ProgressBarComponent.new(kind: "physical", value: stage.physical_progress) %>
+                <%# Medidor sem rótulo: o nome da etapa e o percentual já estão
+                    na linha acima, e a barra repetia os dois. %>
+                <div class="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                  <span class="block h-full rounded-full bg-primary"
+                        style="width: <%= stage.physical_progress %>%"></span>
+                </div>
                 <p class="mt-2 text-label text-muted-foreground">
                   <%= t(".phases.weight", weight: stage.weight,
                          contribution: number_to_percentage(presenter.phase_contribution(stage), precision: 1)) %>
@@ -110,10 +103,10 @@
             <% end %>
           </ol>
         <% end %>
-    </section>
+      </section>
 
-    <section role="tabpanel" data-project-tabs-target="panel" hidden
-             aria-label="<%= t(".navigation.reports") %>" class="min-w-0 space-y-6">
+      <section class="min-w-0 border-t border-border pt-8">
+        <h2 class="mb-4 text-section text-foreground"><%= t(".reports.title") %></h2>
         <%= helpers.turbo_frame_tag "project-reports" do %>
           <% if presenter.reports.empty? %>
             <p class="mt-5 text-body text-muted-foreground"><%= t(".reports.empty") %></p>
@@ -183,10 +176,13 @@
             <% end %>
           <% end %>
         <% end %>
+      </section>
     </section>
 
     <section role="tabpanel" data-project-tabs-target="panel" hidden
-             aria-label="<%= t(".navigation.team") %>" class="min-w-0 space-y-6">
+             aria-label="<%= t(".navigation.people") %>" class="min-w-0 space-y-8">
+      <section class="min-w-0">
+        <h2 class="mb-4 text-section text-foreground"><%= t(".team.title") %></h2>
         <% if presenter.team_members.empty? %>
           <p class="mt-5 text-body text-muted-foreground"><%= t(".team.empty") %></p>
         <% else %>
@@ -199,10 +195,10 @@
             <% end %>
           </ul>
         <% end %>
-    </section>
+      </section>
 
-    <section role="tabpanel" data-project-tabs-target="panel" hidden
-             aria-label="<%= t(".navigation.needs") %>" class="min-w-0 space-y-6">
+      <section class="min-w-0 border-t border-border pt-8">
+        <h2 class="mb-4 text-section text-foreground"><%= t(".needs.title") %></h2>
         <% if presenter.needs.empty? %>
           <p class="mt-5 text-body text-muted-foreground"><%= t(".needs.empty") %></p>
         <% else %>
@@ -226,10 +222,13 @@
             <% end %>
           </ul>
         <% end %>
+      </section>
     </section>
 
     <section role="tabpanel" data-project-tabs-target="panel" hidden
-             aria-label="<%= t(".navigation.funding") %>" class="min-w-0 space-y-6">
+             aria-label="<%= t(".navigation.funding") %>" class="min-w-0 space-y-8">
+      <section class="min-w-0">
+        <h2 class="mb-4 text-section text-foreground"><%= t(".budget.title") %></h2>
         <% if presenter.budget_rows.empty? %>
           <p class="mt-5 text-body text-muted-foreground"><%= t(".budget.empty") %></p>
         <% else %>
@@ -253,6 +252,7 @@
           </p>
           <p class="mt-1 text-sm font-medium text-warning"><%= t(".simulated") %></p>
         <% end %>
+      </section>
     </section>
     </div>
   </div>
