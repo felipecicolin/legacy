@@ -225,4 +225,10 @@ RSpec.describe Ngo do
   it "accepts an unknown headcount" do
     expect(build(:ngo, people_served: nil)).to be_valid
   end
+
+  # A busca chamava `country.name` direto e quebrava com 500 em produção: desde
+  # a fusão o país é opcional, e ONG sem país é estado legítimo.
+  it "answers a blank country label instead of raising, as search assumes a country" do
+    expect { create(:ngo, country: nil).country_label }.not_to raise_error
+  end
 end

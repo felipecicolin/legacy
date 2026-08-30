@@ -6,7 +6,7 @@
       <%= render TableComponent.new(rows: records, caption: t(".caption"), classes: "mt-3") do |table| %>
         <% table.with_column(header: t(".name")) { |base| base.name } %>
         <% table.with_column(header: t(".kind")) { |base| base.ngo_kind_label } %>
-        <% table.with_column(header: t(".country")) { |base| base.country.name } %>
+        <% table.with_column(header: t(".country")) { |base| base.country_label } %>
       <% end %>
     <% else %>
       <div class="mt-3 grid gap-4 tablet:grid-cols-2 desktop:grid-cols-3">
@@ -16,7 +16,7 @@
               <%= base.name %>
             </a>
             <p class="text-label text-muted-foreground">
-              <%= base.ngo_kind_label %> · <%= base.country.name %>
+              <%= [base.ngo_kind_label, base.country_label].compact_blank.join(" · ") %>
             </p>
           <% end %>
         <% end %>

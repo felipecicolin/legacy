@@ -218,7 +218,6 @@ pt-BR:
     application:
       nav:
         investor: Investimentos
-        search: Buscar
         team: Obras
       sign_out: Sair
   member_roles:
