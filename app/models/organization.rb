@@ -21,6 +21,9 @@ class Organization < ApplicationRecord
   has_many :mission_bases, dependent: :nullify, inverse_of: :organization
   has_many :volunteer_groups, dependent: :restrict_with_error
   has_many :volunteer_engagements, dependent: :nullify
+  has_many :partnerships, dependent: :restrict_with_error
+  has_many :contributions, as: :contributor, dependent: :nullify
+  has_many :donated_in_kind_donations, as: :donor, class_name: "InKindDonation", dependent: :restrict_with_error
 
   has_rich_text :description
   has_one_attached :logo

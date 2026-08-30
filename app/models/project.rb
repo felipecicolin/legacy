@@ -40,6 +40,9 @@ class Project < ApplicationRecord
   # `destroy`: a foto pertence à obra e não sobrevive a ela. O blob vai junto
   # pelo `dependent: :purge_later` que o Active Storage instala.
   has_many :project_photos, dependent: :destroy
+  has_many :campaigns, dependent: :restrict_with_error
+  has_many :budgets, dependent: :restrict_with_error
+  has_many :expenses, dependent: :restrict_with_error
 
   enum :status, STATUSES, validate: true
 

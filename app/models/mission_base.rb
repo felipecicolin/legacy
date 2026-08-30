@@ -26,6 +26,7 @@ class MissionBase < ApplicationRecord
   # humano, e o histórico da obra é prestação de contas. Some a obra, some a
   # resposta para "onde foi parar o dinheiro".
   has_many :projects, dependent: :restrict_with_error
+  has_many :campaigns, dependent: :restrict_with_error
 
   # `has_many :needs` direto é o que permite a base ter necessidade SEM obra
   # ativa — o caso que a fusão Base/Obra destruiria, e a razão de as duas serem
