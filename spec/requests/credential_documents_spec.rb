@@ -34,6 +34,16 @@ RSpec.describe "Credential documents" do
     expect(response.headers["Content-Disposition"]).to start_with("attachment")
   end
 
+  it "returns not found when the credential has no document" do
+    credential_without_document = create(:credential, profile: profile)
+
+    sign_in(owner, password: password)
+
+    get document_credential_path(credential_without_document)
+
+    expect(response).to have_http_status(:not_found)
+  end
+
   it "returns not found to another authenticated user" do
     other_user = create(:user, password: password)
     create(:profile, user: other_user)
@@ -49,6 +59,15 @@ RSpec.describe "Credential documents" do
     sign_in(owner, password: password)
 
     get document_credential_path(id: "nao-existe")
+
+    expect(response).to have_http_status(:not_found)
+  end
+
+  it "returns not found to an authenticated user without a profile" do
+    user_without_profile = create(:user, password: password)
+    sign_in(user_without_profile, password: password)
+
+    get document_credential_path(credential)
 
     expect(response).to have_http_status(:not_found)
   end

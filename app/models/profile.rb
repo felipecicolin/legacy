@@ -38,7 +38,7 @@ class Profile < ApplicationRecord
 
   # É o ponto de consulta que a futura Candidacy usa para decidir se uma
   # necessidade que exige registro profissional pode receber esta pessoa.
-  def has_valid_professional_registration?
+  def valid_professional_registration?
     credentials.any?(&:valid_for_professional_registration?)
   end
 
