@@ -67,6 +67,12 @@ pt-BR:
     beginner: Iniciante
     expert: Especialista
     intermediate: Intermediário
+  project_statuses:
+    completed: Concluída
+    in_progress: Em obra
+    paused: Parada
+    surveying: Levantamento
+    urgent: Urgente
   roles:
     admin: Administrador
     member: Membro

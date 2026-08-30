@@ -1,0 +1,6 @@
+---
+pt-BR:
+  funding_label: Recursos arrecadados
+  funding_value: "%{value} de %{target}"
+  physical_label: Avanço físico da obra
+  without_target: Sem meta definida

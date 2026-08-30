@@ -1,0 +1,12 @@
+<%= tag.div class: class_merge("space-y-2", @attrs.options[:container_class]) do %>
+  <%= @attrs.form.label @attrs.attribute, display_label,
+                        class: "flex items-center gap-2 text-sm font-semibold text-foreground" %>
+
+  <%= field_tag %>
+
+  <% if errors.any? %>
+    <p id="<%= field_id("-error") %>" role="alert" class="text-sm text-destructive"><%= errors.to_sentence %></p>
+  <% elsif @attrs.options[:hint].present? %>
+    <p id="<%= field_id("-hint") %>" class="text-sm text-muted-foreground"><%= @attrs.options[:hint] %></p>
+  <% end %>
+<% end %>

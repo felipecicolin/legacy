@@ -31,22 +31,17 @@
     <%# No layout, e não na tela de arrecadação: assim toda tela nasce marcada
         e nenhuma precisa lembrar. O componente decide sozinho se aparece —
         pergunta ao provedor de pagamento, não ao ambiente. %>
-    <%= render SimulatedDataBannerComponent.new(classes: "container mx-auto mt-4") %>
+    <%= render SimulatedDataBannerComponent.new(classes: "mx-auto mt-4 w-full max-w-7xl px-4 tablet:px-5 desktop:px-6") %>
 
-    <%# Cabeçalho mínimo: sair precisa existir em toda página autenticada, não
-        só na de chegada. #8 troca isto pelo shell de verdade. %>
-    <% if authenticated? %>
-      <header class="border-b border-border">
-        <nav class="container mx-auto flex items-center justify-end px-5 py-3">
+    <%= render AppShellComponent.new do |shell| %>
+      <% if authenticated? %>
+        <% shell.with_navigation do %>
           <%= render ButtonComponent.new(label: t("layouts.application.sign_out"), variant: :ghost,
-                                         size: :sm, href: session_path,
+                                         size: :sm, href: session_path, classes: "w-full justify-start",
                                          data: { turbo_method: :delete }) %>
-        </nav>
-      </header>
-    <% end %>
-
-    <main class="container mx-auto mt-28 flex px-5">
+        <% end %>
+      <% end %>
       <%= yield %>
-    </main>
+    <% end %>
   </body>
 </html>

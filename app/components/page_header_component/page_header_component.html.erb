@@ -1,0 +1,28 @@
+<%= tag.header(**html_attributes) do %>
+  <% if breadcrumbs? %>
+    <nav aria-label="<%= t(".breadcrumbs") %>" class="mb-4">
+      <ol class="flex flex-wrap items-center gap-2 text-sm">
+        <% breadcrumbs.each_with_index do |breadcrumb, index| %>
+          <%= breadcrumb %>
+          <% if index < breadcrumbs.length - 1 %>
+            <li aria-hidden="true" class="text-muted-foreground">
+              <%= render IconComponent.new(name: "chevron-right", size: :xs) %>
+            </li>
+          <% end %>
+        <% end %>
+      </ol>
+    </nav>
+  <% end %>
+
+  <div class="flex flex-col gap-4 desktop:flex-row desktop:items-end desktop:justify-between">
+    <div class="min-w-0">
+      <h1 class="text-display text-foreground"><%= title %></h1>
+      <% if subtitle.present? %>
+        <p class="mt-2 max-w-2xl text-body text-muted-foreground"><%= subtitle %></p>
+      <% end %>
+    </div>
+    <% if actions? %>
+      <div class="flex shrink-0 flex-wrap items-center gap-2"><%= actions %></div>
+    <% end %>
+  </div>
+<% end %>

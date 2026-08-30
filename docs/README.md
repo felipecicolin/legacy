@@ -25,6 +25,9 @@ acrescenta nada. Então:
 - [Moldura de imagem](design-system/image-frame.md) — por que a proporção é
   reservada antes de a imagem existir, os tokens de enquadramento, os três
   estados do anexo, e a evidência que obrigou a instalar o Active Storage.
+- [Biblioteca de componentes](design-system/components.md) — a composição do
+  shell responsivo, os estados sem conteúdo, a tabela dupla e as regras de
+  acessibilidade compartilhadas pelos componentes de fundação.
 
 ### Plataforma
 

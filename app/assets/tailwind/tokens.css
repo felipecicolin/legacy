@@ -110,6 +110,13 @@
 }
 
 @theme inline {
+  /* — Layout ————————————————————————————————————————————————————
+   * Os nomes dos breakpoints são vocabulário do produto. As views usam
+   * `tablet:` e `desktop:` em vez de repetir valores de viewport em cada
+   * tela; trocar a grade continua sendo uma edição deste arquivo. */
+  --breakpoint-tablet: 48rem;
+  --breakpoint-desktop: 64rem;
+
   /* — Superfície ————————————————————————————————————————————————— */
   --color-background: var(--sand-50);
   --color-foreground: var(--ink-900);

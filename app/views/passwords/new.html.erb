@@ -1,8 +1,7 @@
 <div class="mx-auto w-full max-w-md">
   <%= render "shared/flash" %>
 
-  <h1 class="text-2xl font-bold text-foreground"><%= t(".title") %></h1>
-  <p class="mt-2 text-sm text-muted-foreground"><%= t(".help") %></p>
+  <%= render PageHeaderComponent.new(title: t(".title"), subtitle: t(".help")) %>
 
   <%= form_with url: passwords_path, class: "contents" do |form| %>
     <div class="my-5">

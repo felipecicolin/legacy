@@ -1,0 +1,9 @@
+<%= tag.div(**html_attributes) do %>
+  <div class="mb-2 flex items-baseline justify-between gap-4">
+    <span class="text-label text-muted-foreground"><%= aria_label %></span>
+    <span class="font-mono text-sm font-medium text-foreground"><%= value_label %></span>
+  </div>
+  <%= tag.div(**progress_attributes) do %>
+    <%= tag.div(**fill_attributes) %>
+  <% end %>
+<% end %>
