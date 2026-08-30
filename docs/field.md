@@ -220,12 +220,19 @@ destruído na ingestão sempre** — não só em obra confidencial. Regra única
 regra que não se esquece, e a obra pode ser promovida a confidencial depois de
 a foto já estar guardada. Ver [Política de foto](photo-policy.md).
 
-**A validação de formato olha os bytes, não o content-type declarado.** Um
-arquivo renomeado para `.jpg` chega ao servidor com `image/jpeg` no formulário;
-confiar nisso é confiar no cliente. A whitelist de content-type é a primeira
-peneira, e a segunda é a libvips recusar abrir o que não é imagem. Whitelist e
-não blacklist, pelo motivo de sempre: o formato desconhecido fica de fora por
+**São duas peneiras, e elas respondem coisas diferentes.** A libvips recusar
+abrir os bytes responde *"isto não é imagem"* — e é o `ExifScrubber` que
+levanta. A whitelist de content-type responde *"isto não é um formato que
+servimos"*: um TIFF é imagem legítima e mesmo assim não entra. Whitelist e não
+blacklist, pelo motivo de sempre — o formato desconhecido fica de fora por
 default, em vez de o próximo formato ruim passar.
+
+**O content-type declarado não é superfície de ataque aqui**, e a razão é do
+Active Storage, não nossa: ele **reidentifica o tipo pelos bytes** na ingestão.
+Um TIFF rotulado de `image/jpeg` volta do blob como `image/tiff` e é recusado; e
+um JPEG rotulado de `image/tiff` volta como `image/jpeg` e passa. Isso tem uma
+consequência para quem escreve spec: **o caso de formato não servido exige um
+arquivo real daquele formato** — mentir no rótulo não produz o caso.
 
 O limite de tamanho é 12 MB — foto de celular cabe, PDF de planta e vídeo não, e
 é o upload acidental desses que enche o storage sem ninguém ver.

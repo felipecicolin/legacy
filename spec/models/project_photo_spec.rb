@@ -48,11 +48,15 @@ RSpec.describe ProjectPhoto do
       expect(photo_with(StringIO.new("%PDF-1.7"), content_type: "application/pdf")).not_to be_valid
     end
 
-    # A libvips ABRE um GIF sem reclamar, então o scrubber não recusa: quem
+    # A libvips ABRE um TIFF sem reclamar, então o scrubber não recusa: quem
     # recusa é a whitelist. É o caso que separa as duas peneiras — uma responde
     # "isto não é imagem", a outra responde "isto não é um formato que servimos".
+    #
+    # A imagem é um TIFF de verdade, e não um JPEG rotulado: o Active Storage
+    # reidentifica o content-type pelos bytes, então mentir no formulário não
+    # produz o caso — e é por isso que o rótulo declarado não é ataque aqui.
     it "refuses a real picture in a format outside the whitelist" do
-      exotic = photo_with(StringIO.new(GeotaggedPhoto.bytes), content_type: "image/gif")
+      exotic = build(:project_photo, project: project, image: GeotaggedPhoto.unserved_format_upload)
 
       expect(exotic.tap(&:valid?).errors.details[:image].pluck(:error)).to include(:unsupported_picture)
     end
