@@ -16,6 +16,15 @@ RSpec.describe "Sessions" do
 
       expect(response).to have_http_status(:ok)
     end
+
+    # A tela de acesso não passa pelo AppShellComponent, e trocar de layout é
+    # o tipo de mudança que leva junto o que o layout antigo dava de graça.
+    it "renders the split layout instead of the application shell" do
+      get new_session_path
+
+      expect(response.body).to include("main-content")
+      expect(response.body).not_to include("app-shell-drawer")
+    end
   end
 
   describe "POST /session" do
@@ -43,6 +52,17 @@ RSpec.describe "Sessions" do
       expect { sign_in(senha: "s3nha-errada") }.not_to change(Session, :count)
 
       expect(response).to redirect_to(new_session_path)
+    end
+
+    # `flash[:alert]` preenchido e toast ausente é exatamente o que um layout
+    # sem o partial de flash produz: a pessoa erra a senha, volta para o mesmo
+    # formulário e nada explica o porquê.
+    it "shows the failure on the page it redirects to" do
+      sign_in(senha: "s3nha-errada")
+
+      follow_redirect!
+
+      expect(response.body).to include(I18n.t("sessions.create.failed"))
     end
 
     # Enumeração de usuário: se "senha errada" e "e-mail não existe" tiverem

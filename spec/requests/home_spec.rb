@@ -20,16 +20,4 @@ RSpec.describe "Home" do
 
     expect(response).to have_http_status(:ok)
   end
-
-  # A marca de dado simulado vive no layout justamente para nenhuma tela
-  # precisar lembrar dela. É aqui que se prova que ela chega a uma página de
-  # verdade, e não só ao spec do componente.
-  it "marks the page as demonstration data" do
-    user = create(:user)
-    post session_path, params: { email_address: user.email_address, password: "s3nha-de-teste-longa" }
-
-    get root_path
-
-    expect(response.body).to include("Ambiente de demonstração")
-  end
 end

@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 class PasswordsController < ApplicationController
+  # Fora do AppShellComponent: o shell é a moldura de quem já entrou, e
+  # quem chega aqui não tem para onde navegar. Ver docs/design-system/auth-layout.md.
+  layout "authentication"
+
   allow_unauthenticated_access
 
   # Recuperação de senha é para quem não conseguiu entrar — não há contexto

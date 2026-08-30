@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <%= render "layouts/head" %>
+  </head>
+
+  <body class="bg-background text-foreground">
+    <%# Autenticação não passa pelo AppShellComponent: o shell é a moldura de
+        quem já entrou — gaveta de navegação, cabeçalho e uma coluna de no
+        máximo 7xl. A tela de acesso quer a largura inteira e não tem para
+        onde navegar. O flash continua aqui, na coluna do formulário: é o
+        layout que garante que nenhuma tela precise lembrar dele. %>
+    <%= render AuthLayoutComponent.new do |auth| %>
+      <%# `alt` vazio de propósito: a foto é decorativa, e descrevê-la só
+          faria o leitor de tela anunciar um canteiro de obra antes do campo
+          de e-mail. `object-cover` corta nas bordas de cima e de baixo — o
+          assunto da foto está no terço central por causa disso.
+
+          Sem `loading: "lazy"`: medido no Chrome, o telefone baixa a foto
+          mesmo com o painel em `display: none` e mesmo com o atributo. O
+          comentário que dizia o contrário seria pior que a ausência dele —
+          ver docs/design-system/auth-layout.md. %>
+      <% auth.with_illustration do %>
+        <%= image_tag "login.jpg", alt: "", class: "absolute inset-0 h-full w-full object-cover" %>
+      <% end %>
+
+      <%= render "shared/flash" %>
+      <%= yield %>
+    <% end %>
+  </body>
+</html>

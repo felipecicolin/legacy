@@ -16,6 +16,43 @@ Os breakpoints `tablet` (768px) e `desktop` (1024px) vivem em
 `tokens.css`. Assim, a mesma grade de 4, 8 e 12 colunas pode ser aplicada a
 uma nova tela sem espalhar números de viewport em templates.
 
+## O padding do card é vocabulário
+
+`CardComponent` aceita `padding:` — `default` (`p-4 md:p-6`) ou `roomy`
+(`p-8 tablet:p-14`) —, e não uma classe passada pelo call site. O motivo é
+medido, não estético: o padrão traz `md:p-6`, e o `md` do Tailwind é os mesmos
+48rem que este projeto chama de `tablet`. Um `p-8` escrito no call site
+convive com o `md:p-6` em vez de substituí-lo — o `tailwind-merge` os trata
+como utilities de modificadores diferentes —, e quem decide acima de 48rem é a
+ordem no CSS compilado, onde a variante vem depois. O resultado é um card com
+**menos** ar no desktop do que no telefone, sem erro e sem aviso.
+
+Escolher entre nomes fecha essa porta: um valor fora do vocabulário levanta
+`ArgumentError` na construção. Se falta um tamanho, o lugar de acrescentar é o
+`PADDINGS`, não o call site.
+
+## O logotipo
+
+A marca vive em `app/assets/images/logo.png` e aparece em dois lugares: a gaveta
+do `AppShellComponent` e o cabeçalho da coluna de formulário da
+`AuthLayoutComponent`. Nos dois, o nome acessível vem do `alt` — a mesma chave
+`.brand` que antes era texto na tela —, porque trocar palavra por imagem sem
+isso apagaria a marca para quem usa leitor de tela.
+
+Três decisões que não se leem no arquivo:
+
+- **A cor foi normalizada para `--clay-500` (#A8482C).** O arquivo entregue
+  vinha em #BC522A, um desvio do modelo que gerou a arte em relação ao valor
+  pedido. O logotipo é reconstruído como uma máscara de alfa recolorida, então
+  a cor da marca continua tendo uma única fonte, que é o `tokens.css`.
+- **O fundo virou transparente por alfa de luminância, e não por chave de
+  cor.** `-transparent` sobre a borda antisserrilhada deixa halo claro, que só
+  aparece quando alguém põe o logotipo sobre fundo escuro — tarde demais.
+- **É PNG, e não SVG, porque não há tracer nesta máquina** (nem `potrace` nem
+  `autotrace`). O custo é conhecido: trocar o matiz da marca no `tokens.css`
+  **não** alcança este arquivo, e ele precisa ser reexportado à mão. É a única
+  coisa no design system que não segue o token sozinha.
+
 ## Estados e semântica
 
 `EmptyStateComponent` recebe o texto e o ícone do contexto. Isso mantém

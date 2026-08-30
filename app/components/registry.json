@@ -19,6 +19,28 @@
       ]
     },
     {
+      "name": "AuthLayoutComponent",
+      "category": "ui",
+      "params": [],
+      "constants": {},
+      "slots": [
+        "illustration"
+      ],
+      "stimulus_controller": "auth-layout-component",
+      "template": "app/components/auth_layout_component/auth_layout_component.html.erb",
+      "preview": "spec/components/previews/auth_layout_component_preview.rb",
+      "examples": [
+        {
+          "name": "default",
+          "source": "  def default\n    render(AuthLayoutComponent.new) do\n      '<h1 class=\"text-display text-foreground\">Acessar a plataforma</h1>'.html_safe\n    end"
+        },
+        {
+          "name": "with_illustration",
+          "source": "  def with_illustration\n    render(AuthLayoutComponent.new) do |auth|\n      auth.with_illustration_content(\n        '<div class=\"absolute inset-0 bg-primary\"></div>'.html_safe,\n      )\n      '<h1 class=\"text-display text-foreground\">Acessar a plataforma</h1>'.html_safe\n    end"
+        }
+      ]
+    },
+    {
       "name": "ButtonComponent",
       "category": "ui",
       "params": [
@@ -115,11 +137,19 @@
           "kind": "key"
         },
         {
+          "name": "padding",
+          "kind": "key"
+        },
+        {
           "name": "html_options",
           "kind": "keyrest"
         }
       ],
       "constants": {
+        "PADDINGS": [
+          "default",
+          "roomy"
+        ],
         "VARIANTS": [
           "default",
           "elevated",
@@ -136,7 +166,7 @@
       "examples": [
         {
           "name": "playground",
-          "source": "  def playground(variant: \"default\")\n    render(CardComponent.new(variant: variant)) do |card|\n      card.with_header { \"Resumo da obra\" }\n      \"O conteúdo do cartão respeita os tokens do design system.\"\n    end\n  end\nend"
+          "source": "  def playground(variant: \"default\", padding: \"default\")\n    render(CardComponent.new(variant: variant, padding: padding)) do |card|\n      card.with_header { \"Resumo da obra\" }\n      \"O conteúdo do cartão respeita os tokens do design system.\"\n    end\n  end\nend"
         }
       ]
     },
@@ -564,31 +594,6 @@
         {
           "name": "without_a_blank_option",
           "source": "  def without_a_blank_option\n    render(SelectComponent.new(name: :status, label: \"Situação\", choices: STATUSES))\n  end"
-        }
-      ]
-    },
-    {
-      "name": "SimulatedDataBannerComponent",
-      "category": "ui",
-      "params": [
-        {
-          "name": "classes",
-          "kind": "key"
-        }
-      ],
-      "constants": {},
-      "slots": [],
-      "stimulus_controller": "simulated-data-banner-component",
-      "template": "app/components/simulated_data_banner_component/simulated_data_banner_component.html.erb",
-      "preview": "spec/components/previews/simulated_data_banner_component_preview.rb",
-      "examples": [
-        {
-          "name": "default",
-          "source": "  def default\n    render(SimulatedDataBannerComponent.new)\n  end"
-        },
-        {
-          "name": "inside_a_container",
-          "source": "  def inside_a_container\n    render(SimulatedDataBannerComponent.new(classes: \"container mx-auto\"))\n  end"
         }
       ]
     },

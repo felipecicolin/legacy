@@ -308,6 +308,7 @@ pt-BR:
       sent: Se houver conta com esse e-mail, as instruções de recuperação foram enviadas.
     edit:
       confirmation: Repita a nova senha
+      help: Escolha uma senha que você ainda não usa em outro lugar.
       password: Nova senha
       submit: Salvar nova senha
       title: Definir uma nova senha
@@ -414,6 +415,7 @@ pt-BR:
       forgot: Esqueceu a senha?
       password: Senha
       submit: Entrar
+      subtitle: Entre com o e-mail e a senha da sua conta para continuar.
       title: Acessar a plataforma
     rate_limited: Muitas tentativas de acesso. Tente de novo em alguns minutos.
   staff_levels:

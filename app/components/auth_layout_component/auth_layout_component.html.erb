@@ -1,0 +1,45 @@
+<%= tag.div(**html_attributes) do %>
+  <div class="flex w-full min-w-0 flex-col desktop:w-1/2">
+    <%# `desktop:hidden`: a partir de 1024px a marca vive sobre o painel de
+        imagem. Abaixo disso o painel não existe, e sem esta cópia a tela de
+        acesso no telefone não teria marca nenhuma. %>
+    <header class="px-6 pt-8 tablet:px-10 desktop:hidden">
+      <%= image_tag "logo.png", alt: t(".brand"), class: "h-8 w-auto" %>
+    </header>
+
+    <main id="main-content" class="flex min-w-0 flex-1 items-center justify-center px-6 py-10 tablet:px-10">
+      <%# `padding: "roomy"` em vez de um `p-10` escrito aqui: o padding do
+          card é vocabulário dele, e classe passada de fora perderia para o
+          `md:p-6` acima de 48rem sem ninguém perceber. %>
+      <%= render CardComponent.new(variant: "elevated", padding: "roomy",
+                                   class: "w-full max-w-xl") do %>
+        <%= content %>
+      <% end %>
+    </main>
+  </div>
+
+  <%# `hidden desktop:block`: abaixo de 1024px a coluna do formulário fica com
+      a tela inteira. Um painel decorativo espremido em 380px empurra o
+      formulário para baixo da dobra e não mostra imagem nenhuma. %>
+  <aside class="relative hidden w-1/2 shrink-0 desktop:block">
+    <% if illustration? %>
+      <%= illustration %>
+    <% else %>
+      <%# `bg-accent` com `text-accent-foreground`: é um par declarado no
+          tokens.css, medido em 8.91 pelo spec de contraste. Combinar dois
+          tokens que não formam par deixaria o contraste sem ninguém medindo. %>
+      <div class="absolute inset-0 flex flex-col items-center justify-center gap-3
+                  bg-accent p-10 text-center text-accent-foreground">
+        <%= render IconComponent.new(name: "image", size: :xl) %>
+        <p class="text-body"><%= t(".placeholder") %></p>
+      </div>
+    <% end %>
+
+    <%# A sombra não é enfeite: é o que separa a marca de uma foto cujo canto
+        superior esquerdo muda de claridade a cada troca de imagem. Sem ela, a
+        legibilidade passa a depender do que está atrás. %>
+    <div class="absolute left-10 top-10">
+      <%= image_tag "logo.png", alt: t(".brand"), class: "h-8 w-auto drop-shadow-lg" %>
+    </div>
+  </aside>
+<% end %>

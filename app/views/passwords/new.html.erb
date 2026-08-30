@@ -1,17 +1,18 @@
-<div class="mx-auto w-full max-w-md">
-  <%= render PageHeaderComponent.new(title: t(".title"), subtitle: t(".help")) %>
+<h1 class="text-display text-foreground"><%= t(".title") %></h1>
+<p class="mt-2 text-body text-muted-foreground"><%= t(".help") %></p>
 
-  <%= form_with url: passwords_path, class: "contents" do |form| %>
-    <div class="my-5">
-      <%= form.label :email_address, t(".email"), class: "font-medium text-foreground" %>
+<%= form_with url: passwords_path, class: "contents" do |form| %>
+  <div class="mt-8 flex flex-col gap-5">
+    <div>
+      <%= form.label :email_address, t(".email"), class: "text-sm font-semibold text-foreground" %>
       <%= form.email_field :email_address, required: true, autofocus: true,
                            autocomplete: "username", value: params[:email_address],
                            class: auth_field_classes %>
     </div>
 
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-      <%= render ButtonComponent.new(label: t(".submit"), type: :submit, classes: "w-full sm:w-auto") %>
-      <%= link_to t(".back"), new_session_path, class: "text-sm text-muted-foreground underline hover:no-underline" %>
-    </div>
-  <% end %>
-</div>
+    <%= render ButtonComponent.new(label: t(".submit"), type: :submit, size: :lg, classes: "mt-1 w-full") %>
+
+    <%= link_to t(".back"), new_session_path,
+                class: "text-center text-sm text-muted-foreground underline-offset-4 hover:underline" %>
+  </div>
+<% end %>
