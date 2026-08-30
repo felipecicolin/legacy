@@ -8,8 +8,21 @@
     <%= render AppShellComponent.new do |shell| %>
       <% if authenticated? %>
         <% shell.with_navigation do %>
+          <%= render ButtonComponent.new(label: t("layouts.application.nav.investor"), variant: :ghost,
+                                         size: :sm, href: investor_path, classes: "w-full justify-start") %>
+          <%= render ButtonComponent.new(label: t("layouts.application.nav.team"), variant: :ghost,
+                                         size: :sm, href: team_path, classes: "w-full justify-start") %>
+          <%# Destinos ainda não construídos. Ficam visíveis para a coluna
+              mostrar a forma que ela vai ter, e apontam para lugar nenhum de
+              propósito — um link que promete tela inexistente é pior. %>
+          <% %w[ngos projects campaigns search].each do |item| %>
+            <%= render ButtonComponent.new(label: t(item, scope: "layouts.application.nav"),
+                                           variant: :ghost, size: :sm, href: "#",
+                                           classes: "w-full justify-start opacity-60") %>
+          <% end %>
           <%= render ButtonComponent.new(label: t("layouts.application.sign_out"), variant: :ghost,
-                                         size: :sm, href: session_path, classes: "w-full justify-start",
+                                         size: :sm, href: session_path,
+                                         classes: "mt-4 w-full justify-start",
                                          data: { turbo_method: :delete }) %>
         <% end %>
       <% end %>

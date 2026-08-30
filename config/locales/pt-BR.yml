@@ -171,6 +171,13 @@ pt-BR:
     workshop: Oficina
   layouts:
     application:
+      nav:
+        campaigns: Campanhas
+        investor: Seus aportes
+        ngos: ONGs
+        projects: Obras
+        search: Buscar
+        team: Suas obras
       sign_out: Sair
   member_roles:
     lead: Liderança
