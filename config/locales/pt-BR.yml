@@ -62,6 +62,11 @@ pt-BR:
       expires: O link vale por %{duration}.
       intro: Recebemos um pedido para redefinir a senha da sua conta.
       subject: Redefinir sua senha
+  proficiencies:
+    advanced: Avançado
+    beginner: Iniciante
+    expert: Especialista
+    intermediate: Intermediário
   roles:
     admin: Administrador
     member: Membro

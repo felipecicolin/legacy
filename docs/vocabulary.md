@@ -5,6 +5,7 @@
 > · Rótulos: [`config/locales/vocabulary/pt-BR.yml`](../config/locales/vocabulary/pt-BR.yml)
 > · Leitor: [`Vocabulary::Catalog`](../app/models/vocabulary/catalog.rb)
 > · Modelos: [`Country`](../app/models/country.rb) · [`Region`](../app/models/region.rb)
+> · [`Skill`](../app/models/skill.rb) · [`ProfileSkill`](../app/models/profile_skill.rb)
 > · Specs: [`spec/models/vocabulary/catalog_spec.rb`](../spec/models/vocabulary/catalog_spec.rb)
 > · [`spec/models/country_spec.rb`](../spec/models/country_spec.rb)
 
@@ -24,6 +25,28 @@ seguido de `update!` — e não o `find_or_create_by!` que a issue sugeria. A
 diferença aparece na segunda carga: a curadoria muda, e marcar um país como
 `high_risk` no YAML precisa alcançar a linha que **já existe** no banco. Com
 `find_or_create_by!`, a edição só valeria para país novo — e não há país novo.
+
+## Habilidades e perfis
+
+`Skill` é o registro persistido da taxonomia. A tabela guarda apenas a chave
+estável, a categoria, a posição e o estado de ativação; o nome exibido sai de
+`skills.<key>` no locale:
+
+```ruby
+skill.name # => I18n.t(skill.key, scope: :skills)
+```
+
+`Skill.load_vocabulary!` lê `db/vocabulary/skills.yml` e atualiza a linha pela
+`key`. Assim, executar `bin/rails db:seed` novamente não duplica habilidades e
+uma correção de categoria, ordem ou ativação alcança um registro já existente.
+Uma habilidade de perfil é um `ProfileSkill`: o vínculo único entre pessoa e
+habilidade guarda `proficiency` (`beginner`, `intermediate`, `advanced` ou
+`expert`) e anos de experiência. O perfil expõe `profile.skills` através desse
+vínculo, e remover um perfil ou habilidade remove seus vínculos junto.
+
+O rótulo do nível segue a convenção de enums em `proficiencies.*`. A auditoria
+de enums verifica esses quatro rótulos, enquanto o spec deste catálogo compara
+as chaves de `skills.yml` com o locale nos dois sentidos.
 
 ## Chave em inglês, rótulo no locale
 

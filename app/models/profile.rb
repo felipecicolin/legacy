@@ -20,6 +20,8 @@ class Profile < ApplicationRecord
   # coordenada da base no EXIF, igual à foto da obra.
   attaches_scrubbed_photo :avatar
   has_many :credentials, dependent: :destroy
+  has_many :profile_skills, dependent: :destroy, inverse_of: :profile
+  has_many :skills, through: :profile_skills
 
   # `legal_name` fora do `inspect`, que é o que vai para a linha de log de
   # exceção e para o rastreador de erros. Espelha o que `Sensitive` faz com a

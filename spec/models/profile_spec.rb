@@ -7,6 +7,8 @@ RSpec.describe Profile do
 
   it { is_expected.to belong_to(:user) }
   it { is_expected.to have_many(:credentials).dependent(:destroy) }
+  it { is_expected.to have_many(:profile_skills).dependent(:destroy) }
+  it { is_expected.to have_many(:skills).through(:profile_skills) }
   it { is_expected.to validate_presence_of(:legal_name) }
 
   # `validate_presence_of(:display_name)` não serve aqui: o callback de

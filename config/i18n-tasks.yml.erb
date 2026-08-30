@@ -80,7 +80,7 @@ ignore_unused:
   # impossível de esconder, porque `spec/models/enum_translation_audit_spec.rb`
   # percorre os enums de todos os modelos e reprova qualquer valor SEM rótulo.
   # A checagem de "não usada" foi substituída por uma mais forte, não removida.
-  - "{kinds,statuses,verification_statuses,sensitivity_levels,default_sensitivities,from_levels,to_levels}.*"
+  - "{kinds,statuses,verification_statuses,sensitivity_levels,default_sensitivities,from_levels,to_levels,proficiencies}.*"
   - "{organization_kinds,organization_statuses,roles,staff_levels}.*"
 
   # Vocabulário curado em db/vocabulary/. Mesma mecânica do enum: a chave é

@@ -7,6 +7,7 @@
 # mudança de curadoria (marcar um país como `high_risk`) alcance também os
 # países já gravados. Ver docs/vocabulary.md.
 Country.load_vocabulary!
+Skill.load_vocabulary!
 
 # Regiões não entram aqui: carregar a subdivisão administrativa do mundo
 # inteiro é dado para manter em dia sem ninguém para reclamar quando
