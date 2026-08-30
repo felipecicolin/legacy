@@ -21,6 +21,8 @@ class HomeController < ApplicationController
   private
 
   def on_a_team?
-    Current.user.profile&.project_participations&.effective&.exists?
+    profile = Current.user.profile
+
+    profile && profile.project_participations.effective.exists?
   end
 end
