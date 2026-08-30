@@ -9,7 +9,7 @@ RSpec.describe AuthLayoutComponent, type: :component do
     render_inline(described_class.new) { "Formulário" }
 
     expect(page).to have_css("main#main-content", text: "Formulário")
-    expect(page).to have_css("header", text: "Legacy")
+    expect(page).to have_css("header img[alt='Legacy']")
   end
 
   # O formulário vem antes do painel no DOM justamente para que teclado e

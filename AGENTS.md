@@ -397,9 +397,10 @@ webhook. Quatro regras valem daqui para frente:
 - **Todo lançamento nasce com `simulated`**, e a marca é `attr_readonly`:
   promover simulado a real levanta `ReadonlyAttributeError`. `update_all` e SQL
   cru escapam — o alcance exato e por que não há trigger estão em
-  [`docs/payments.md`](docs/payments.md). Toda tela que mostra valor traz a
-  marca visível — o `SimulatedDataBannerComponent` está no layout justamente
-  para nenhuma precisar lembrar.
+  [`docs/payments.md`](docs/payments.md). **A marca é do dado, não da tela:**
+  não há aviso de demonstração na interface, por decisão de produto, e o
+  `simulated` que o gateway carimba em todo lançamento é o único registro de
+  que o dinheiro é de mentira.
 
 Arrecadação — campanha, contribuição, assinatura, orçamento e canais — segue
 as mesmas regras de centavos, moeda explícita, gateway simulado e visibilidade;

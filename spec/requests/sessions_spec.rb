@@ -25,15 +25,6 @@ RSpec.describe "Sessions" do
       expect(response.body).to include("main-content")
       expect(response.body).not_to include("app-shell-drawer")
     end
-
-    # A marca de dado simulado vive no layout para nenhuma tela precisar dela.
-    # O spec de `root_path` prova isso no layout da aplicação; este prova no de
-    # autenticação, que é o outro.
-    it "marks the page as demonstration data" do
-      get new_session_path
-
-      expect(response.body).to include("Ambiente de demonstração")
-    end
   end
 
   describe "POST /session" do

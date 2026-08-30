@@ -23,19 +23,19 @@ mesma coisa em uma linha, e um `grep` a encontra.
 ## O que o layout novo precisou trazer de volta
 
 Trocar de layout é o tipo de mudança que perde, em silêncio, o que o layout
-antigo dava de graça. Foram três coisas, e as três estão cobertas por spec de
+antigo dava de graça. Foram duas coisas, e as duas estão cobertas por spec de
 request em `spec/requests/sessions_spec.rb`:
 
-- **A marca de dado simulado.** O `SimulatedDataBannerComponent` vive no layout
-  justamente para nenhuma tela precisar lembrar dele. Um segundo layout sem o
-  banner fura a promessa "toda tela nasce marcada" — e não reprova nada, porque
-  o spec que existia provava a marca só em `root_path`.
 - **O partial de flash.** Senha errada é `redirect_to new_session_path,
   alert:`. O spec de sessão que já existia afirma sobre `flash[:alert]`, e ele
   passa com o toast invisível: o flash está na sessão, só não foi pintado. Sem o
   partial, a tela recusaria a pessoa sem dizer por quê.
 - **O `<main id="main-content">`.** Era o `AppShellComponent` que declarava a
   landmark. A `AuthLayoutComponent` declara a sua.
+
+(Uma terceira coisa era a tarja de dado simulado, que o layout novo também
+trouxe. Ela saiu depois, dos dois layouts, por decisão de produto — o porquê e
+o que se perdeu junto estão em [`payments.md`](../payments.md).)
 
 O que **não** voltou foi o link de pular para o conteúdo, e isso é decisão, não
 esquecimento — ver abaixo.

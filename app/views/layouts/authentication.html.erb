@@ -8,9 +8,8 @@
     <%# Autenticação não passa pelo AppShellComponent: o shell é a moldura de
         quem já entrou — gaveta de navegação, cabeçalho e uma coluna de no
         máximo 7xl. A tela de acesso quer a largura inteira e não tem para
-        onde navegar. A marca de dado simulado e o flash continuam aqui, na
-        coluna do formulário: é o layout que garante que nenhuma tela precise
-        lembrar dos dois. %>
+        onde navegar. O flash continua aqui, na coluna do formulário: é o
+        layout que garante que nenhuma tela precise lembrar dele. %>
     <%= render AuthLayoutComponent.new do |auth| %>
       <%# `alt` vazio de propósito: a foto é decorativa, e descrevê-la só
           faria o leitor de tela anunciar um canteiro de obra antes do campo
@@ -25,7 +24,6 @@
         <%= image_tag "login.jpg", alt: "", class: "absolute inset-0 h-full w-full object-cover" %>
       <% end %>
 
-      <%= render SimulatedDataBannerComponent.new(classes: "mb-6") %>
       <%= render "shared/flash" %>
       <%= yield %>
     <% end %>

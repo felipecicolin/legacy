@@ -1,8 +1,7 @@
 <%= tag.div(**html_attributes) do %>
   <div class="flex w-full min-w-0 flex-col desktop:w-1/2">
-    <header class="flex items-center gap-2 px-6 pt-8 text-section text-foreground tablet:px-10">
-      <%= render IconComponent.new(name: "building", size: :md) %>
-      <span><%= t(".brand") %></span>
+    <header class="px-6 pt-8 tablet:px-10">
+      <%= image_tag "logo.png", alt: t(".brand"), class: "h-8 w-auto" %>
     </header>
 
     <main id="main-content" class="flex min-w-0 flex-1 items-center justify-center px-6 py-10 tablet:px-10">

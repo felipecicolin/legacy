@@ -2,7 +2,6 @@
 
 > Fronteira: [`app/payments/payments/`](../app/payments/payments)
 > · Rastro: [`PaymentTransaction`](../app/models/payment_transaction.rb)
-> · Marca na UI: [`SimulatedDataBannerComponent`](../app/components/simulated_data_banner_component.rb)
 > · Specs: [`spec/payments/`](../spec/payments)
 
 Este projeto é uma **demonstração**. Não há gateway, não há PIX, não há cartão,
@@ -182,18 +181,29 @@ apontado para o diretório errado acha zero arquivos e passa para sempre.
 As duas foram verificadas do jeito que o `AGENTS.md` manda: com uma violação
 plantada de propósito, para ver o spec reprovar antes de confiar nele.
 
-## A marca na tela
+## A marca é do dado, e não da tela
 
-`SimulatedDataBannerComponent` fica no **layout**, não na tela de arrecadação.
-A escolha é deliberada: assim toda tela nasce marcada e nenhuma precisa lembrar
-— e o print compartilhado fora de contexto, que é o risco de verdade de uma
-prestação de contas que parece real, sai marcado.
+Houve um `SimulatedDataBannerComponent`: uma tarja no layout, em toda tela, com
+os dizeres "Ambiente de demonstração". Ele foi **removido por decisão de
+produto** — a tarja competia com o conteúdo em cada tela do produto, inclusive
+nas que não mostram um centavo, como a de acesso.
 
-O `render?` pergunta ao provedor (`Payments::Gateway.simulated?`), e não ao
-ambiente. `Rails.env.production?` responderia errado justamente numa demo
-publicada, que é onde o aviso mais importa. Quando o provedor deixar de ser
-simulado, o banner some sozinho — aviso falso custa a mesma confiança que aviso
-faltando.
+Fica registrado o que se perdeu junto, porque a decisão só é revisável se o
+custo estiver escrito: o risco que a tarja endereçava é o **print compartilhado
+fora de contexto**. Uma prestação de contas simulada que parece real não se
+denuncia sozinha numa captura de tela, e hoje nada na interface a denuncia.
+
+O que **continua** valendo é a marca no dado, que é a camada que não depende de
+ninguém lembrar: `Payments::Gateway` carimba `simulated:` em todo lançamento a
+partir do `simulated?` do provedor, a coluna é `attr_readonly`, e promover
+simulado a real levanta `ReadonlyAttributeError`. O contrato do provedor
+continua exigindo `simulated?` explicitamente, pelo mesmo motivo de sempre —
+não há padrão, porque os dois padrões possíveis mentem.
+
+Se a marca voltar para a interface, ela volta pelo layout e não pela tela de
+arrecadação, e perguntando ao provedor (`Payments::Gateway.simulated?`) e não
+ao ambiente: `Rails.env.production?` responderia errado justamente numa demo
+publicada, que é onde o aviso mais importaria.
 
 ## Escrevendo o próximo provedor
 
