@@ -37,4 +37,20 @@ module GeotaggedPhoto
   def self.upload(filename: "obra.jpg")
     Rack::Test::UploadedFile.new(StringIO.new(bytes), "image/jpeg", original_filename: filename)
   end
+
+  # Uma imagem de VERDADE num formato que a plataforma não serve.
+  #
+  # Precisa ser real, e não um JPEG rotulado de TIFF: o Active Storage
+  # reidentifica o content-type pelos BYTES na ingestão, então mentir no
+  # formulário não produz o caso — o blob volta como `image/jpeg` e passa pela
+  # whitelist. É esse mesmo comportamento que faz o content-type declarado não
+  # ser uma superfície de ataque aqui.
+  #
+  # TIFF, e não GIF: o `tiffsave` da libvips está sempre presente, e o `gifsave`
+  # depende de a cgif ter sido compilada junto.
+  def self.unserved_format_upload
+    bytes = Vips::Image.black(32, 24).add(100).cast(:uchar).write_to_buffer(".tif")
+
+    Rack::Test::UploadedFile.new(StringIO.new(bytes), "image/tiff", original_filename: "obra.tif")
+  end
 end

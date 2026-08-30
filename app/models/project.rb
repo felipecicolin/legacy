@@ -31,6 +31,13 @@ class Project < ApplicationRecord
 
   belongs_to :mission_base
   has_many :progress_reports, dependent: :destroy
+  has_many :site_surveys, dependent: :destroy
+  has_many :project_participations, dependent: :destroy
+  has_many :participants, through: :project_participations, source: :profile
+
+  # `destroy`: a foto pertence à obra e não sobrevive a ela. O blob vai junto
+  # pelo `dependent: :purge_later` que o Active Storage instala.
+  has_many :project_photos, dependent: :destroy
 
   enum :status, STATUSES, validate: true
 
@@ -47,6 +54,7 @@ class Project < ApplicationRecord
   validates :currency, presence: true, length: { is: 3 }
 
   validate :transition_is_allowed, on: :update
+  validate :work_in_progress_has_a_coordinator, on: :update
   validate :not_less_restrictive_than_base
 
   before_validation :inherit_base_sensitivity, on: :create
@@ -77,6 +85,20 @@ class Project < ApplicationRecord
     return unless forced_transition?
 
     errors.add(:status, :transition_not_allowed)
+  end
+
+  # Cobrado na TRANSIÇÃO para `in_progress`, e não na criação: obra em
+  # levantamento ainda não tem equipe, e exigir coordenador desde o cadastro
+  # obrigaria a inventar um.
+  #
+  # Só validação, sem a guarda que levanta do outro lado: um `save(validate:
+  # false)` aqui não abre porta de segurança nenhuma — deixa a obra sem quem
+  # responda por ela, que é problema de processo e aparece na primeira tela.
+  def work_in_progress_has_a_coordinator
+    return unless status_changed? && in_progress?
+    return if project_participations.reporting.exists?(participation_role: :coordinator)
+
+    errors.add(:status, :in_progress_without_coordinator)
   end
 
   def forbid_forced_transition

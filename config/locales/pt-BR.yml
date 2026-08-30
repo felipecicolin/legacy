@@ -51,6 +51,17 @@ pt-BR:
     placeholder:
       message: Esta área estará disponível em breve.
       title: Área em construção
+  participation_roles:
+    coordinator: Coordenação
+    local_host: Anfitriã local
+    observer: Observação
+    technical_lead: Liderança técnica
+    volunteer: Voluntariado
+  participation_statuses:
+    active: Ativa
+    completed: Concluída
+    invited: Convidada
+    withdrawn: Retirada
   passwords:
     create:
       sent: Se houver conta com esse e-mail, as instruções de recuperação foram enviadas.
@@ -77,6 +88,12 @@ pt-BR:
       expires: O link vale por %{duration}.
       intro: Recebemos um pedido para redefinir a senha da sua conta.
       subject: Redefinir sua senha
+  photo_categories:
+    after: Depois
+    before: Antes
+    detail: Detalhe
+    during: Durante
+    team: Equipe
   proficiencies:
     advanced: Avançado
     beginner: Iniciante

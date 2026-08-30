@@ -18,6 +18,7 @@ class ProgressReport < ApplicationRecord
   belongs_to :project
   belongs_to :reported_by, class_name: "Profile", inverse_of: :progress_reports
   belongs_to :approved_by, class_name: "Profile", optional: true, inverse_of: :approved_progress_reports
+  has_many :project_photos, dependent: :nullify
 
   enum :status, { draft: 0, submitted: 1, approved: 2 }, validate: true
 

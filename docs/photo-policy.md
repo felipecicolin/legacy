@@ -138,6 +138,19 @@ e uma miniatura embutida é uma segunda cópia da imagem que ninguém inspeciona
 | qualquer outra coisa | `ExifScrubber::Unsupported` |
 | bytes que a libvips não abre | `ExifScrubber::Unsupported` |
 
+**Quem anexa foto de formulário traduz essa exceção em erro de campo.**
+`ExifScrubber::Unsupported` é a porta se fechando — o desenho certo, porque
+reescrever o arquivo "como está" devolveria o EXIF intacto com cara de limpo.
+Mas exceção no writer vira 500, e o que a pessoa fez foi escolher o arquivo
+errado. `ProjectPhoto` mostra o padrão: um módulo com `prepend` captura a
+exceção e marca um atributo virtual que a validação lê.
+
+**`prepend`, e não `def image=` no corpo da classe.** O writer que
+`attaches_scrubbed_photo` instala é definido NA CLASSE com `define_method`, e um
+`def` no corpo o substituiria — a foto subiria com o EXIF dentro, sem erro
+nenhum. É a mesma armadilha de módulo-versus-classe que o próprio concern
+documenta, só que na direção oposta.
+
 Recusar o blob pronto é o ponto que merece explicação. É o que o **direct
 upload** devolve, e sobre ele não há o que prometer: os bytes já foram
 armazenados, por um caminho que ninguém limpou. Aceitá-lo e "limpar depois"
