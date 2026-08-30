@@ -1,6 +1,24 @@
 {
   "components": [
     {
+      "name": "AppShellComponent",
+      "category": "ui",
+      "params": [],
+      "constants": {},
+      "slots": [
+        "navigation"
+      ],
+      "stimulus_controller": "app-shell",
+      "template": "app/components/app_shell_component/app_shell_component.html.erb",
+      "preview": "spec/components/previews/app_shell_component_preview.rb",
+      "examples": [
+        {
+          "name": "default",
+          "source": "  def default\n    render(AppShellComponent.new) do |shell|\n      shell.with_navigation_content('<a class=\"text-body text-foreground\" href=\"#\">Visão geral</a>'.html_safe)\n      '<p class=\"text-body text-foreground\">Conteúdo principal</p>'.html_safe\n    end"
+        }
+      ]
+    },
+    {
       "name": "ButtonComponent",
       "category": "ui",
       "params": [
@@ -34,6 +52,10 @@
         },
         {
           "name": "data",
+          "kind": "key"
+        },
+        {
+          "name": "aria",
           "kind": "key"
         }
       ],
@@ -115,6 +137,45 @@
         {
           "name": "playground",
           "source": "  def playground(variant: \"default\")\n    render(CardComponent.new(variant: variant)) do |card|\n      card.with_header { \"Resumo da obra\" }\n      \"O conteúdo do cartão respeita os tokens do design system.\"\n    end\n  end\nend"
+        }
+      ]
+    },
+    {
+      "name": "EmptyStateComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "icon",
+          "kind": "keyreq"
+        },
+        {
+          "name": "title",
+          "kind": "keyreq"
+        },
+        {
+          "name": "description",
+          "kind": "key"
+        },
+        {
+          "name": "html_options",
+          "kind": "keyrest"
+        }
+      ],
+      "constants": {},
+      "slots": [
+        "action"
+      ],
+      "stimulus_controller": "empty-state-component",
+      "template": "app/components/empty_state_component/empty_state_component.html.erb",
+      "preview": "spec/components/previews/empty_state_component_preview.rb",
+      "examples": [
+        {
+          "name": "default",
+          "source": "  def default\n    render(EmptyStateComponent.new(icon: \"blueprint\", title: \"Nenhuma obra cadastrada ainda\",\n                                   description: \"Crie a primeira obra para começar a acompanhar o avanço.\"))\n  end"
+        },
+        {
+          "name": "with_action",
+          "source": "  def with_action\n    render(EmptyStateComponent.new(icon: \"blueprint\", title: \"Nenhuma obra cadastrada ainda\")) do |state|\n      state.with_action do\n        render(ButtonComponent.new(label: \"Cadastrar obra\", href: \"#\"))\n      end\n    end"
         }
       ]
     },
@@ -244,6 +305,176 @@
       ]
     },
     {
+      "name": "InputComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "form",
+          "kind": "keyreq"
+        },
+        {
+          "name": "attribute",
+          "kind": "keyreq"
+        },
+        {
+          "name": "type",
+          "kind": "key"
+        },
+        {
+          "name": "options",
+          "kind": "keyrest"
+        }
+      ],
+      "constants": {
+        "FIELD_HELPERS": [
+          "text",
+          "email",
+          "password",
+          "number",
+          "tel",
+          "date"
+        ],
+        "TYPES": [
+          "text",
+          "email",
+          "password",
+          "number",
+          "tel",
+          "date",
+          "textarea"
+        ]
+      },
+      "slots": [],
+      "stimulus_controller": "input-component",
+      "template": "app/components/input_component/input_component.html.erb",
+      "preview": "spec/components/previews/input_component_preview.rb",
+      "examples": [
+        {
+          "name": "default",
+          "source": "  def default\n    render(InputComponent.new(form: form_builder, attribute: :email, type: \"email\",\n                              required: true, hint: \"Usaremos este endereço para falar com você.\"))\n  end"
+        }
+      ]
+    },
+    {
+      "name": "PageHeaderComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "title",
+          "kind": "keyreq"
+        },
+        {
+          "name": "subtitle",
+          "kind": "key"
+        },
+        {
+          "name": "html_options",
+          "kind": "keyrest"
+        }
+      ],
+      "constants": {},
+      "slots": [
+        "actions",
+        "breadcrumbs"
+      ],
+      "stimulus_controller": "page-header-component",
+      "template": "app/components/page_header_component/page_header_component.html.erb",
+      "preview": "spec/components/previews/page_header_component_preview.rb",
+      "examples": [
+        {
+          "name": "playground",
+          "source": "  def playground\n    render(PageHeaderComponent.new(title: \"Obras\", subtitle: \"Acompanhe o avanço de cada projeto.\"))\n  end"
+        },
+        {
+          "name": "with_breadcrumbs_and_actions",
+          "source": "  def with_breadcrumbs_and_actions\n    render(PageHeaderComponent.new(title: \"Detalhes da obra\")) do |header|\n      header.with_breadcrumb(label: \"Obras\", href: \"#\")\n      header.with_breadcrumb(label: \"Detalhes\")\n      header.with_actions do\n        render(ButtonComponent.new(label: \"Editar obra\", variant: :outline, href: \"#\"))\n      end\n    end"
+        }
+      ]
+    },
+    {
+      "name": "ProgressBarComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "kind",
+          "kind": "keyreq"
+        },
+        {
+          "name": "value",
+          "kind": "keyreq"
+        },
+        {
+          "name": "target",
+          "kind": "key"
+        },
+        {
+          "name": "html_options",
+          "kind": "keyrest"
+        }
+      ],
+      "constants": {
+        "KINDS": [
+          "physical",
+          "funding"
+        ],
+        "KIND_CONFIG": [
+          "physical",
+          "funding"
+        ]
+      },
+      "slots": [],
+      "stimulus_controller": "progress-bar-component",
+      "template": "app/components/progress_bar_component/progress_bar_component.html.erb",
+      "preview": "spec/components/previews/progress_bar_component_preview.rb",
+      "examples": [
+        {
+          "name": "funding",
+          "source": "  def funding\n    render(ProgressBarComponent.new(kind: \"funding\", value: 184_000, target: 300_000))\n  end"
+        },
+        {
+          "name": "physical",
+          "source": "  def physical\n    render(ProgressBarComponent.new(kind: \"physical\", value: 62))\n  end"
+        }
+      ]
+    },
+    {
+      "name": "SearchFieldComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "url",
+          "kind": "keyreq"
+        },
+        {
+          "name": "frame",
+          "kind": "key"
+        },
+        {
+          "name": "attribute",
+          "kind": "key"
+        },
+        {
+          "name": "value",
+          "kind": "key"
+        },
+        {
+          "name": "html_options",
+          "kind": "keyrest"
+        }
+      ],
+      "constants": {},
+      "slots": [],
+      "stimulus_controller": "search-field-component",
+      "template": "app/components/search_field_component/search_field_component.html.erb",
+      "preview": "spec/components/previews/search_field_component_preview.rb",
+      "examples": [
+        {
+          "name": "default",
+          "source": "  def default\n    render(SearchFieldComponent.new(url: \"#\", frame: \"results\", value: \"obra\"))\n  end"
+        }
+      ]
+    },
+    {
       "name": "SimulatedDataBannerComponent",
       "category": "ui",
       "params": [
@@ -265,6 +496,94 @@
         {
           "name": "inside_a_container",
           "source": "  def inside_a_container\n    render(SimulatedDataBannerComponent.new(classes: \"container mx-auto\"))\n  end"
+        }
+      ]
+    },
+    {
+      "name": "StatusBadgeComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "status",
+          "kind": "keyreq"
+        },
+        {
+          "name": "size",
+          "kind": "key"
+        },
+        {
+          "name": "html_options",
+          "kind": "keyrest"
+        }
+      ],
+      "constants": {
+        "SIZES": [
+          "sm",
+          "md",
+          "lg"
+        ],
+        "STATUSES": [
+          "surveying",
+          "in_progress",
+          "paused",
+          "urgent",
+          "completed"
+        ]
+      },
+      "slots": [],
+      "stimulus_controller": "status-badge-component",
+      "template": "app/components/status_badge_component/status_badge_component.html.erb",
+      "preview": "spec/components/previews/status_badge_component_preview.rb",
+      "examples": [
+        {
+          "name": "playground",
+          "source": "  def playground(status: \"in_progress\", size: :md)\n    render(StatusBadgeComponent.new(status: status, size: size))\n  end"
+        }
+      ]
+    },
+    {
+      "name": "TableComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "rows",
+          "kind": "keyreq"
+        },
+        {
+          "name": "caption",
+          "kind": "keyreq"
+        },
+        {
+          "name": "html_options",
+          "kind": "keyrest"
+        }
+      ],
+      "constants": {
+        "ALIGNMENTS": [
+          "left",
+          "center",
+          "right"
+        ],
+        "ALIGNMENT_CLASSES": [
+          "left",
+          "center",
+          "right"
+        ],
+        "DIRECTIONS": [
+          "ascending",
+          "descending"
+        ]
+      },
+      "slots": [
+        "columns"
+      ],
+      "stimulus_controller": "table-component",
+      "template": "app/components/table_component/table_component.html.erb",
+      "preview": "spec/components/previews/table_component_preview.rb",
+      "examples": [
+        {
+          "name": "default",
+          "source": "  def default\n    render(TableComponent.new(rows: rows, caption: \"Obras cadastradas\")) { |table| configure_columns(table) }\n  end"
         }
       ]
     }

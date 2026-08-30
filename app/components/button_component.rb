@@ -32,18 +32,18 @@ class ButtonComponent < ApplicationComponent
 
   # Um Data em vez de oito ivars: o `TooManyInstanceVariables` do reek está
   # ligado e está certo — oito estados soltos num objeto são difíceis de ler.
-  Attrs = Data.define(:label, :variant, :size, :type, :disabled, :href, :classes, :data)
+  Attrs = Data.define(:label, :variant, :size, :type, :disabled, :href, :classes, :data, :aria)
   private_constant :Attrs
 
   renders_one :leading_icon, IconComponent
   renders_one :trailing_icon, IconComponent
 
   def initialize(label: nil, variant: :default, size: :md, type: :button,
-                 disabled: false, href: nil, classes: nil, data: nil)
+                 disabled: false, href: nil, classes: nil, data: nil, aria: nil)
     super()
     validate_inputs!(variant, size, type)
     @attrs = Attrs.new(label: label, variant: variant, size: size, type: type,
-                       disabled: disabled, href: href, classes: classes, data: data)
+                       disabled: disabled, href: href, classes: classes, data: data, aria: aria)
   end
 
   def computed_classes
@@ -54,7 +54,7 @@ class ButtonComponent < ApplicationComponent
     @attrs.href.present?
   end
 
-  delegate :label, :type, :disabled, :href, :data, to: :@attrs
+  delegate :label, :type, :disabled, :href, :data, :aria, to: :@attrs
 
   private
 

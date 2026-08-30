@@ -83,6 +83,11 @@ ignore_unused:
   - "{kinds,statuses,verification_statuses,sensitivity_levels,default_sensitivities,from_levels,to_levels,proficiencies}.*"
   - "{organization_kinds,organization_statuses,roles,staff_levels}.*"
 
+  # StatusBadgeComponent não depende de um modelo ainda existente: ele recebe
+  # o enum de obra em tempo de execução, e o scanner não resolve essa chave.
+  # O spec do componente percorre os cinco valores e exige cada rótulo.
+  - "project_statuses.*"
+
   # Vocabulário curado em db/vocabulary/. Mesma mecânica do enum: a chave é
   # montada em tempo de execução (`I18n.t(iso_code.downcase, scope: :countries)`)
   # e o scanner não a resolve — as ~250 entradas apareceriam todas como órfãs.

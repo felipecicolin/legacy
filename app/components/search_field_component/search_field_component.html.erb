@@ -1,0 +1,18 @@
+<%= tag.div(**html_attributes) do %>
+  <%= form_with url: url, method: :get, data: form_data,
+                class: "flex min-h-11 items-center gap-2 rounded-sm border border-input bg-background px-3 " \
+                       "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2" do |form| %>
+    <%= render IconComponent.new(name: "search", size: :sm, classes: "text-muted-foreground") %>
+    <%= form.label attribute, t(".label"), class: "sr-only" %>
+    <%= form.search_field attribute, value: value, placeholder: t(".placeholder"),
+                          class: "min-w-0 flex-1 border-0 bg-transparent text-body text-foreground " \
+                                 "placeholder:text-muted-foreground focus:outline-none" %>
+    <%= link_to url, data: clear_data,
+                class: "inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm " \
+                       "text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-2 " \
+                       "focus-visible:ring-ring focus-visible:ring-offset-2" do %>
+      <%= render IconComponent.new(name: "x", size: :sm) %>
+      <span class="sr-only"><%= t(".clear") %></span>
+    <% end %>
+  <% end %>
+<% end %>

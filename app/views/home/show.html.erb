@@ -4,6 +4,6 @@
 <div class="mx-auto w-full max-w-md">
   <%= render "shared/flash" %>
 
-  <h1 class="text-2xl font-bold text-foreground"><%= t(".title") %></h1>
-  <p class="mt-2 text-sm text-muted-foreground"><%= t(".signed_in_as", email: Current.user.email_address) %></p>
+  <%= render PageHeaderComponent.new(title: t(".title"),
+                                     subtitle: t(".signed_in_as", email: Current.user.email_address)) %>
 </div>

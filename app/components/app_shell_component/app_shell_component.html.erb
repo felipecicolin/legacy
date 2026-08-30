@@ -1,0 +1,53 @@
+<%= tag.div(**html_attributes) do %>
+  <%= link_to t(".skip_to_content"), "#main-content",
+              class: "sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 " \
+                     "focus:rounded-sm focus:bg-primary focus:px-4 focus:py-3 focus:text-primary-foreground " \
+                     "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" %>
+
+  <div class="relative mx-auto flex min-h-screen w-full max-w-7xl">
+    <aside id="app-shell-drawer"
+           class="fixed inset-y-0 left-0 z-40 w-72 -translate-x-full border-r border-border bg-card
+                  p-5 shadow-lg transition-transform duration-200 ease-out desktop:static desktop:translate-x-0
+                  desktop:shrink-0 desktop:shadow-none"
+           data-app-shell-target="drawer"
+           aria-label="<%= t(".navigation") %>">
+      <div class="mb-8 flex items-center gap-2 text-section text-foreground">
+        <%= render IconComponent.new(name: "building", size: :md) %>
+        <span><%= t(".brand") %></span>
+      </div>
+
+      <nav aria-label="<%= t(".navigation") %>" class="flex flex-col gap-2">
+        <%= navigation %>
+      </nav>
+    </aside>
+
+    <div class="fixed inset-0 z-30 -translate-x-full bg-foreground/20 transition-transform duration-200
+               ease-out desktop:hidden"
+         data-app-shell-target="overlay"
+         data-action="click->app-shell#close"
+         aria-hidden="true"></div>
+
+    <div class="min-w-0 flex-1">
+      <header class="border-b border-border bg-card">
+        <div class="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3
+                   tablet:px-5 desktop:px-6">
+          <%= render ButtonComponent.new(size: :icon, classes: "desktop:hidden",
+                                         aria: { expanded: false, controls: "app-shell-drawer" },
+                                         data: { action: "click->app-shell#toggle keydown.enter->app-shell#toggle",
+                                                 "app-shell-target": "toggle" }) do %>
+            <%= render IconComponent.new(name: "menu", size: :sm) %>
+            <span class="sr-only"><%= t(".open_navigation") %></span>
+          <% end %>
+          <span class="text-label text-muted-foreground"><%= t(".mobile_navigation") %></span>
+          <div class="desktop:ml-auto"><%= content_for(:shell_header_actions) %></div>
+        </div>
+      </header>
+
+      <main id="main-content" class="grid min-w-0 grid-cols-4 gap-4 px-4 py-6
+                                     tablet:grid-cols-8 tablet:gap-5 tablet:px-5 tablet:py-8
+                                     desktop:grid-cols-12 desktop:gap-6 desktop:px-6">
+        <div class="col-span-full min-w-0"><%= content %></div>
+      </main>
+    </div>
+  </div>
+<% end %>
