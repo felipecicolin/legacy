@@ -15,6 +15,11 @@ class Organization < ApplicationRecord
   has_many :memberships, dependent: :destroy
   has_many :profiles, through: :memberships
 
+  # `nullify`, e não `restrict`: a base sobrevive à organização que a
+  # operava. Quem opera pode mudar — e uma base sem operador declarado é
+  # estado legítimo, ao contrário de uma base sem país.
+  has_many :mission_bases, dependent: :nullify, inverse_of: :organization
+
   has_rich_text :description
   has_one_attached :logo
 

@@ -1,18 +1,13 @@
 # frozen_string_literal: true
 
-# Be sure to restart your server when you modify this file.
-
-# Add new inflection rules using the following format. Inflections
-# are locale specific, and you may define rules for as many different
-# locales as you wish. All of these examples are active by default:
-# ActiveSupport::Inflector.inflections(:en) do |inflect|
-#   inflect.plural /^(ox)$/i, "\\1en"
-#   inflect.singular /^(ox)en/i, "\\1"
-#   inflect.irregular "person", "people"
-#   inflect.uncountable %w( fish sheep )
-# end
-
-# These inflection rules are supported but not enabled by default:
-# ActiveSupport::Inflector.inflections(:en) do |inflect|
-#   inflect.acronym "RESTful"
-# end
+ActiveSupport::Inflector.inflections(:en) do |inflect|
+  # O inflector do Rails singulariza "bases" como "basis" — a regra latina de
+  # `basis`/`bases`. `MissionBase#pluralize` dá "mission_bases", mas o caminho
+  # de volta dá "MissionBasis", e é ele que um `has_many :mission_bases` usa
+  # para achar a classe: sem esta linha a associação aponta para um modelo que
+  # não existe, e o erro só aparece na primeira leitura.
+  #
+  # A regra é registrada para a palavra composta, e não para "base": a
+  # singularização latina segue valendo onde ela está certa.
+  inflect.irregular("mission_base", "mission_bases")
+end

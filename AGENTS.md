@@ -485,6 +485,28 @@ não num módulo. O writer do `has_one_attached` mora em
 incluído depois perde a disputa **sem erro nenhum**, com a foto subindo com o
 GPS dentro.
 
+## Campo — base, obra e avanço
+
+> O raciocínio de cada decisão: [`docs/field.md`](docs/field.md).
+
+- **Base não é obra.** A base é lugar durável e acumula obras; a obra é
+  episódica. `Need` aponta para a base por FK obrigatória e para a obra por FK
+  opcional — necessidade sem obra é o caso normal, não a exceção.
+- **A sensibilidade desce e só APERTA:** país → base → obra. Base em país
+  `public` não nasce `public`; abrir é `promote_visibility!`. O piso da obra em
+  relação à base vale sempre, não só na criação.
+- **`Project#code` é coluna gerada pelo banco**, sobre um `serial`. Sequence
+  avulsa **não é dumpada** no `db/schema.rb`, e o banco de teste nasce do
+  schema: presa à coluna, ela sobrevive.
+- **Avanço é log de eventos.** `Project#physical_progress` é cache com **um
+  escritor só** (`recalculate_physical_progress`, chamado pelo `ProgressReport`),
+  movido apenas por relatório `approved`, e valendo o **mais recente**, não o
+  maior — regressão de percentual é permitida.
+- **Relatório aprovado é imutável.** A guarda pergunta por `status_was`, não por
+  `approved?` — a aprovação é ela própria um `update`.
+- **Texto rico "preenchido" se mede por `body.to_plain_text.strip.present?`.**
+  O Trix envia `<div><br></div>` quando ninguém digitou nada.
+
 ## Autorização — fechada por padrão
 
 > Vocabulário, matriz de papéis e o raciocínio de cada decisão:

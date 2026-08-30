@@ -23,6 +23,15 @@ class Profile < ApplicationRecord
   has_many :profile_skills, dependent: :destroy, inverse_of: :profile
   has_many :skills, through: :profile_skills
 
+  # `restrict_with_error` dos dois lados, e não `destroy`: o relatório de
+  # avanço é prestação de contas, e apagar a pessoa não pode apagar o registro
+  # de quem disse que a obra estava em 62%. É a mesma assimetria de
+  # `SensitivityChange` — remover a conta não remove o rastro.
+  has_many :progress_reports, foreign_key: :reported_by_id, inverse_of: :reported_by,
+                              dependent: :restrict_with_error
+  has_many :approved_progress_reports, class_name: "ProgressReport", foreign_key: :approved_by_id,
+                                       inverse_of: :approved_by, dependent: :restrict_with_error
+
   # `legal_name` fora do `inspect`, que é o que vai para a linha de log de
   # exceção e para o rastreador de erros. Espelha o que `Sensitive` faz com a
   # coordenada, e pelo mesmo motivo: o `serializable_hash` abaixo cobre a

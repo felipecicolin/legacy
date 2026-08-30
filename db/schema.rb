@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_30_140100) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_30_150200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -89,6 +89,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_140100) do
     t.index ["profile_id", "organization_id"], name: "index_memberships_on_profile_id_and_organization_id", unique: true
   end
 
+  create_table "mission_bases", force: :cascade do |t|
+    t.string "address"
+    t.integer "base_kind", null: false
+    t.integer "base_status", default: 0, null: false
+    t.bigint "country_id", null: false
+    t.datetime "created_at", null: false
+    t.date "established_on"
+    t.decimal "latitude", precision: 9, scale: 6
+    t.decimal "longitude", precision: 9, scale: 6
+    t.string "name", null: false
+    t.bigint "organization_id"
+    t.integer "people_served"
+    t.bigint "region_id"
+    t.integer "sensitivity_level", default: 1, null: false
+    t.string "slug", null: false
+    t.datetime "updated_at", null: false
+    t.index ["country_id", "base_status"], name: "index_mission_bases_on_country_id_and_base_status"
+    t.index ["organization_id"], name: "index_mission_bases_on_organization_id"
+    t.index ["region_id"], name: "index_mission_bases_on_region_id"
+    t.index ["sensitivity_level"], name: "index_mission_bases_on_sensitivity_level"
+    t.index ["slug"], name: "index_mission_bases_on_slug", unique: true
+    t.check_constraint "people_served IS NULL OR people_served >= 0", name: "mission_bases_people_served_not_negative"
+    t.check_constraint "sensitivity_level <> 2 OR NULLIF(btrim(address::text), ''::text) IS NULL AND NULLIF(btrim(latitude::text), ''::text) IS NULL AND NULLIF(btrim(longitude::text), ''::text) IS NULL", name: "mission_bases_confidential_has_no_location"
+  end
+
   create_table "organizations", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "legal_document"
@@ -119,8 +144,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_140100) do
 
   create_table "profile_skills", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.bigint "profile_id", null: false
     t.integer "proficiency", null: false
+    t.bigint "profile_id", null: false
     t.bigint "skill_id", null: false
     t.datetime "updated_at", null: false
     t.integer "years_of_experience"
@@ -139,6 +164,48 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_140100) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_profiles_on_user_id", unique: true
+  end
+
+  create_table "progress_reports", force: :cascade do |t|
+    t.datetime "approved_at"
+    t.bigint "approved_by_id"
+    t.datetime "created_at", null: false
+    t.integer "physical_progress", null: false
+    t.bigint "project_id", null: false
+    t.bigint "reported_by_id", null: false
+    t.date "reported_on", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.integer "workers_on_site"
+    t.index ["approved_by_id"], name: "index_progress_reports_on_approved_by_id"
+    t.index ["project_id", "created_at"], name: "index_progress_reports_on_project_id_and_created_at"
+    t.index ["project_id", "reported_on"], name: "index_progress_reports_on_project_id_and_reported_on"
+    t.index ["reported_by_id"], name: "index_progress_reports_on_reported_by_id"
+    t.check_constraint "physical_progress >= 0 AND physical_progress <= 100", name: "progress_reports_physical_progress_within_range"
+    t.check_constraint "workers_on_site IS NULL OR workers_on_site >= 0", name: "progress_reports_workers_not_negative"
+  end
+
+  create_table "projects", force: :cascade do |t|
+    t.date "actual_end_on"
+    t.date "actual_start_on"
+    t.virtual "code", type: :string, as: "('OB-'::text || lpad((code_number)::text, 4, '0'::text))", stored: true
+    t.serial "code_number", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "BRL", null: false
+    t.bigint "funding_target_cents", default: 0, null: false
+    t.bigint "mission_base_id", null: false
+    t.integer "physical_progress", default: 0, null: false
+    t.date "planned_end_on"
+    t.date "planned_start_on"
+    t.integer "sensitivity_level", default: 1, null: false
+    t.integer "status", default: 0, null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code"], name: "index_projects_on_code", unique: true
+    t.index ["mission_base_id", "status"], name: "index_projects_on_mission_base_id_and_status"
+    t.index ["status", "sensitivity_level"], name: "index_projects_on_status_and_sensitivity_level"
+    t.check_constraint "funding_target_cents >= 0", name: "projects_funding_target_not_negative"
+    t.check_constraint "physical_progress >= 0 AND physical_progress <= 100", name: "projects_physical_progress_within_range"
   end
 
   create_table "regions", force: :cascade do |t|
@@ -375,9 +442,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_140100) do
   add_foreign_key "credentials", "profiles"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "profiles"
+  add_foreign_key "mission_bases", "countries"
+  add_foreign_key "mission_bases", "organizations", on_delete: :nullify
+  add_foreign_key "mission_bases", "regions"
   add_foreign_key "profile_skills", "profiles"
   add_foreign_key "profile_skills", "skills"
   add_foreign_key "profiles", "users"
+  add_foreign_key "progress_reports", "profiles", column: "approved_by_id"
+  add_foreign_key "progress_reports", "profiles", column: "reported_by_id"
+  add_foreign_key "progress_reports", "projects"
+  add_foreign_key "projects", "mission_bases"
   add_foreign_key "regions", "countries"
   add_foreign_key "sensitivity_changes", "users", column: "author_id"
   add_foreign_key "sessions", "users"
