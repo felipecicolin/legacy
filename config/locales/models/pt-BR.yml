@@ -38,6 +38,7 @@ pt-BR:
         exceeded: não comporta mais gente do que isso.
         in_progress_without_coordinator: Uma obra não entra em execução sem coordenação.
         last_owner: A organização precisa de pelo menos um proprietário.
+        other_country: precisa pertencer ao mesmo país da base.
         other_mission_base: precisa pertencer à mesma base desta necessidade.
         promotion_requires_justification: Reduzir a restrição exige autor e justificativa registrados.
         too_large: não pode passar de %{limit} MB.

@@ -5,6 +5,7 @@
 # matching é o produto. Ver docs/mobilization.md.
 class Need < ApplicationRecord
   include Sensitive
+  include ScrubbedPhoto
 
   # Habilidade é a única espécie que aponta para a taxonomia curada; as demais
   # descrevem coisa, dinheiro ou gente, e um `skill_id` nelas seria dado
@@ -12,7 +13,7 @@ class Need < ApplicationRecord
   SKILL_KIND = "skill"
 
   has_rich_text :description
-  has_many_attached :references
+  attaches_scrubbed_files :references
 
   belongs_to :mission_base
   belongs_to :project, optional: true

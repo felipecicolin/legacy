@@ -145,6 +145,42 @@ Mas exceção no writer vira 500, e o que a pessoa fez foi escolher o arquivo
 errado. `ProjectPhoto` mostra o padrão: um módulo com `prepend` captura a
 exceção e marca um atributo virtual que a validação lê.
 
+### A porta de coleção, e por que ela recusa menos
+
+`has_many_attached` **cru não passa pelo scrubber** — e isso foi um buraco real
+neste repositório: `Need#references` ("planta, **foto**, especificação") e
+`SiteSurvey#documents` aceitaram foto com GPS dentro até
+`attaches_scrubbed_files` existir.
+
+A macro de coleção tem semântica **diferente da singular, de propósito**:
+
+| | `attaches_scrubbed_photo` | `attaches_scrubbed_files` |
+| --- | --- | --- |
+| O campo é | uma foto | documentação de obra |
+| Imagem | limpa | limpa |
+| O que não abre como imagem | **recusado** | **passa intacto** |
+
+Recusar o PDF na coleção quebraria a funcionalidade: laudo e planta são o
+conteúdo principal daquele campo. O que não pode acontecer é a foto entrar por
+ali com a coordenada dentro.
+
+Três detalhes que a implementação não pode perder:
+
+**Rebobinar antes de deixar passar.** O scrubber copia o IO para um temporário
+*antes* de descobrir que não consegue abri-lo. Sem `rewind`, o que chega ao
+storage é **zero byte** — e um teste que só contasse anexos passaria.
+
+**Os já armazenados voltam pelo writer.** `Attached::Many#attach` chama
+`record.nome = blobs + attachables`, então toda anexação a partir da segunda
+reapresenta os blobs que já estão lá. Reprocessá-los levantaria `AlreadyStored`
+e quebraria a funcionalidade inteira.
+
+**E mesmo assim `AlreadyStored` continua valendo.** A comparação é com a coleção
+**do próprio registro**, e não com "é um blob?": blob que já está aqui volta
+intacto, blob e signed id vindos de fora seguem recusados. É essa recusa que
+fecha a porta do direct upload, e afrouxá-la para fazer o append funcionar teria
+sido a troca errada.
+
 **`prepend`, e não `def image=` no corpo da classe.** O writer que
 `attaches_scrubbed_photo` instala é definido NA CLASSE com `define_method`, e um
 `def` no corpo o substituiria — a foto subiria com o EXIF dentro, sem erro

@@ -49,4 +49,91 @@ RSpec.describe ScrubbedPhoto do
 
     expect { record.photo.attach(blob) }.to raise_error(ExifScrubber::AlreadyStored)
   end
+
+  # A porta de COLEÇÃO. Semântica diferente da singular de propósito: no
+  # singular o campo É uma foto e o que não abre como imagem é recusado; aqui
+  # o campo é documentação de obra, com planta em PDF e foto no meio.
+  describe ".attaches_scrubbed_files" do
+    let(:need) { create(:need) }
+
+    def pdf(text = "%PDF-1.7 laudo")
+      Rack::Test::UploadedFile.new(StringIO.new(text), "application/pdf", original_filename: "laudo.pdf")
+    end
+
+    # O buraco que este arquivo existe para fechar: `has_many_attached` cru não
+    # passava pelo scrubber, e a descrição do campo diz "planta, FOTO,
+    # especificação".
+    it "destroys the metadata of a picture in the collection" do
+      need.references.attach(GeotaggedPhoto.upload)
+
+      expect(need.reload.references.first.blob.download).not_to include(GeotaggedPhoto::MARKER)
+    end
+
+    it "leaves no exif field behind" do
+      need.references.attach(GeotaggedPhoto.upload)
+
+      expect(GeotaggedPhoto.exif_fields(need.reload.references.first.blob.download)).to be_empty
+    end
+
+    # Recusar o PDF quebraria a funcionalidade: laudo e planta são o conteúdo
+    # principal deste campo.
+    it "passes a file that is not a picture through untouched" do
+      need.references.attach(pdf("%PDF-1.7 laudo do engenheiro"))
+
+      expect(need.reload.references.first.blob.download).to eq("%PDF-1.7 laudo do engenheiro")
+    end
+
+    # O IO é consumido pelo scrubber antes de ele descobrir que não abre o
+    # arquivo. Sem rebobinar, o que chega ao storage é zero byte — e o teste que
+    # só olhasse o número de anexos passaria.
+    it "stores the whole file, not what was left of the stream" do
+      need.references.attach(pdf)
+
+      expect(need.reload.references.first.blob.byte_size).to eq("%PDF-1.7 laudo".bytesize)
+    end
+
+    describe "a second attachment" do
+      before { need.references.attach(GeotaggedPhoto.upload(filename: "primeira.jpg")) }
+
+      # `Attached::Many#attach` chama o writer com `blobs + attachables`, então os
+      # já armazenados voltam a passar por aqui. Reprocessá-los levantaria
+      # `AlreadyStored` e quebraria toda anexação a partir da segunda.
+      it "keeps the files that were already stored" do
+        need.references.attach(GeotaggedPhoto.upload(filename: "segunda.jpg"))
+
+        expect(need.reload.references.count).to eq(2)
+      end
+
+      it "does not reprocess what was already stored" do
+        first_size = need.reload.references.first.blob.byte_size
+        need.references.attach(pdf)
+
+        expect(need.reload.references.first.blob.byte_size).to eq(first_size)
+      end
+    end
+
+    # A recusa do direct upload continua valendo, e é ela que impede o cliente de
+    # entregar bytes que ninguém limpou. Ver docs/photo-policy.md.
+    describe "a file that was already stored elsewhere" do
+      let(:foreign) do
+        ActiveStorage::Blob.create_and_upload!(io: StringIO.new(GeotaggedPhoto.bytes),
+                                               filename: "alheia.jpg", content_type: "image/jpeg")
+      end
+
+      it "refuses a blob handed in from outside" do
+        expect { need.references.attach(foreign) }.to raise_error(ExifScrubber::AlreadyStored)
+      end
+
+      it "refuses a signed id" do
+        expect { need.references.attach(foreign.signed_id) }.to raise_error(ExifScrubber::AlreadyStored)
+      end
+    end
+
+    it "covers the survey documents by the same door" do
+      survey = create(:site_survey)
+      survey.documents.attach(GeotaggedPhoto.upload)
+
+      expect(GeotaggedPhoto.exif_fields(survey.reload.documents.first.blob.download)).to be_empty
+    end
+  end
 end
