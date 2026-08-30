@@ -14,6 +14,19 @@ pt-BR:
         organization: Organização
         profile: Pessoa
         role: Papel
+      mission_base:
+        country: País
+        established_on: Data de fundação
+        kind: Tipo
+        latitude: Latitude
+        longitude: Longitude
+        name: Nome
+        organization: Organização
+        people_served: Pessoas atendidas
+        region: Região
+        sensitivity_level: Nível de visibilidade
+        slug: Endereço
+        status: Situação
       organization:
         legal_document: CNPJ ou equivalente
         name: Nome
@@ -21,6 +34,53 @@ pt-BR:
         organization_status: Situação
         slug: Endereço
         website: Site
+      progress_report:
+        approved_at: Aprovado em
+        approved_by: Aprovado por
+        physical_progress: Avanço físico
+        project: Obra
+        reported_by: Reportado por
+        reported_on: Data do relatório
+        status: Situação
+        summary: Resumo
+        workers_on_site: Pessoas no local
+      project:
+        actual_end_on: Data real de término
+        actual_start_on: Data real de início
+        code: Código
+        currency: Moeda
+        funding_target_cents: Meta de recursos
+        mission_base: Base
+        physical_progress: Avanço físico
+        planned_end_on: Data planejada de término
+        planned_start_on: Data planejada de início
+        status: Situação
+        title: Título
+      project_participation:
+        ended_on: Data de término
+        profile: Pessoa
+        project: Obra
+        role: Papel
+        started_on: Data de início
+        status: Situação
+      project_photo:
+        caption: Legenda
+        category: Categoria
+        image: Imagem
+        position: Posição
+        progress_report: Relatório de avanço
+        project: Obra
+        taken_by: Registrada por
+        taken_on: Data da foto
+      site_survey:
+        currency: Moeda
+        estimated_cost_cents: Custo estimado
+        findings: Achados
+        project: Obra
+        recommendations: Recomendações
+        status: Situação
+        surveyed_by: Levantado por
+        surveyed_on: Data do levantamento
       user:
         email_address: E-mail
         password: Senha
@@ -28,6 +88,13 @@ pt-BR:
         password_digest: Senha
     errors:
       messages:
+        after_start: deve ser posterior ou igual à data de início.
         confidential_precise_location: Registro confidencial não guarda coordenada nem endereço.
+        content_type: deve ser JPEG, PNG ou WebP.
+        coordinator_required: A obra precisa de um coordenador ativo para começar.
+        invalid_transition: não permite esta transição de situação.
         last_owner: A organização precisa de pelo menos um proprietário.
+        less_restrictive_than_base: não pode ser menos restritiva que a base.
         promotion_requires_justification: Reduzir a restrição exige autor e justificativa registrados.
+        regression_explanation_required: A redução do avanço precisa de uma explicação no resumo.
+        too_large: não pode ultrapassar 10 MB.

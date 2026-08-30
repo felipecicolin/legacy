@@ -83,6 +83,12 @@ module Sensitive
     end
   end
 
+  def self.sensitivity_rank(level)
+    return level if level.is_a?(Integer)
+
+    LEVELS[level&.to_sym]
+  end
+
   # Única porta para afrouxar a restrição. `update` direto reprova na
   # validação: exposição sem autor e sem motivo não tem como ser revista.
   # A promoção viaja numa variável de instância, e não num atributo público,
@@ -132,8 +138,8 @@ module Sensitive
   # Um registro que ainda não existe parte do default: nascer aberto é
   # promoção como qualquer outra, e passa pela mesma auditoria.
   def sensitivity_relaxed?
-    previous = LEVELS.fetch(new_record? ? DEFAULT_LEVEL : sensitivity_level_was.to_sym)
-    current = LEVELS[sensitivity_level&.to_sym]
+    previous = new_record? ? LEVELS.fetch(DEFAULT_LEVEL) : Sensitive.sensitivity_rank(sensitivity_level_was)
+    current = Sensitive.sensitivity_rank(sensitivity_level)
 
     current.present? && current < previous
   end

@@ -41,6 +41,16 @@ class Profile < ApplicationRecord
   # organizações ficariam sem dono" — em vez de tentar apresentar o erro depois.
   has_many :memberships, dependent: :destroy
   has_many :organizations, through: :memberships
+  has_many :project_participations, dependent: :destroy
+  has_many :projects, through: :project_participations
+  has_many :surveyed_site_surveys, class_name: "SiteSurvey", foreign_key: :surveyed_by_id,
+                                   dependent: :restrict_with_error, inverse_of: :surveyed_by
+  has_many :reported_progress_reports, class_name: "ProgressReport", foreign_key: :reported_by_id,
+                                       dependent: :restrict_with_error, inverse_of: :reported_by
+  has_many :approved_progress_reports, class_name: "ProgressReport", foreign_key: :approved_by_id,
+                                       dependent: :nullify, inverse_of: :approved_by
+  has_many :taken_project_photos, class_name: "ProjectPhoto", foreign_key: :taken_by_id,
+                                  dependent: :nullify, inverse_of: :taken_by
 
   validates :legal_name, :display_name, presence: true
 

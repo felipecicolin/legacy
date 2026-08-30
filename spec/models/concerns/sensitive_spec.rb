@@ -25,6 +25,10 @@ RSpec.describe Sensitive do
     it "rejects a level outside the enum" do
       expect(build_record(sensitivity_level: nil)).not_to be_valid
     end
+
+    it "ranks integer enum values" do
+      expect(described_class.sensitivity_rank(Sensitive::LEVELS.fetch(:public))).to eq(0)
+    end
   end
 
   describe ".visible_to" do

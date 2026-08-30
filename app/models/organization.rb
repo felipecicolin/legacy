@@ -14,6 +14,7 @@ class Organization < ApplicationRecord
 
   has_many :memberships, dependent: :destroy
   has_many :profiles, through: :memberships
+  has_many :mission_bases, class_name: "MissionBase", dependent: :restrict_with_error
 
   has_rich_text :description
   has_one_attached :logo

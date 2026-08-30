@@ -6,6 +6,7 @@
 # de risco que dita a sensibilidade padrão. Ver docs/vocabulary.md.
 class Country < ApplicationRecord
   has_many :regions, dependent: :destroy, inverse_of: :country
+  has_many :mission_bases, class_name: "MissionBase", dependent: :restrict_with_error
 
   # Mesmo vocabulário do `Sensitive`, e vindo dele: o nível com que uma obra
   # criada aqui nasce é um nível como qualquer outro, e duas listas divergindo

@@ -106,6 +106,14 @@ RSpec.describe "Authorized blobs" do
     expect(response).to have_http_status(:ok)
   end
 
+  it "hides a project photo according to the project visibility" do
+    photo = create(:project_photo)
+
+    get rails_blob_path(photo.image.blob, only_path: true)
+
+    expect(response).to have_http_status(:not_found)
+  end
+
   it "answers a tampered signed id with the same 404" do
     get "/rails/active_storage/blobs/redirect/nao-e-uma-assinatura/base.jpg"
 

@@ -64,6 +64,9 @@ acrescenta nada. Então:
   interceptada sem copiar o arquivo de rotas do engine, e onde cada uma
   dessas defesas para.
 
+- [Campo: base, obra e entregáveis](field.md) — separação entre base durável,
+  obra episódica, relatórios, participação e fotos.
+
 - [Action Text](action-text.md) — por que texto rico nasce sem anexo embutido,
   as duas camadas que cobram isso, a corrida que a barra do Trix perde se a
   tradução chegar um tique atrasada, por que o CSS do Trix fica verbatim, e o

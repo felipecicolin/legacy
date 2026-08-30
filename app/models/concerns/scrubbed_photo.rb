@@ -22,5 +22,20 @@ module ScrubbedPhoto
 
       define_method(:"#{name}=") { |attachable| super(ExifScrubber.call(attachable)) }
     end
+
+    def attaches_scrubbed_photos(name)
+      has_many_attached name
+
+      define_method(:"#{name}=") { |attachables| super(scrubbed_attachables(name, attachables)) }
+    end
+  end
+
+  private
+
+  def scrubbed_attachables(name, attachables)
+    stored = public_send(:"#{name}_blobs")
+    Array(attachables).map do |attachable|
+      stored.include?(attachable) ? attachable : ExifScrubber.call(attachable)
+    end
   end
 end

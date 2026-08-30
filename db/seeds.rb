@@ -11,3 +11,7 @@ Country.load_vocabulary!
 # Regiões não entram aqui: carregar a subdivisão administrativa do mundo
 # inteiro é dado para manter em dia sem ninguém para reclamar quando
 # envelhecer. Região nasce junto com a obra que fica nela.
+
+if Rails.env.development? || Rails.env.test?
+  Rails.root.glob("db/seeds/development/*.rb").sort.each { |file| load file }
+end

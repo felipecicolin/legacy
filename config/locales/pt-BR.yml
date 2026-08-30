@@ -3,6 +3,12 @@ pt-BR:
   app:
     name: Legacy
     preview_title: Legacy — Preview de componente
+  categories:
+    after: Depois
+    before: Antes
+    detail: Detalhe
+    during: Durante
+    team: Equipe
   default_sensitivities:
     confidential: Confidencial
     public: Pública
@@ -19,11 +25,17 @@ pt-BR:
     cau: CAU
     certificate: Certificado
     charge: Cobrança
+    church: Igreja
+    clinic: Clínica
     crea: CREA
+    housing: Moradia
     license: Licença profissional
+    mission_base: Base missionária
+    ngo: ONG
     other_professional: Outro registro profissional
     refund: Estorno
     schedule_recurring: Agendamento recorrente
+    school: Escola
   layouts:
     application:
       sign_out: Sair
@@ -64,9 +76,14 @@ pt-BR:
       subject: Redefinir sua senha
   roles:
     admin: Administrador
+    coordinator: Coordenador
+    local_host: Anfitrião local
     member: Membro
+    observer: Observador
     owner: Proprietário
     representative: Representante
+    technical_lead: Líder técnico
+    volunteer: Voluntário
   sensitivity_levels:
     confidential: Confidencial
     public: Pública
@@ -82,10 +99,22 @@ pt-BR:
       title: Acessar a plataforma
     rate_limited: Muitas tentativas de acesso. Tente de novo em alguns minutos.
   statuses:
+    active: Ativa
+    approved: Aprovado
+    completed: Concluída
+    draft: Rascunho
     failed: Falhou
+    in_progress: Em obra
+    inactive: Inativa
+    invited: Convidada
+    paused: Parada
     pending: Pendente
     refused: Recusado
+    submitted: Enviado
     succeeded: Aprovado
+    surveying: Levantamento
+    urgent: Urgente
+    withdrawn: Retirada
   to_levels:
     confidential: Confidencial
     public: Pública

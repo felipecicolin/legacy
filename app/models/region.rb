@@ -9,6 +9,7 @@
 # em dia sem ninguém para reclamar quando envelhecer.
 class Region < ApplicationRecord
   belongs_to :country, inverse_of: :regions
+  has_many :mission_bases, class_name: "MissionBase", dependent: :restrict_with_error
 
   # O nome da região é dado, e não chave de locale como o do país: ele varia
   # com o idioma local da equipe em campo, e não existe lista fechada dele.

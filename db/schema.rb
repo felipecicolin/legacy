@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_30_130200) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_30_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -89,6 +89,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_130200) do
     t.index ["profile_id", "organization_id"], name: "index_memberships_on_profile_id_and_organization_id", unique: true
   end
 
+  create_table "mission_bases", force: :cascade do |t|
+    t.bigint "country_id", null: false
+    t.datetime "created_at", null: false
+    t.date "established_on"
+    t.integer "kind", null: false
+    t.decimal "latitude", precision: 9, scale: 6
+    t.decimal "longitude", precision: 9, scale: 6
+    t.string "name", null: false
+    t.bigint "organization_id"
+    t.integer "people_served"
+    t.bigint "region_id"
+    t.integer "sensitivity_level", default: 1, null: false
+    t.string "slug", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["country_id", "status"], name: "index_mission_bases_on_country_id_and_status"
+    t.index ["organization_id"], name: "index_mission_bases_on_organization_id"
+    t.index ["region_id"], name: "index_mission_bases_on_region_id"
+    t.index ["sensitivity_level"], name: "index_mission_bases_on_sensitivity_level"
+    t.index ["slug"], name: "index_mission_bases_on_slug", unique: true
+    t.check_constraint "sensitivity_level <> 2 OR NULLIF(btrim(latitude::text), ''::text) IS NULL AND NULLIF(btrim(longitude::text), ''::text) IS NULL", name: "mission_bases_confidential_has_no_location"
+  end
+
   create_table "organizations", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "legal_document"
@@ -130,6 +153,76 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_130200) do
     t.index ["user_id"], name: "index_profiles_on_user_id", unique: true
   end
 
+  create_table "progress_reports", force: :cascade do |t|
+    t.datetime "approved_at"
+    t.bigint "approved_by_id"
+    t.datetime "created_at", null: false
+    t.integer "physical_progress", null: false
+    t.bigint "project_id", null: false
+    t.bigint "reported_by_id", null: false
+    t.date "reported_on", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.integer "workers_on_site"
+    t.index ["approved_by_id"], name: "index_progress_reports_on_approved_by_id"
+    t.index ["project_id", "created_at"], name: "index_progress_reports_on_project_id_and_created_at"
+    t.index ["project_id", "reported_on"], name: "index_progress_reports_on_project_id_and_reported_on"
+    t.index ["reported_by_id"], name: "index_progress_reports_on_reported_by_id"
+    t.check_constraint "physical_progress >= 0 AND physical_progress <= 100", name: "progress_reports_physical_progress_in_range"
+  end
+
+  create_table "project_participations", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.date "ended_on"
+    t.bigint "profile_id", null: false
+    t.bigint "project_id", null: false
+    t.integer "role", null: false
+    t.date "started_on", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["profile_id", "status"], name: "index_project_participations_on_profile_id_and_status"
+    t.index ["project_id", "profile_id", "role"], name: "idx_on_project_id_profile_id_role_9c778fc32b", unique: true
+    t.check_constraint "ended_on IS NULL OR ended_on >= started_on", name: "project_participations_dates_are_ordered"
+  end
+
+  create_table "project_photos", force: :cascade do |t|
+    t.string "caption"
+    t.integer "category", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.integer "position", default: 0, null: false
+    t.bigint "progress_report_id"
+    t.bigint "project_id", null: false
+    t.bigint "taken_by_id"
+    t.date "taken_on", null: false
+    t.datetime "updated_at", null: false
+    t.index ["progress_report_id"], name: "index_project_photos_on_progress_report_id"
+    t.index ["project_id", "category", "position"], name: "index_project_photos_on_project_id_and_category_and_position"
+    t.index ["taken_by_id"], name: "index_project_photos_on_taken_by_id"
+    t.check_constraint "\"position\" >= 0", name: "project_photos_position_nonnegative"
+  end
+
+  create_table "projects", force: :cascade do |t|
+    t.date "actual_end_on"
+    t.date "actual_start_on"
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "BRL", null: false
+    t.bigint "funding_target_cents", default: 0, null: false
+    t.bigint "mission_base_id", null: false
+    t.integer "physical_progress", default: 0, null: false
+    t.date "planned_end_on"
+    t.date "planned_start_on"
+    t.integer "sensitivity_level", default: 1, null: false
+    t.integer "status", default: 0, null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code"], name: "index_projects_on_code", unique: true
+    t.index ["mission_base_id", "status"], name: "index_projects_on_mission_base_id_and_status"
+    t.index ["status", "sensitivity_level"], name: "index_projects_on_status_and_sensitivity_level"
+    t.check_constraint "funding_target_cents >= 0", name: "projects_funding_target_nonnegative"
+    t.check_constraint "physical_progress >= 0 AND physical_progress <= 100", name: "projects_physical_progress_in_range"
+  end
+
   create_table "regions", force: :cascade do |t|
     t.string "code"
     t.bigint "country_id", null: false
@@ -159,6 +252,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_130200) do
     t.string "user_agent"
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_sessions_on_user_id"
+  end
+
+  create_table "site_surveys", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "BRL", null: false
+    t.bigint "estimated_cost_cents"
+    t.bigint "project_id", null: false
+    t.integer "status", default: 0, null: false
+    t.bigint "surveyed_by_id", null: false
+    t.date "surveyed_on", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id", "surveyed_on"], name: "index_site_surveys_on_project_id_and_surveyed_on"
+    t.index ["surveyed_by_id"], name: "index_site_surveys_on_surveyed_by_id"
+    t.check_constraint "estimated_cost_cents IS NULL OR estimated_cost_cents >= 0", name: "site_surveys_estimated_cost_nonnegative"
   end
 
   create_table "solid_cable_messages", force: :cascade do |t|
@@ -345,10 +452,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_130200) do
   add_foreign_key "credentials", "profiles"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "profiles"
+  add_foreign_key "mission_bases", "countries"
+  add_foreign_key "mission_bases", "organizations"
+  add_foreign_key "mission_bases", "regions"
   add_foreign_key "profiles", "users"
+  add_foreign_key "progress_reports", "profiles", column: "approved_by_id", on_delete: :nullify
+  add_foreign_key "progress_reports", "profiles", column: "reported_by_id"
+  add_foreign_key "progress_reports", "projects"
+  add_foreign_key "project_participations", "profiles"
+  add_foreign_key "project_participations", "projects"
+  add_foreign_key "project_photos", "profiles", column: "taken_by_id", on_delete: :nullify
+  add_foreign_key "project_photos", "progress_reports", on_delete: :nullify
+  add_foreign_key "project_photos", "projects"
+  add_foreign_key "projects", "mission_bases", column: "mission_base_id"
   add_foreign_key "regions", "countries"
   add_foreign_key "sensitivity_changes", "users", column: "author_id"
   add_foreign_key "sessions", "users"
+  add_foreign_key "site_surveys", "profiles", column: "surveyed_by_id"
+  add_foreign_key "site_surveys", "projects"
   add_foreign_key "solid_queue_batch_executions", "solid_queue_batches", column: "batch_id", on_delete: :cascade
   add_foreign_key "solid_queue_batch_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

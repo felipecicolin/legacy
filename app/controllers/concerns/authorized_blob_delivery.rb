@@ -65,7 +65,7 @@ module AuthorizedBlobDelivery
     context = visibility_context
 
     @blob.attachments.all? do |attachment|
-      record = attachment.record
+      record = attachment.record.try(:visibility_subject) || attachment.record
 
       !record.is_a?(Sensitive) || context.can_see_attachment?(record)
     end
