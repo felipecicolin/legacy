@@ -1,6 +1,6 @@
 <div class="col-span-full min-w-0">
   <div class="mb-2 flex flex-wrap items-center justify-between gap-3">
-    <span class="font-mono text-label text-muted-foreground"><%= t(".code") %> <%= presenter.code %></span>
+    <span class="text-sm text-muted-foreground tabular-nums"><%= t(".code") %> <%= presenter.code %></span>
     <%= render StatusBadgeComponent.new(status: presenter.status) %>
   </div>
 
@@ -15,28 +15,54 @@
     <% end %>
   <% end %>
 
-  <div class="grid min-w-0 gap-6 desktop:grid-cols-12">
-    <nav class="hidden desktop:col-span-2 desktop:block" aria-label="<%= t(".section_navigation") %>">
-      <ul class="sticky top-6 space-y-3 border-l border-border pl-4 text-label text-muted-foreground">
-        <li><a class="hover:text-foreground" href="#progress"><%= t(".navigation.progress") %></a></li>
-        <li><a class="hover:text-foreground" href="#phases"><%= t(".navigation.phases") %></a></li>
-        <li><a class="hover:text-foreground" href="#reports"><%= t(".navigation.reports") %></a></li>
-        <li><a class="hover:text-foreground" href="#team"><%= t(".navigation.team") %></a></li>
-        <li><a class="hover:text-foreground" href="#needs"><%= t(".navigation.needs") %></a></li>
-        <li><a class="hover:text-foreground" href="#funding"><%= t(".navigation.funding") %></a></li>
-      </ul>
-    </nav>
+  <%# Abas no lugar da lista de âncoras: eram seis cartões de alturas
+      diferentes lado a lado, e o olho não sabia por onde começar. Uma
+      seção por vez, e a barra diz quantas existem. %>
+  <div class="mt-6 min-w-0" data-controller="project-tabs">
+    <div role="tablist" aria-label="<%= t(".section_navigation") %>"
+         class="flex gap-6 overflow-x-auto border-b border-border">
+      <button type="button" role="tab" data-project-tabs-target="tab"
+              data-action="project-tabs#select"
+              class="shrink-0 border-b-2 border-transparent px-1 pb-3 text-body font-medium
+                     text-muted-foreground transition-colors hover:text-foreground
+                     aria-selected:border-primary aria-selected:font-semibold aria-selected:text-foreground">
+        <%= t(".navigation.progress") %>
+      </button>
+      <button type="button" role="tab" data-project-tabs-target="tab"
+              data-action="project-tabs#select"
+              class="shrink-0 border-b-2 border-transparent px-1 pb-3 text-body font-medium
+                     text-muted-foreground transition-colors hover:text-foreground
+                     aria-selected:border-primary aria-selected:font-semibold aria-selected:text-foreground">
+        <%= t(".navigation.reports") %>
+      </button>
+      <button type="button" role="tab" data-project-tabs-target="tab"
+              data-action="project-tabs#select"
+              class="shrink-0 border-b-2 border-transparent px-1 pb-3 text-body font-medium
+                     text-muted-foreground transition-colors hover:text-foreground
+                     aria-selected:border-primary aria-selected:font-semibold aria-selected:text-foreground">
+        <%= t(".navigation.team") %>
+      </button>
+      <button type="button" role="tab" data-project-tabs-target="tab"
+              data-action="project-tabs#select"
+              class="shrink-0 border-b-2 border-transparent px-1 pb-3 text-body font-medium
+                     text-muted-foreground transition-colors hover:text-foreground
+                     aria-selected:border-primary aria-selected:font-semibold aria-selected:text-foreground">
+        <%= t(".navigation.needs") %>
+      </button>
+      <button type="button" role="tab" data-project-tabs-target="tab"
+              data-action="project-tabs#select"
+              class="shrink-0 border-b-2 border-transparent px-1 pb-3 text-body font-medium
+                     text-muted-foreground transition-colors hover:text-foreground
+                     aria-selected:border-primary aria-selected:font-semibold aria-selected:text-foreground">
+        <%= t(".navigation.funding") %>
+      </button>
+    </div>
 
-    <div class="grid min-w-0 gap-4 desktop:col-span-10 desktop:grid-cols-2">
-    <%= render CardComponent.new(id: "progress", variant: "default") do %>
-      <details open>
-        <summary class="cursor-pointer list-none text-section text-foreground"><%= t(".progress.title") %></summary>
+    <div class="mt-6 min-w-0">
+    <section role="tabpanel" data-project-tabs-target="panel" hidden
+             aria-label="<%= t(".navigation.progress") %>" class="min-w-0 space-y-6">
         <div class="mt-5 grid gap-6 tablet:grid-cols-2">
           <div class="min-w-0">
-            <div class="mb-2 flex items-baseline justify-between gap-3">
-              <h3 class="text-body font-semibold text-foreground"><%= t(".progress.physical") %></h3>
-              <span class="font-mono text-sm text-foreground"><%= number_to_percentage(presenter.physical_progress, precision: 0) %></span>
-            </div>
             <%= render ProgressBarComponent.new(kind: "physical", value: presenter.physical_progress) %>
             <p class="mt-3 text-sm text-muted-foreground">
               <% if presenter.progress_report %>
@@ -50,24 +76,15 @@
           </div>
 
           <div class="min-w-0" data-simulated="true">
-            <div class="mb-2 flex items-baseline justify-between gap-3">
-              <h3 class="text-body font-semibold text-foreground"><%= t(".progress.funding") %></h3>
-              <span class="font-mono text-sm text-foreground"><%= number_to_currency(presenter.funding_value / 100.0) %></span>
-            </div>
             <%= render ProgressBarComponent.new(kind: "funding", value: presenter.funding_value / 100.0,
                                                  target: presenter.funding_target / 100.0) %>
             <p class="mt-3 text-sm text-muted-foreground">
               <%= t(".progress.goal", value: number_to_currency(presenter.funding_target / 100.0)) %>
             </p>
-            <p class="mt-1 text-label text-warning"><%= t(".simulated") %></p>
+            <p class="mt-1 text-sm font-medium text-warning"><%= t(".simulated") %></p>
           </div>
         </div>
-      </details>
-    <% end %>
 
-    <%= render CardComponent.new(id: "phases", variant: "outlined") do %>
-      <details open>
-        <summary class="cursor-pointer list-none text-section text-foreground"><%= t(".phases.title") %></summary>
         <p class="mt-5 text-body text-muted-foreground">
           <% if presenter.stages.empty? %>
             <%= t(".phases.direct", value: number_to_percentage(presenter.physical_progress, precision: 0)) %>
@@ -81,7 +98,7 @@
               <li>
                 <div class="mb-2 flex items-baseline justify-between gap-3">
                   <span class="text-body font-semibold text-foreground"><%= stage.name %></span>
-                  <span class="font-mono text-sm text-foreground"><%= number_to_percentage(stage.physical_progress, precision: 0) %></span>
+                  <span class="text-sm font-semibold text-foreground tabular-nums"><%= number_to_percentage(stage.physical_progress, precision: 0) %></span>
                 </div>
                 <%= render ProgressBarComponent.new(kind: "physical", value: stage.physical_progress) %>
                 <p class="mt-2 text-label text-muted-foreground">
@@ -92,12 +109,10 @@
             <% end %>
           </ol>
         <% end %>
-      </details>
-    <% end %>
+    </section>
 
-    <%= render CardComponent.new(id: "reports", variant: "default", class: "desktop:col-span-2") do %>
-      <details open>
-        <summary class="cursor-pointer list-none text-section text-foreground"><%= t(".reports.title") %></summary>
+    <section role="tabpanel" data-project-tabs-target="panel" hidden
+             aria-label="<%= t(".navigation.reports") %>" class="min-w-0 space-y-6">
         <%= helpers.turbo_frame_tag "project-reports" do %>
           <% if presenter.reports.empty? %>
             <p class="mt-5 text-body text-muted-foreground"><%= t(".reports.empty") %></p>
@@ -167,12 +182,10 @@
             <% end %>
           <% end %>
         <% end %>
-      </details>
-    <% end %>
+    </section>
 
-    <%= render CardComponent.new(id: "team", variant: "outlined") do %>
-      <details open>
-        <summary class="cursor-pointer list-none text-section text-foreground"><%= t(".team.title") %></summary>
+    <section role="tabpanel" data-project-tabs-target="panel" hidden
+             aria-label="<%= t(".navigation.team") %>" class="min-w-0 space-y-6">
         <% if presenter.team_members.empty? %>
           <p class="mt-5 text-body text-muted-foreground"><%= t(".team.empty") %></p>
         <% else %>
@@ -185,12 +198,10 @@
             <% end %>
           </ul>
         <% end %>
-      </details>
-    <% end %>
+    </section>
 
-    <%= render CardComponent.new(id: "needs", variant: "outlined") do %>
-      <details open>
-        <summary class="cursor-pointer list-none text-section text-foreground"><%= t(".needs.title") %></summary>
+    <section role="tabpanel" data-project-tabs-target="panel" hidden
+             aria-label="<%= t(".navigation.needs") %>" class="min-w-0 space-y-6">
         <% if presenter.needs.empty? %>
           <p class="mt-5 text-body text-muted-foreground"><%= t(".needs.empty") %></p>
         <% else %>
@@ -214,12 +225,10 @@
             <% end %>
           </ul>
         <% end %>
-      </details>
-    <% end %>
+    </section>
 
-    <%= render CardComponent.new(id: "funding", variant: "default", class: "desktop:col-span-2") do %>
-      <details open>
-        <summary class="cursor-pointer list-none text-section text-foreground"><%= t(".budget.title") %></summary>
+    <section role="tabpanel" data-project-tabs-target="panel" hidden
+             aria-label="<%= t(".navigation.funding") %>" class="min-w-0 space-y-6">
         <% if presenter.budget_rows.empty? %>
           <p class="mt-5 text-body text-muted-foreground"><%= t(".budget.empty") %></p>
         <% else %>
@@ -228,10 +237,10 @@
               <% table.with_column(header: t(".budget.item")) { |row| row.description } %>
               <% table.with_column(header: t(".budget.category")) { |row| row.category } %>
               <% table.with_column(header: t(".budget.estimated"), align: :right) do |row| %>
-                <%= number_to_currency(row.estimated_cents / 100.0, unit: presenter.funding_currency) %>
+                <%= number_to_currency(row.estimated_cents / 100.0) %>
               <% end %>
               <% table.with_column(header: t(".budget.spent"), align: :right) do |row| %>
-                <%= number_to_currency(row.spent_cents / 100.0, unit: presenter.funding_currency) %>
+                <%= number_to_currency(row.spent_cents / 100.0) %>
                 <% if row.over_budget %>
                   <span class="mt-1 block text-label text-destructive"><%= t(".budget.exceeded") %></span>
                 <% end %>
@@ -239,13 +248,11 @@
             <% end %>
           </div>
           <p class="mt-4 text-sm text-muted-foreground">
-            <%= t(".budget.total", value: number_to_currency(presenter.budget_total_cents / 100.0,
-                                                               unit: presenter.funding_currency)) %>
+            <%= t(".budget.total", value: number_to_currency(presenter.budget_total_cents / 100.0)) %>
           </p>
-          <p class="mt-1 text-label text-warning"><%= t(".simulated") %></p>
+          <p class="mt-1 text-sm font-medium text-warning"><%= t(".simulated") %></p>
         <% end %>
-      </details>
-    <% end %>
+    </section>
     </div>
   </div>
 </div>

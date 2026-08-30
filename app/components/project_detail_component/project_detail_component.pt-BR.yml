@@ -32,9 +32,7 @@ pt-BR:
     weighted: 'Total ponderado: %{value}.'
   progress:
     direct: Avanço informado diretamente, sem relatório aprovado.
-    funding: Recursos
     goal: Meta de %{value}
-    physical: Avanço físico
     reported: "%{date}, por %{author}"
     title: Avanço e recursos
   reports:
