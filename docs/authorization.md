@@ -65,8 +65,8 @@ action.
 concern `Authentication`, com `allow_unauthenticated_access` para quem abre.
 Aqui a saída se chama `skip_authorization_for`, e ela é para actions que **não
 têm registro** para autorizar — o formulário de login existe justamente para
-quem ainda não é ninguém. Hoje são três: `SessionsController`,
-`PasswordsController` e o `HomeController`, que é espaço reservado.
+quem ainda não é ninguém. Hoje são `SessionsController` e
+`PasswordsController`; as demais actions autorizam uma página ou registro.
 
 Não é atalho de conveniência. Uma action que tem registro e não quer autorizá-lo
 está errada, e o guarda existe para dizer isso.
@@ -79,11 +79,11 @@ testável sem controller, e a matriz papel × recurso vira uma tabela de exemplo
 espalhado por controller — não porque seja feio, mas porque a regra deixa de ter
 um lugar, e a próxima tela reescreve uma versão ligeiramente diferente dela.
 
-Não há `ApplicationPolicy::Scope`. A pergunta "quais registros esta pessoa
-enxerga" já é respondida por `Sensitive.visible_to(context)`, que existe desde
-#23 e devolve uma relação. Um `Scope` do Pundit por cima seria um segundo
-caminho para a mesma decisão — e dois caminhos divergem. Quando uma listagem
-precisar filtrar por algo que não seja sensibilidade, o `Scope` entra.
+`ApplicationPolicy::Scope` é apenas o adaptador padrão do Pundit: cada policy
+concreta usa os scopes existentes, como `Sensitive.visible_to(context.visibility)`.
+A pergunta "quais registros esta pessoa enxerga" continua respondida por
+`Sensitive.visible_to(context)`, que existe desde #23 e devolve uma relação;
+nenhuma policy cria um segundo caminho de SQL para a visibilidade.
 
 ## Papel de plataforma e alcance de visibilidade
 
@@ -149,3 +149,11 @@ conselho de uma pessoa real, e atender chamado não exige lê-lo.
 5. Spec em `spec/policies/`, com a matriz **papel × action** completa —
    inclusive o default negativo. "Usuário sem papel não é admin por omissão" é
    um exemplo escrito, não uma suposição.
+## Páginas de erro e flash
+
+As páginas 404, 403, 422 e 500 usam o layout da aplicação e
+`ErrorPageComponent`; os arquivos HTML estáticos correspondentes não ficam em
+`public/`. O layout sempre monta o alvo `#flash`; `render_flash` redireciona em
+HTML e, quando o pedido é Turbo, substitui esse alvo com
+`_flash.turbo_stream.erb`. `ToastComponent` mantém a semântica acessível:
+`role="alert"` para alertas e `role="status"` para avisos normais.

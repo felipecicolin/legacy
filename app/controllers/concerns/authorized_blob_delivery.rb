@@ -8,10 +8,12 @@
 # print, em e-mail encaminhado e em cache de proxy. Ver docs/photo-policy.md.
 module AuthorizedBlobDelivery
   extend ActiveSupport::Concern
+  include Pundit::Authorization
 
   included do
     before_action :require_visible_blob
     after_action :forbid_shared_caching
+    after_action :verify_authorized
   end
 
   private
@@ -20,6 +22,15 @@ module AuthorizedBlobDelivery
   # local: era o `SIGNED_IN_CLEARANCE` que esperava por #21. O teto de quem
   # entrou e não é da equipe continua `restricted` — o que mudou é que agora
   # existe quem esteja acima dele.
+  def pundit_user
+    authenticated?
+    @pundit_user ||= Authorization::Context.for(Current.user)
+  end
+
+  def authorize_public_page
+    authorize :page, :public_access?, policy_class: ApplicationPolicy
+  end
+
   def visibility_context
     Authorization::Context.for(authenticated? ? Current.user : nil).visibility
   end
@@ -28,6 +39,7 @@ module AuthorizedBlobDelivery
   # foto já é informação sobre a obra. É a mesma escolha do login, que não diz
   # se a conta existe.
   def require_visible_blob
+    authorize_public_page
     head :not_found unless blob_visible?
   end
 

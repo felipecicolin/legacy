@@ -2,8 +2,6 @@
     que esta página precisa provar hoje é que o ciclo de autenticação fecha —
     entrou, chegou em algum lugar, e consegue sair. %>
 <div class="mx-auto w-full max-w-md">
-  <%= render "shared/flash" %>
-
   <%= render PageHeaderComponent.new(title: t(".title"),
                                      subtitle: t(".signed_in_as", email: Current.user.email_address)) %>
 </div>

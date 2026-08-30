@@ -180,6 +180,50 @@
       ]
     },
     {
+      "name": "ErrorPageComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "status",
+          "kind": "keyreq"
+        },
+        {
+          "name": "classes",
+          "kind": "key"
+        }
+      ],
+      "constants": {
+        "STATUSES": [
+          "forbidden",
+          "not_found",
+          "unprocessable_entity",
+          "internal_server_error"
+        ]
+      },
+      "slots": [],
+      "stimulus_controller": "error-page-component",
+      "template": "app/components/error_page_component/error_page_component.html.erb",
+      "preview": "spec/components/previews/error_page_component_preview.rb",
+      "examples": [
+        {
+          "name": "forbidden",
+          "source": "  def forbidden\n    render ErrorPageComponent.new(status: :forbidden)\n  end"
+        },
+        {
+          "name": "internal_server_error",
+          "source": "  def internal_server_error\n    render ErrorPageComponent.new(status: :internal_server_error)\n  end"
+        },
+        {
+          "name": "not_found",
+          "source": "  def not_found\n    render ErrorPageComponent.new(status: :not_found)\n  end"
+        },
+        {
+          "name": "unprocessable_entity",
+          "source": "  def unprocessable_entity\n    render ErrorPageComponent.new(status: :unprocessable_entity)\n  end"
+        }
+      ]
+    },
+    {
       "name": "IconComponent",
       "category": "ui",
       "params": [
@@ -584,6 +628,44 @@
         {
           "name": "default",
           "source": "  def default\n    render(TableComponent.new(rows: rows, caption: \"Obras cadastradas\")) { |table| configure_columns(table) }\n  end"
+        }
+      ]
+    },
+    {
+      "name": "ToastComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "severity",
+          "kind": "keyreq"
+        },
+        {
+          "name": "message",
+          "kind": "keyreq"
+        },
+        {
+          "name": "classes",
+          "kind": "key"
+        }
+      ],
+      "constants": {
+        "SEVERITIES": [
+          "alert",
+          "notice"
+        ]
+      },
+      "slots": [],
+      "stimulus_controller": "toast-component",
+      "template": "app/components/toast_component/toast_component.html.erb",
+      "preview": "spec/components/previews/toast_component_preview.rb",
+      "examples": [
+        {
+          "name": "alert",
+          "source": "  def alert\n    render ToastComponent.new(severity: :alert, message: t(\"sessions.create.failed\"))\n  end"
+        },
+        {
+          "name": "notice",
+          "source": "  def notice\n    render ToastComponent.new(severity: :notice, message: t(\"passwords.create.sent\"))\n  end"
         }
       ]
     }

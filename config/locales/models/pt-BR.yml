@@ -21,6 +21,9 @@ pt-BR:
         organization_status: Situação
         slug: Endereço
         website: Site
+      staff_role:
+        staff_level: Nível
+        user: Usuário
       user:
         email_address: E-mail
         password: Senha

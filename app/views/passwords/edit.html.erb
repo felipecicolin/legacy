@@ -1,6 +1,4 @@
 <div class="mx-auto w-full max-w-md">
-  <%= render "shared/flash" %>
-
   <%= render PageHeaderComponent.new(title: t(".title")) %>
 
   <%= form_with url: password_path(params[:token]), method: :put, class: "contents" do |form| %>
