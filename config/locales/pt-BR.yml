@@ -3,6 +3,17 @@ pt-BR:
   app:
     name: Legacy
     preview_title: Legacy — Preview de componente
+  base_kinds:
+    church: Igreja
+    clinic: Clínica
+    housing: Moradia
+    mission_base: Base missionária
+    ngo: ONG
+    school: Escola
+  base_statuses:
+    active: Ativa
+    inactive: Inativa
+    pending: Pendente
   default_sensitivities:
     confidential: Confidencial
     public: Pública
@@ -91,10 +102,18 @@ pt-BR:
     curator: Curadoria
     support: Suporte
   statuses:
+    approved: Aprovado
+    completed: Concluída
+    draft: Rascunho
     failed: Falhou
+    in_progress: Em obra
+    paused: Parada
     pending: Pendente
     refused: Recusado
+    submitted: Enviado
     succeeded: Aprovado
+    surveying: Levantamento
+    urgent: Urgente
   to_levels:
     confidential: Confidencial
     public: Pública

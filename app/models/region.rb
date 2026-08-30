@@ -10,6 +10,10 @@
 class Region < ApplicationRecord
   belongs_to :country, inverse_of: :regions
 
+  # Mesma direção do país: a região existe porque há obra nela, então
+  # apagá-la com base apontando é erro, não limpeza.
+  has_many :mission_bases, dependent: :restrict_with_error, inverse_of: :region
+
   # O nome da região é dado, e não chave de locale como o do país: ele varia
   # com o idioma local da equipe em campo, e não existe lista fechada dele.
   validates :name, presence: true, uniqueness: { scope: :country_id }

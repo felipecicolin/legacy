@@ -7,6 +7,10 @@
 class Country < ApplicationRecord
   has_many :regions, dependent: :destroy, inverse_of: :country
 
+  # `restrict_with_error`, e não cascata: apagar um país com base é sempre
+  # erro humano, e a cascata levaria junto obra e prestação de contas.
+  has_many :mission_bases, dependent: :restrict_with_error, inverse_of: :country
+
   # Mesmo vocabulário do `Sensitive`, e vindo dele: o nível com que uma obra
   # criada aqui nasce é um nível como qualquer outro, e duas listas divergindo
   # é questão de tempo. `scopes: false` pelo mesmo motivo de lá — o escopo que

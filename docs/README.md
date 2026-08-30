@@ -34,6 +34,10 @@ acrescenta nada. Então:
 - [i18n](i18n.md) — o que a `rails-i18n` traduz e o que sobrou para nós, os
   formatos pt-BR e o raciocínio por trás de cada um, onde cada chave mora, a
   convenção de rótulo de enum e o guarda que a cobra.
+- [Campo — base, obra e avanço](field.md) — por que base e obra são coisas
+  diferentes e o que a fusão quebraria, como a sensibilidade desce sem nunca
+  afrouxar, por que o código da obra é coluna gerada, e por que o avanço é log
+  de eventos com a coluna servindo só de cache.
 - [Autorização](authorization.md) — por que a pergunta é "pode fazer isto neste
   objeto" e nunca "que tipo de usuário é este", onde cada papel mora, por que a
   autorização é fechada por padrão nas duas pontas, e por que 404 e 403
