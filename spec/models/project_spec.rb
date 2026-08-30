@@ -29,12 +29,19 @@ RSpec.describe Project do
     end
 
     # A imutabilidade não depende de `attr_readonly` nem de callback: `code` é
-    # coluna GERADA, e o Postgres recusa escrita nela por qualquer caminho.
+    # coluna GERADA, e o Postgres recusa escrita nela por qualquer caminho —
+    # inclusive `update_all` e SQL cru, que é onde o `attr_readonly` de
+    # `Organization#slug` não alcança.
+    #
+    # Sem leitura de volta depois da recusa, de propósito: o Postgres aborta a
+    # transação ao reprovar o statement, e a transação aqui é a do exemplo.
+    # Qualquer consulta seguinte morreria com "current transaction is aborted",
+    # e o exemplo passaria a falhar por outro motivo que não o dele.
     it "refuses to be written, even by raw SQL" do
-      project = create(:project)
+      create(:project)
 
       expect { described_class.connection.execute("update projects set code = 'OB-9999'") }
-        .to raise_error(ActiveRecord::StatementInvalid).and(not_change { project.reload.code })
+        .to raise_error(ActiveRecord::StatementInvalid, /code/)
     end
 
     it "interpolates as its code" do
