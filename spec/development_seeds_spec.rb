@@ -48,15 +48,21 @@ RSpec.describe DevelopmentSeeds do
   # de sensibilidade, e sem uma base aberta ao lado não haveria contraste.
   #
   # A propriedade, e não a contagem: uma camada nova no seed muda os números e
-  # não muda o que importa — que os três níveis enxergam conjuntos diferentes,
-  # cada um contendo o anterior, e que o anônimo enxerga alguma coisa.
-  it "answers a different set of bases to each level of clearance" do
-    load_seeds
-    counts = %i[public restricted confidential].map { |level| bases_visible_at(level) }
+  # não muda o que importa.
+  describe "what each level of clearance reaches" do
+    subject(:counts) { %i[public restricted confidential].map { |level| bases_visible_at(level) } }
 
-    aggregate_failures do
+    before { load_seeds }
+
+    it "never shrinks as the clearance grows" do
       expect(counts).to eq(counts.sort)
+    end
+
+    it "answers a different set to each of the three" do
       expect(counts.uniq.size).to eq(3)
+    end
+
+    it "shows something to an anonymous reader" do
       expect(counts.first).to be_positive
     end
   end
@@ -64,14 +70,17 @@ RSpec.describe DevelopmentSeeds do
   # Abrir uma base passa pela porta de verdade, que exige autor e
   # justificativa — e a segunda carga não pode registrar a promoção de novo.
   # O que se mede é a IDEMPOTÊNCIA, não quantas bases o seed abre hoje.
-  it "records each disclosure once, however many times it runs" do
-    load_seeds
-    first = SensitivityChange.count
-    load_seeds
+  describe "the disclosures it records" do
+    let(:first_run) { load_seeds && SensitivityChange.count }
 
-    aggregate_failures do
-      expect(first).to be_positive
-      expect(SensitivityChange.count).to eq(first)
+    it "opens at least one base" do
+      expect(first_run).to be_positive
+    end
+
+    it "records each one once, however many times it runs" do
+      first_run
+
+      expect { load_seeds }.not_to(change { SensitivityChange.count })
     end
   end
 end
