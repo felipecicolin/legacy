@@ -71,9 +71,53 @@ RSpec.describe Membership do
 
       expect { owner.profile.destroy }.not_to change(Profile, :count)
     end
+
+    # A pessoa continua, mas a organização perde o dono do mesmo jeito — e este
+    # caminho não passa por `role`: com o papel intacto, `role_changed?` é
+    # falso e uma guarda que só perguntasse por ele deixaria a gravação passar.
+    it "cannot be moved to another organization" do
+      owner = create(:membership, role: :owner)
+
+      expect(owner.update(organization: create(:organization))).to be(false)
+    end
+
+    # E a contagem tem de sair da organização de ORIGEM: saindo de
+    # `organization`, esta gravação contaria o owner do DESTINO e passaria,
+    # deixando a de origem sem nenhum.
+    it "cannot be moved into an organization that has an owner of its own" do
+      owner = create(:membership, role: :owner)
+      destination = create(:membership, role: :owner).organization
+      owner.attributes = { organization: destination, role: :member }
+
+      expect(owner).not_to be_valid
+    end
+
+    # Limpar `organization_id` num PATCH levantava `NoMethodError` no meio do
+    # request: a validação de presença do `belongs_to` registra o erro, mas não
+    # interrompe as outras validações, e a guarda ia buscar `nil.memberships`.
+    it "turns a cleared organization into a form error" do
+      owner = create(:membership, role: :owner)
+
+      expect(owner.update(organization: nil, role: :member)).to be(false)
+    end
+
+    # Aceitar o convite é a gravação mais comum do vínculo, e não mexe em papel
+    # nem em organização: a guarda não pode esbarrar nela.
+    it "still accepts its own invitation" do
+      owner = create(:membership, role: :owner)
+
+      expect(owner.update(accepted_at: Time.current)).to be(true)
+    end
   end
 
   describe "an owner with company" do
+    it "can be moved away" do
+      owner = create(:membership, role: :owner)
+      create(:membership, role: :owner, organization: owner.organization)
+
+      expect(owner.update(organization: create(:organization))).to be(true)
+    end
+
     it "can be removed" do
       owner = create(:membership, role: :owner)
       create(:membership, role: :owner, organization: owner.organization)

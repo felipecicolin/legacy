@@ -353,8 +353,9 @@ Quatro regras:
   aprovada não aparece em busca e não recebe doação.
 - **`slug` nasce do nome e é imutável** (`attr_readonly`) — URL pública que
   quebra é dívida permanente.
-- **Toda organização tem pelo menos um `owner`.** Remover *ou rebaixar* o
-  último reprova; a cascata da própria organização é a única isenta.
+- **Uma organização não perde o `owner` que tem.** Remover, rebaixar *ou mover
+  para outra organização* o último reprova; a cascata da própria organização é
+  a única isenta.
 
 E uma regra de vocabulário que vale para qualquer enum novo: **se o namespace
 de rótulo (`<enum no plural>.*`) já existe com outro sentido, o enum ganha nome

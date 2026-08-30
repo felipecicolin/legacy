@@ -27,6 +27,10 @@ class Membership < ApplicationRecord
   # `prepend: true` para rodar antes do `dependent:` de qualquer associação que
   # este registro venha a ter: a recusa tem de acontecer antes de qualquer
   # efeito colateral, não depois.
+  #
+  # O alcance é o de um callback: `delete_all` e SQL cru montam o DELETE sem
+  # instanciar o registro, e passam por baixo desta regra. Ver
+  # docs/organizations.md.
   before_destroy :refuse_to_remove_the_last_owner, prepend: true
 
   def role_label
@@ -44,8 +48,17 @@ class Membership < ApplicationRecord
 
   private
 
+  # Quem fica sem dono é a organização de ORIGEM, e por isso a consulta sai de
+  # `organization_id_was` em vez de `organization`. Num update que troca de
+  # organização, `organization` já é a de destino: contar os owners de lá
+  # deixaria a de origem sem nenhum, em silêncio. Em destroy e em update sem
+  # troca os dois valores são o mesmo.
+  #
+  # De quebra some o `nil` que `organization` tinha: um PATCH que limpasse
+  # `organization_id` levantava `NoMethodError` aqui — a validação de presença
+  # do `belongs_to` registra o erro, mas não interrompe as outras validações.
   def other_owners
-    organization.memberships.owner.where.not(id: id)
+    self.class.owner.where(organization_id: organization_id_was).where.not(id: id)
   end
 
   # A organização é destruída inteira: aí a última posse vai junto, e recusar
@@ -67,12 +80,17 @@ class Membership < ApplicationRecord
     throw(:abort)
   end
 
-  # A outra metade da mesma invariante: rebaixar o último dono deixa a
-  # organização sem ninguém que responda por ela, exatamente como removê-lo.
-  # Aqui é validação, e não callback, porque a troca de papel é uma gravação
-  # comum e o resultado tem de ser erro de formulário.
+  # A outra metade da mesma invariante. Um vínculo deixa de ser posse da sua
+  # organização de duas formas, e as duas deixam-na sem ninguém que responda
+  # por ela, exatamente como removê-lo: ser REBAIXADO e ser MOVIDO para outra
+  # organização. A segunda não passa por `role`, então uma guarda que só
+  # perguntasse `role_changed?` a deixaria passar inteira.
+  #
+  # Aqui é validação, e não callback, porque as duas são gravação comum e o
+  # resultado tem de ser erro de formulário.
   def organization_keeps_an_owner
-    return unless role_changed? && role_was == "owner"
+    return unless role_was == "owner"
+    return unless role_changed? || organization_id_changed?
     return unless other_owners.none?
 
     errors.add(:base, :last_owner)

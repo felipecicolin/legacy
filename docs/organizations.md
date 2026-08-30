@@ -113,7 +113,14 @@ promete, `effective_role` é o que ele concede.
 
 ## O último owner
 
-> Toda organização tem pelo menos um `owner`. Remover o último falha.
+> Uma organização não perde o `owner` que tem. Remover, rebaixar **ou mover**
+> o último falha.
+
+O enunciado é sobre **perda**, e não sobre existência: nada obriga uma
+organização a nascer com dono. `Organization.create!` sem nenhum `Membership`
+passa em todas as camadas abaixo, porque não há vínculo para elas olharem —
+quem cria uma organização e não cria a posse junto fica com uma órfã, e o
+lugar de fechar isso é o fluxo de cadastro (#23 em diante), não o modelo.
 
 A invariante conta **papel**, não aceite. É uma decisão, e a alternativa era
 plausível: contar só os owners aceitos, alinhando a invariante com o
@@ -124,19 +131,44 @@ deixaria zero owners aceitos, que é o estado em que ela já está. A issue
 também lista as duas coisas como invariantes separadas, e a segunda fala de
 *permissão*, não de posse.
 
+**O preço dessa escolha, dito por inteiro:** uma organização cujo único owner
+nunca aceitou o convite fica com **zero `effective_role`** — ninguém responde
+por ela para efeito de policy — e o vínculo pendente **não pode ser removido**,
+porque é o último owner. Sair desse estado é aceitar o convite, promover outra
+pessoa a owner, ou apagar a organização. Isso é aceitável enquanto o convite é
+recente, que é o caso que a decisão acima otimiza; se um dia a plataforma
+precisar recuperar organizações abandonadas nesse estado, o lugar é um fluxo de
+transferência de posse (#23), não um afrouxamento desta regra — afrouxá-la
+devolve o buraco de deixar a organização sem dono nenhum.
+
 A regra é cobrada em três lugares, e cada um cobre um caminho que os outros
 não alcançam:
 
 | Camada | Cobre | O que acontece |
 | --- | --- | --- |
-| `validate :organization_keeps_an_owner, on: :update` | rebaixar o último owner | erro de formulário em `:base` |
+| `validate :organization_keeps_an_owner, on: :update` | rebaixar **ou mover** o último owner | erro de formulário em `:base` |
 | `before_destroy … prepend: true` | remover o último owner | `destroy` volta `false`; `destroy!` levanta |
 | a mesma, isenta na cascata da organização | apagar a organização inteira | passa |
 
-**Rebaixar é remover.** Trocar o papel do último owner para `member` deixa a
-organização sem ninguém que responda por ela, exatamente como apagar o vínculo.
-Ali é validação, e não callback, porque troca de papel é gravação comum e o
+**Rebaixar é remover, e mover também.** Trocar o papel do último owner para
+`member` deixa a organização sem ninguém que responda por ela, exatamente como
+apagar o vínculo. Mover o vínculo para outra organização faz o mesmo — e esse
+caminho **não passa por `role`**: com o papel intacto, `role_changed?` é falso,
+e uma guarda que só perguntasse por ele deixaria um `update!(organization:)`
+esvaziar a organização de origem sem um único erro.
+
+Ali é validação, e não callback, porque as duas são gravação comum e o
 resultado tem de ser erro de campo.
+
+**A contagem sai da organização de ORIGEM.** É por isso que `#other_owners`
+consulta `organization_id_was`, e não a associação `organization`: num update
+que troca de organização, `organization` já é a de destino, e contar os owners
+de lá aprovaria justamente a gravação que deixa a de origem vazia. Sair da
+associação tem um segundo efeito: `organization_id_was` nunca é `nil` num
+registro persistido, enquanto `organization` é — um PATCH que limpasse
+`organization_id` levantava `NoMethodError` no meio do request, porque a
+validação de presença do `belongs_to` registra o erro mas não interrompe as
+outras validações.
 
 **A remoção em massa não passa por baixo.** `organization.memberships.destroy_all`
 instancia cada registro e chama `destroy!` — o `throw(:abort)` do callback vira
