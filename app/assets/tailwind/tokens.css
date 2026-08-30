@@ -22,6 +22,48 @@
  * está fora do escopo de #6.
  */
 
+/* Fontes locais, servidas pelo Propshaft e sem dependência de CDN. Os caminhos
+ * são lógicos: o Propshaft os troca pelos nomes com digest no precompile. */
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("/fonts/InstrumentSans-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("/fonts/InstrumentSans-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("/fonts/InstrumentSans-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   /* — Primitivas —————————————————————————————————————————————————
    * Escala crua. Nome diz o matiz, não o uso. Ninguém consome direto. */
@@ -131,6 +173,25 @@
   --radius-sm: var(--radius-control);
   --radius-lg: var(--radius-card);
   --radius-full: var(--radius-pill);
+
+  /* — Tipografia ————————————————————————————————————————————————
+   * A interface pede um papel, não uma família concreta. Os fallbacks deixam
+   * texto legível mesmo antes de a fonte local terminar de carregar. */
+  --font-sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --text-display: clamp(1.75rem, 1.2rem + 2.2vw, 2.75rem);
+  --text-display--line-height: 1.1;
+  --text-display--font-weight: 700;
+
+  --text-section: 1.125rem;
+  --text-section--font-weight: 600;
+
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.55;
+
+  --text-label: 0.75rem;
+  --text-label--letter-spacing: 0.08em;
 
   /* — Proporção —————————————————————————————————————————————————
    * Os três enquadramentos que a `ImageFrameComponent` reserva antes de a
