@@ -116,6 +116,14 @@ RSpec.describe "Volunteer view" do
   # o erro de vaga esgotada volta para dentro dele. É fato de marcação, e por
   # isso é verificado aqui — não precisa de navegador para ser verdade.
   describe "the candidacy form" do
+    # Assinado, porque `restricted` é o default de uma necessidade e o leitor
+    # anônimo para em `public`: sem sessão a resposta é 404 de corpo vazio, que
+    # é o comportamento certo e não o que este exemplo mede.
+    before do
+      profile
+      sign_in
+    end
+
     it "is wrapped in its own turbo frame" do
       need = create(:need, mission_base: mission_base)
 
