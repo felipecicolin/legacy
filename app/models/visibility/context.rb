@@ -15,10 +15,10 @@ module Visibility
       Sensitive::LEVELS.select { |_level, rank| rank <= ceiling }.keys
     end
 
-    # Três perguntas diferentes com a mesma resposta hoje, e três nomes de
+    # Duas perguntas diferentes com a mesma resposta hoje, e dois nomes de
     # propósito: o dia em que uma delas mudar de regra — identificar gente pode
     # pedir mais que ver a obra — o call site já está escrito na pergunta certa,
-    # e não num predicado genérico que atenderia às três por acidente.
+    # e não num predicado genérico que atenderia às duas por acidente.
 
     # Registro confidential não guarda coordenada nenhuma; para os demais, ver
     # o ponto exato exige alcançar o nível do próprio registro.
@@ -29,10 +29,6 @@ module Visibility
     # sensibilidade, e o risco de nomear alguém vem da obra a que ela está
     # ligada. Ver `ProfilePresenter`.
     def can_identify?(record) = reaches?(record)
-
-    # Se o arquivo anexado a este registro pode ser entregue. Ver
-    # `AuthorizedBlobDelivery`.
-    def can_see_attachment?(record) = reaches?(record)
 
     private
 

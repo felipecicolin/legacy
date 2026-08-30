@@ -50,9 +50,8 @@ acrescenta nada. Então:
 - [Identidade contextual e política de foto](photo-policy.md) — por que quem
   decide o nome que aparece é o recurso e não o perfil, por que o EXIF é
   destruído na ingestão em vez de filtrado na exibição, as duas armadilhas
-  silenciosas do override de anexo, como a rota do Active Storage é
-  interceptada sem copiar o arquivo de rotas do engine, e onde cada uma
-  dessas defesas para.
+  silenciosas do override de anexo, por que apagar o EXIF não deita as fotos de
+  celular, e por que a entrega autorizada do arquivo ficou para a #21.
 
 - [Action Text](action-text.md) — por que texto rico nasce sem anexo embutido,
   as duas camadas que cobram isso, a corrida que a barra do Trix perde se a

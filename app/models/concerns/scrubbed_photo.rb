@@ -17,6 +17,13 @@ module ScrubbedPhoto
     # Método definido na classe vence módulo incluído; método definido em outro
     # módulo incluído depois perde, e o override nunca seria chamado — sem erro
     # nenhum, com a foto subindo com o GPS dentro.
+    #
+    # O LIMITE, escrito aqui porque é aqui que alguém vem procurar: um blob
+    # criado à mão — `ActiveStorage::Blob.create_and_upload!` seguido de
+    # `ActiveStorage::Attachment.create!` — grava o anexo SEM passar por este
+    # writer, e portanto sem limpeza nenhuma. É o análogo do `update_column` da
+    # #23, e não há constraint equivalente: EXIF é conteúdo de arquivo, e o
+    # banco não lê arquivo. Anexe pelo writer, sempre.
     def attaches_scrubbed_photo(name)
       has_one_attached name
 

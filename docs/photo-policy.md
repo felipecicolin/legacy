@@ -3,12 +3,15 @@
 > Presenter: [`ProfilePresenter`](../app/presenters/profile_presenter.rb)
 > · Ingestão: [`ExifScrubber`](../app/models/exif_scrubber.rb) ·
 > [`ScrubbedPhoto`](../app/models/concerns/scrubbed_photo.rb)
-> · Entrega: [`AuthorizedBlobDelivery`](../app/controllers/concerns/authorized_blob_delivery.rb)
 > · Complementos: [Visibilidade](visibility.md) · [Identidade](identity.md)
 
 A [#23](visibility.md) fechou o registro; esta fecha as duas coisas que
 continuam identificando uma base depois de o registro estar fechado: **a
 pessoa que aparece ao lado dela** e **a foto**.
+
+Duas das três, para ser exato. A **entrega autorizada do arquivo** foi adiada
+para a [#21](https://github.com/felipecicolin/legacy/issues/21), e a seção 3
+explica por quê — o resumo é que hoje ela guardaria uma porta sem nada atrás.
 
 O princípio é o mesmo, e ele vale a repetição porque é ele que decide cada
 escolha abaixo: *dado que não existe não vaza* — nem por bug de view, nem por
@@ -128,61 +131,69 @@ O `Profile#avatar` entra no pipeline junto: "sempre e para todas as fotos" só �
 verdade se valer também para o único anexo que já existia. Um retrato tirado no
 celular numa base carrega a coordenada da base, igual à foto da obra.
 
-## 3. Entrega autorizada
+### A orientação é o efeito colateral que não pode passar batido
 
-Os controllers do Active Storage são **públicos por padrão**, e o comentário no
-código-fonte deles diz isso com todas as letras: a única proteção é a URL ser
-difícil de adivinhar. Para foto de obra confidencial isso não serve — a URL é
-permanente por desenho, e viaja em print, em e-mail encaminhado e em cache de
-proxy.
+Apagar o bloco de metadados apaga junto a tag `Orientation`, e é ela que diz ao
+visualizador para girar a foto do celular. Sem mais nada, todo retrato tirado
+em pé sairia deitado — um bug visível em cem por cento das fotos de telefone, e
+que ninguém associaria à remoção de EXIF.
 
-### Como a interceptação funciona
+O que salva é o `ImageProcessing::Vips`, que aplica `autorot` ao carregar: os
+pixels são **girados de verdade** antes de a tag sumir, e a imagem gravada já
+está na posição certa sem depender de metadado nenhum. Medido em libvips
+8.18.6: uma origem 64×48 com `Orientation = 6` sai 48×64 e sem campo de EXIF.
 
-O `config/routes.rb` declara os **mesmos padrões** que o engine declara, antes
-dele:
+Isso é propriedade da biblioteca, não do código daqui, e é exatamente por isso
+que há um exemplo cobrando: trocar o `ImageProcessing` por um
+`Vips::Image#write_to_file` direto, ou passar `autorot: false`, desliga a
+correção **sem erro nenhum**.
 
-```ruby
-scope ActiveStorage.routes_prefix do
-  get "/blobs/redirect/:signed_id/*filename" => "authorized_blobs#show"
-  # …
-end
-```
+## 3. Entrega autorizada — adiada para a #21
 
-As rotas da aplicação são desenhadas antes das do engine e o roteador casa na
-ordem de declaração, então quem atende é o controller da aplicação. Os
-**nomes** continuam sendo os do engine (`rails_blob_path`,
-`rails_representation_url`) e continuam gerando as mesmas URLs — nenhum call
-site muda de forma, inclusive o `ImageFrameComponent`.
+A metade de entrega **não entrou**, e o motivo é que ela ainda não tem o que
+proteger. Os controllers do Active Storage são públicos por padrão — o
+comentário no código-fonte deles diz isso com todas as letras —, e a única
+proteção nativa é a URL ser difícil de adivinhar. Isso continua verdade nesta
+aplicação hoje.
 
-Sem `as:` de propósito: repetir um nome que o engine também declara levanta
-`Invalid route name, already in use` no boot.
+O que fez a defesa ser adiada em vez de escrita:
 
-As três alternativas foram descartadas por motivo escrito:
+- **Nada em produção inclui `Sensitive`.** O único host do concern é o
+  `SensitiveTestRecord` de `spec/support/`. Uma autorização de entrega que
+  decide pela sensibilidade do registro dono do anexo estaria guardando uma
+  porta sem nada atrás.
+- **O único anexo que existe é o `Profile#avatar`**, e `Profile` não é
+  `Sensitive` — ou seja, o anexo real do sistema cairia justamente no caso que
+  a política deixa passar.
+- **O caminho de permissão não é testável ainda.** "Tem sessão" só consegue
+  virar teto `restricted`, porque papel é contexto e as tabelas que o guardam
+  chegam na #20, na #21 e na #31. Não existe fonte de clearance capaz de emitir
+  `confidential`, então o lado *permitido* da regra não teria como ser
+  exercitado ponta a ponta — só o lado que nega.
 
-| Alternativa | Por que não |
-| --- | --- |
-| `config.active_storage.draw_routes = false` | quebra o `rich_text_area_tag`, que pede `rails_direct_uploads_url`, e o `ImageFrameComponent`, que pede o `resolve` de variante. Obrigaria a copiar o arquivo de rotas do engine para dentro da aplicação — uma cópia que desatualiza em silêncio no upgrade |
-| incluir o `before_action` em `ActiveStorage::BaseController` por `to_prepare` | `__callbacks` é `class_attribute`, e as subclasses do engine registram callbacks próprios. Uma subclasse já carregada quando o patch roda mantém a cópia dela e **nunca vê** o callback novo — falha silenciosa dependente de ordem de carga |
-| confiar na URL ser difícil de adivinhar | é o que o Active Storage já faz, e é o que a issue existe para não aceitar |
+Código não exercitável guardando dado que não existe é pior que a ausência
+dele: ele parece uma garantia. A exigência está registrada na **#21**, que é
+onde a clearance passa a existir.
 
-### Herda do controller de proxy, inclusive nas rotas de redirect
+O ponto que quem retomar precisa saber, e que custou a investigação: os
+controllers da engine **não herdam de `ApplicationController`**, então o
+`before_action :require_authentication` do "fechado por padrão" não os alcança.
+Fechar isso não é adicionar um filtro num lugar só — é decidir entre
+interceptar as rotas do engine em `config/routes.rb` (as rotas da aplicação são
+desenhadas antes e o roteador casa na ordem de declaração; verificado),
+`config.active_storage.draw_routes = false` (que quebra o `rich_text_area_tag`
+e obriga a copiar o arquivo de rotas do engine, cópia que desatualiza em
+silêncio no upgrade) ou um `to_prepare` sobre `ActiveStorage::BaseController`
+(que **não funciona**: `__callbacks` é `class_attribute`, e uma subclasse já
+carregada mantém a cópia dela e nunca vê o callback novo).
 
-Redirecionar entregaria uma URL assinada do próprio serviço de storage, que
-vale por si e não passa por autorização nenhuma. Fazendo streaming, a
-autorização acontece em **toda** requisição do arquivo, e não só na primeira.
-
-Na variante há um detalhe de ordem que custa CPU se passar batido: o
-`set_representation` da classe-mãe **processa** a variante, e como está
-declarado lá em cima correria antes da autorização — quem não pode ver o
-arquivo teria mandado a aplicação abrir, redimensionar e gravar uma cópia dele
-antes de levar o 404. Por isso `AuthorizedRepresentationsController` remove o
-callback herdado e o redeclara depois do seu.
-
-### 404, e não 403
-
-Um 403 confirma que o arquivo existe, e a existência de uma foto já é
-informação sobre a obra. É a mesma escolha que o login faz ao não dizer se a
-conta existe.
+Dois detalhes que a implementação futura vai precisar e não são óbvios: quem
+autoriza tem de herdar do controller de **proxy** inclusive nas rotas de
+redirect, porque redirecionar entrega uma URL assinada do serviço de storage
+que vale por si; e o `show` do proxy responde com `http_cache_forever
+public: true`, um `Cache-Control` público e permanente sem `Vary` — que num CDN
+ou proxy compartilhado devolve o arquivo a quem nunca foi autorizado, anulando
+a defesa inteira. Autorizar a entrega **exige** trocar esse cabeçalho.
 
 ## Onde a defesa não alcança
 
@@ -194,18 +205,21 @@ declarado vira promessa.
   portanto sem passar pelo `ExifScrubber`. É o análogo do `update_column` da
   #23: pula o callback por definição. Não há constraint equivalente aqui —
   EXIF é conteúdo de arquivo, e o banco não lê arquivo.
-- **Registro sem `Sensitive`.** A autorização de entrega só decide sobre anexo
-  cujo registro dono inclui o concern. Anexo de qualquer outro modelo continua
-  sendo servido como o Active Storage sempre serviu. Quem quiser a garantia
-  inclui `Sensitive`.
-- **Nível `confidential` é inalcançável por sessão.** `AuthorizedBlobDelivery`
-  traduz "tem sessão" em teto `restricted`, porque papel é contexto e as
-  tabelas que o guardam chegam em #20, #21 e #31. Até lá **ninguém** vê foto de
-  obra confidencial pela web — que é o lado seguro do erro, e não o certo.
-- **`/rails/active_storage/disk/…` continua desenhada pelo engine.** Ela só é
-  alcançável com um token assinado e de vida curta, que a aplicação deixou de
-  emitir ao trocar redirect por streaming. Nada aponta para ela hoje; um
-  `blob.url` escrito à mão voltaria a emitir.
+- **Anexo de texto rico não passa por aqui.** O Trix embute imagem criando o
+  blob por direct upload, e esse caminho não tem writer para interceptar — os
+  bytes chegam ao storage como vieram. A [#32](action-text.md) fecha o outro
+  lado: o elemento de anexo é **podado** na renderização, então a imagem nunca
+  é exibida nem endereçada por uma tela. Nenhum modelo de produção tem
+  `has_rich_text` hoje; quando algum tiver, o blob órfão continua no disco.
+- **A entrega do arquivo não é autorizada.** Quem tiver a URL do blob baixa o
+  arquivo, logado ou não — é o comportamento nativo do Active Storage, e ele
+  continua valendo aqui. O que esta issue garante sobre o arquivo entregue é só
+  que ele não carrega EXIF. Ver a seção 3 e a **#21**.
+- **Formato que a libvips não abre não é aceito.** É o lado seguro do erro, mas
+  é um lado: um `.heic` de iPhone só entra se a libvips instalada tiver suporte
+  a HEIF. O Dockerfile instala a `libvips` da distribuição, e o que ela abre
+  varia com a build. Quando isso aparecer, a resposta é a dependência de
+  sistema, nunca aceitar o arquivo sem limpar.
 - **Export CSV/PDF não existe ainda.** O que existe é a política que qualquer
   export terá de respeitar — `visible_to` para o conjunto,
   `Profile#serializable_hash` para o nome legal — e o spec de vazamento que

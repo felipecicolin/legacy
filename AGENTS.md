@@ -427,10 +427,10 @@ Texto rico é `has_rich_text`, com Trix e Active Storage por trás. Quatro regra
   o perfil: `ProfilePresenter#name_for(context)`, com `subject:` obrigatório. O
   rótulo de papel chega traduzido de quem chama — papel é vocabulário de #20,
   #21 e #31.
-- **Arquivo é servido por controller que autoriza.** As rotas do Active Storage
-  são interceptadas em `config/routes.rb`; os nomes continuam sendo os do
-  engine. Não use `blob.url` nem redirecione para o serviço: a URL assinada não
-  passa por autorização nenhuma.
+- **A entrega do arquivo ainda NÃO autoriza.** As rotas do Active Storage são
+  as do engine, e elas decidem só pelo `signed_id` — os controllers do engine
+  não herdam de `ApplicationController`, então o "fechado por padrão" não os
+  alcança. Pendente na #21; não escreva código que dependa de o contrário.
 
 **Armadilha:** o override do writer de anexo tem de ser definido na **classe**,
 não num módulo. O writer do `has_one_attached` mora em

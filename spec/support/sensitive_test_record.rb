@@ -9,9 +9,10 @@ class SensitiveTestRecord < ApplicationRecord
   include Sensitive
   include ScrubbedPhoto
 
-  # O host carrega a foto pelos mesmos motivos que carrega o nível: os dois
-  # mecanismos são abstratos, e é aqui que eles se encontram — a política de
-  # entrega pergunta a sensibilidade do registro dono do anexo.
+  # O host carrega a foto pelo mesmo motivo que carrega o nível: `ScrubbedPhoto`
+  # também é abstrato, e um modelo de spec é o único jeito de exercitá-lo sobre
+  # um `has_one_attached` que não seja o `Profile#avatar` — que é o único anexo
+  # concreto que existe hoje, e por isso não prova que o macro é reutilizável.
   attaches_scrubbed_photo :photo
 end
 

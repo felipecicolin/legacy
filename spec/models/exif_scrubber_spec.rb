@@ -33,6 +33,20 @@ RSpec.describe ExifScrubber do
 
       expect([image.width, image.height]).to eq([64, 48])
     end
+
+    # A tag de orientação mora no bloco de EXIF e some com ele. Sem mais nada,
+    # todo retrato de celular sairia deitado — um bug em cem por cento das
+    # fotos tiradas em pé, que ninguém associaria à remoção de metadado. Quem
+    # salva é o `autorot` do `ImageProcessing`, que gira os PIXELS antes de a
+    # tag sumir. É propriedade da biblioteca, não deste código, e por isso está
+    # cobrada aqui: passar `autorot: false` ou trocar por um `write_to_file`
+    # direto desliga a correção sem levantar erro nenhum.
+    it "rotates the pixels before the orientation tag disappears" do
+      upload = GeotaggedPhoto.upload(data: GeotaggedPhoto.sideways_bytes)
+      image = Vips::Image.new_from_buffer(scrubbed_bytes(upload), "")
+
+      expect([image.width, image.height]).to eq([48, 64])
+    end
   end
 
   describe "the shapes it accepts" do
