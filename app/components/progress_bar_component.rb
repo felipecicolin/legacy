@@ -1,10 +1,18 @@
 # frozen_string_literal: true
 
 class ProgressBarComponent < ApplicationComponent
-  KINDS = %w[physical funding].freeze
+  KINDS = %w[physical funding spending].freeze
+
+  # `spending` reaproveita a razão e o valor de `funding` — a matemática de
+  # "quanto de um alvo" é a mesma — e muda só a cor e o rótulo: gasto contra
+  # orçamento é leitura de atenção, não de conquista.
   KIND_CONFIG = {
-    "physical" => { classes: "bg-primary", ratio: :physical_ratio, value: :physical_label },
-    "funding" => { classes: "bg-accent", ratio: :funding_ratio, value: :funding_label },
+    "physical" => { classes: "bg-primary", ratio: :physical_ratio,
+                    value: :physical_label, label: :physical_label },
+    "funding" => { classes: "bg-accent", ratio: :funding_ratio,
+                   value: :funding_label, label: :funding_label },
+    "spending" => { classes: "bg-warning", ratio: :funding_ratio,
+                    value: :funding_label, label: :spending_label },
   }.freeze
 
   Attrs = Data.define(:kind, :value, :target)
@@ -35,10 +43,10 @@ class ProgressBarComponent < ApplicationComponent
     send(kind_config.fetch(:value))
   end
 
+  # `scope:` e não interpolação: o cop de i18n reprova a chave montada, e o
+  # scanner não enxergaria a chave dinâmica de qualquer forma.
   def aria_label
-    return t("progress_bar_component.physical_label") if @attrs.kind == "physical"
-
-    t("progress_bar_component.funding_label")
+    t(kind_config.fetch(:label), scope: :progress_bar_component)
   end
 
   def percentage

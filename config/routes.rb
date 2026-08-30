@@ -23,6 +23,7 @@ Rails.application.routes.draw do
   # Uma dash por tipo de pessoa que entra. Hoje só a do investidor existe; o
   # alternador entre elas só faz sentido quando houver a segunda.
   resource :investor, path: "investidor", only: :show
+  resource :team, path: "time", only: :show
 
   resource :search, only: :show
 

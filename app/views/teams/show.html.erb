@@ -1,0 +1,57 @@
+<%# locals: (dashboard:) %>
+<%= render PageHeaderComponent.new(title: t(".title"), subtitle: t(".subtitle")) %>
+
+<% if dashboard.on_a_team? %>
+  <div class="mt-6 space-y-4">
+    <% dashboard.boards.each do |board| %>
+      <%= render CardComponent.new do %>
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p class="text-label text-muted-foreground">
+              <%= board.project.code %> · <%= board.project.ngo.name %> · <%= board.role %>
+            </p>
+            <h2 class="text-lg font-semibold text-foreground"><%= board.project.title %></h2>
+          </div>
+          <%= render StatusBadgeComponent.new(status: board.project.status, size: :sm) %>
+        </div>
+
+        <section class="mt-4">
+          <h3 class="text-label text-muted-foreground"><%= t(".schedule") %></h3>
+          <dl class="mt-2 grid gap-3 tablet:grid-cols-3">
+            <div>
+              <dt class="text-label text-muted-foreground"><%= t(".planned_start") %></dt>
+              <dd class="text-foreground"><%= board.project.planned_start_on ? l(board.project.planned_start_on) : t(".undefined") %></dd>
+            </div>
+            <div>
+              <dt class="text-label text-muted-foreground"><%= t(".actual_start") %></dt>
+              <dd class="text-foreground"><%= board.project.actual_start_on ? l(board.project.actual_start_on) : t(".not_started") %></dd>
+            </div>
+            <div>
+              <dt class="text-label text-muted-foreground"><%= t(".delivery") %></dt>
+              <dd class="font-mono text-foreground"><%= board.project.planned_end_on ? l(board.project.planned_end_on) : t(".undefined") %></dd>
+            </div>
+          </dl>
+          <%= render ProgressBarComponent.new(kind: "physical", value: board.project.physical_progress,
+                                              classes: "mt-3") %>
+        </section>
+
+        <div class="mt-5 grid gap-5 tablet:grid-cols-2">
+          <%# O componente já imprime o próprio rótulo e o par valor/meta, e
+              recebe REAIS — não centavos. %>
+          <section>
+            <%= render ProgressBarComponent.new(kind: "spending", value: board.spent_cents / 100.0,
+                                                target: board.budgeted_cents / 100.0) %>
+          </section>
+
+          <section>
+            <%= render ProgressBarComponent.new(kind: "funding", value: board.raised_cents / 100.0,
+                                                target: board.goal_cents / 100.0) %>
+          </section>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% else %>
+  <%= render EmptyStateComponent.new(icon: "hard-hat", title: t(".empty_title"),
+                                     description: t(".empty_description"), classes: "mt-6") %>
+<% end %>

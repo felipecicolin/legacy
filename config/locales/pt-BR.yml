@@ -491,6 +491,22 @@ pt-BR:
     monthly: Mensal
     quarterly: Trimestral
     yearly: Anual
+  teams:
+    no_profile:
+      empty_description: Complete seu perfil para acompanhar as obras em que você trabalha.
+      empty_title: Seu perfil ainda não existe
+      title: Sua obra
+    show:
+      actual_start: Início real
+      delivery: Entrega prevista
+      empty_description: Assim que você entrar na equipe de uma obra, ela aparece aqui com cronograma e orçamento.
+      empty_title: Você ainda não está em nenhuma obra
+      not_started: Não iniciada
+      planned_start: Início previsto
+      schedule: Cronograma
+      subtitle: Cronograma, orçamento e arrecadação de cada obra em que você trabalha.
+      title: Suas obras
+      undefined: A definir
   tiers:
     maintainer: Mantenedora
     partner: Parceira
