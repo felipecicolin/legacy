@@ -19,7 +19,7 @@ RSpec.describe NeedPolicy do
 
   # A recusa por não ver sai pela mesma porta da recusa por não existir.
   it "hides a need the reader does not reach" do
-    hidden = create(:need, mission_base: create(:mission_base, country: create(:country, high_risk: true)))
+    hidden = create(:need, ngo: create(:ngo, country: create(:country, high_risk: true)))
 
     expect(policy_for(hidden, signed_in_context).show?).to be(false)
   end

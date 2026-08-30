@@ -1,16 +1,18 @@
-# Campo — base, obra e avanço
+# Campo — ONG, obra e avanço
 
 > Regra curta no [`AGENTS.md`](../AGENTS.md). Aqui está o porquê.
+> A fusão que apagou a base missionária está em [ONGs e vínculos](ngos.md).
 
-## Base não é obra
+## ONG não é obra
 
-Uma **base** — base missionária, ONG, escola, moradia, igreja, clínica — é um
+Uma **ONG** — igreja, escola, moradia, clínica, empresa, associação — é um
 **lugar durável**. Ela acumula várias obras ao longo dos anos e tem necessidade
 mesmo quando nenhuma obra está acontecendo. Uma **obra** é **episódica**: tem
 escopo, prazo e orçamento próprios, começa e termina.
 
-Fundir as duas é o erro tentador. "A obra *é* a base" simplifica o modelo hoje e
-quebra três coisas depois, todas caras:
+Esta é a distinção que a fusão de instituição e lugar **não** apagou, e é
+proposital: a ONG absorveu o lugar, não a obra. "A obra *é* a ONG" simplifica o
+modelo hoje e quebra três coisas depois, todas caras:
 
 1. **A candidatura do voluntário.** Ele se candidata a uma necessidade da base
    — "precisamos de um engenheiro para avaliar a estrutura" — e essa
@@ -20,7 +22,7 @@ quebra três coisas depois, todas caras:
 3. **O rollup por país.** Contar obras por país e contar lugares por país são
    perguntas diferentes, e a fusão só sabe responder uma.
 
-O campo de busca do próprio design system já separa: *"obra, base ou país"*. O
+O campo de busca do próprio design system já separa: *"obra, ONG ou país"*. O
 desenho de dados segue o que a interface já dizia.
 
 É por isso que `Need` (#33) aponta para a base por FK **obrigatória** e para a
@@ -32,7 +34,7 @@ obra é o caso normal, não a exceção.
 Três níveis encadeados, e a herança tem uma direção só:
 
 ```
-Country#default_sensitivity  →  MissionBase#sensitivity_level  →  Project#sensitivity_level
+Country#default_sensitivity  →  Ngo#sensitivity_level  →  Project#sensitivity_level
 ```
 
 Um país marcado como `high_risk` faz toda base criada nele nascer
@@ -72,7 +74,7 @@ para a causa.
 como qualquer string, e a imutabilidade não depende de `attr_readonly` nem de
 callback: o Postgres recusa escrita em coluna gerada por **qualquer** caminho,
 inclusive `update_all` e SQL cru — que é justamente onde o `attr_readonly` de
-`Organization#slug` e o de `PaymentTransaction#simulated` não alcançam.
+`Ngo#slug` e o de `PaymentTransaction#simulated` não alcançam.
 
 ## Avanço é log de eventos, não coluna
 
@@ -159,7 +161,7 @@ novo cujo grafo de transições ninguém lembrou de atualizar.
 
 ## A tela da base é a prova de que a separação vale
 
-`MissionBasesController#show` existe para ser a evidência visual do que
+`NgosController#show` existe para ser a evidência visual do que
 [a primeira seção](#base-não-é-obra) argumenta: **se a tela pudesse ser
 reduzida a "a obra da base", o modelo estava errado**.
 
@@ -288,7 +290,7 @@ rede, porque nem toda forma de anexável responde `size`.
 e não `role`, `status` e `category`.** A convenção deriva a chave de locale do
 nome do enum, e `roles.*` já é o vocabulário de `Membership`: papel numa
 organização e papel numa obra são coisas diferentes e não dividem balde. É a
-mesma razão de `Organization#organization_kind`, e o
+mesma razão de `Ngo#ngo_kind`, e o
 `spec/models/enum_translation_audit_spec.rb` é quem cobra.
 
 As variantes não são declaradas aqui: as três larguras do `srcset` vivem em

@@ -14,7 +14,7 @@ class VolunteerEngagement < ApplicationRecord
   GROUP_MODEL = "corporate"
 
   belongs_to :profile, inverse_of: :volunteer_engagements
-  belongs_to :organization, optional: true
+  belongs_to :ngo, optional: true
   belongs_to :volunteer_group, optional: true
 
   enum :engagement_model,

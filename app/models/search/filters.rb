@@ -10,7 +10,7 @@ module Search
   # uma exceção nem uma lista vazia que se lê como "não existe nada".
   # Fora do bloco do `Data.define`: constante declarada dentro de bloco é
   # atribuição dinâmica, e o `Lint/ConstantDefinitionInBlock` reprova.
-  FILTER_NAMES = %i[status country_id base_kind urgency min_progress].freeze
+  FILTER_NAMES = %i[status country_id ngo_kind urgency min_progress].freeze
 
   Filters = Data.define(*FILTER_NAMES) do
     def self.from(params)
@@ -33,9 +33,9 @@ module Search
            .then { |relation| by_country_of_base(relation) }
     end
 
-    def apply_to_mission_bases(scope)
+    def apply_to_ngos(scope)
       scope.then { |relation| relation.where(country_id: country_id) if country_id }
-           .then { |relation| by_base_kind(relation || scope) }
+           .then { |relation| by_ngo_kind(relation || scope) }
     end
 
     def to_query = to_h.compact
@@ -49,7 +49,7 @@ module Search
     def by_country(scope)
       return scope if country_id.blank?
 
-      scope.where(mission_base: MissionBase.where(country_id: country_id))
+      scope.where(ngo: Ngo.where(country_id: country_id))
     end
 
     def by_progress(scope)
@@ -69,11 +69,11 @@ module Search
     def by_country_of_base(scope)
       return scope if country_id.blank?
 
-      scope.where(mission_base: MissionBase.where(country_id: country_id))
+      scope.where(ngo: Ngo.where(country_id: country_id))
     end
 
-    def by_base_kind(scope)
-      MissionBase.base_kinds.key?(base_kind) ? scope.where(base_kind: base_kind) : scope
+    def by_ngo_kind(scope)
+      Ngo.ngo_kinds.key?(ngo_kind) ? scope.where(ngo_kind: ngo_kind) : scope
     end
   end
 end

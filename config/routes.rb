@@ -10,7 +10,7 @@ Rails.application.routes.draw do
     get :document, on: :member, to: "credential_documents#show"
   end
 
-  resources :mission_bases, path: "bases", only: %i[index show] do
+  resources :ngos, path: "ongs", only: %i[index show] do
     resources :needs, only: %i[index], shallow: true
   end
   resources :projects, path: "obras", param: :code, only: %i[index show] do

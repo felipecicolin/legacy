@@ -4,7 +4,7 @@
 
 ## A necessidade pende de duas chaves reais, não de um polimorfismo
 
-`Need` aponta para `mission_base` por FK **obrigatória** e para `project` por FK
+`Need` aponta para `ngo` por FK **obrigatória** e para `project` por FK
 **opcional**. A forma tentadora é `belongs_to :needable, polymorphic: true`, e
 ela está errada aqui por três motivos concretos:
 
@@ -21,8 +21,8 @@ tabelas diferentes — ver [Campo](field.md). Não é exceção: é metade do pr
 
 ### A invariante de coerência
 
-Quando `project_id` está preenchido, `mission_base_id` **tem** que ser igual a
-`project.mission_base_id`. Sem isso o registro aponta para a base A pela coluna
+Quando `project_id` está preenchido, `ngo_id` **tem** que ser igual a
+`project.ngo_id`. Sem isso o registro aponta para a base A pela coluna
 e para a base B pela obra, **os dois rollups discordam, e nada dá erro**. É
 validação de modelo com spec que tenta gravar a combinação inconsistente.
 

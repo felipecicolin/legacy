@@ -69,7 +69,7 @@ class Profile < ApplicationRecord
   self.filter_attributes |= HIDDEN_ATTRIBUTES
 
   # Papel é contexto, e o contexto mora do outro lado: nenhuma coluna aqui diz
-  # "esta pessoa é dona de alguma coisa". Ver docs/organizations.md.
+  # "esta pessoa é dona de alguma coisa". Ver docs/ngos.md.
   #
   # `dependent: :destroy` apaga os vínculos junto com a pessoa — menos quando um
   # deles é a última posse de uma organização que continua existindo. Aí o
@@ -81,7 +81,7 @@ class Profile < ApplicationRecord
   # Quem construir a tela de exclusão de conta precisa perguntar antes — "estas
   # organizações ficariam sem dono" — em vez de tentar apresentar o erro depois.
   has_many :memberships, dependent: :destroy
-  has_many :organizations, through: :memberships
+  has_many :ngos, through: :memberships
 
   validates :legal_name, :display_name, presence: true
 

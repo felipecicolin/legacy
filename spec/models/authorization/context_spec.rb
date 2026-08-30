@@ -5,7 +5,7 @@ require "rails_helper"
 RSpec.describe Authorization::Context do
   let(:user) { create(:user) }
   let(:profile) { create(:profile, user: user) }
-  let(:organization) { create(:organization) }
+  let(:ngo) { create(:ngo) }
 
   describe ".anonymous" do
     subject(:context) { described_class.anonymous }
@@ -42,8 +42,8 @@ RSpec.describe Authorization::Context do
 
     # Convite pendente é o caso que uma policy distraída trataria como papel.
     it "loads only the accepted memberships" do
-      accepted = create(:membership, :accepted, profile: profile, organization: organization)
-      create(:membership, profile: profile, organization: create(:organization))
+      accepted = create(:membership, :accepted, profile: profile, ngo: ngo)
+      create(:membership, profile: profile, ngo: create(:ngo))
 
       expect(described_class.for(user).memberships).to contain_exactly(accepted)
     end
@@ -51,15 +51,15 @@ RSpec.describe Authorization::Context do
 
   describe "#role_in" do
     it "answers the role of an accepted membership" do
-      create(:membership, :accepted, profile: profile, organization: organization, role: :owner)
+      create(:membership, :accepted, profile: profile, ngo: ngo, role: :owner)
 
-      expect(described_class.for(user).role_in(organization)).to eq(:owner)
+      expect(described_class.for(user).role_in(ngo)).to eq(:owner)
     end
 
-    it "answers nothing for an organization the person has no bond with" do
+    it "answers nothing for an ngo the person has no bond with" do
       profile
 
-      expect(described_class.for(user).role_in(organization)).to be_nil
+      expect(described_class.for(user).role_in(ngo)).to be_nil
     end
   end
 

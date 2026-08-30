@@ -3,9 +3,9 @@
 require "rails_helper"
 
 RSpec.describe Assignment do
-  let(:mission_base) { create(:mission_base) }
-  let(:project) { create(:project, mission_base: mission_base) }
-  let(:need) { create(:need, mission_base: mission_base, project: project, quantity: 2) }
+  let(:ngo) { create(:ngo) }
+  let(:project) { create(:project, ngo: ngo) }
+  let(:need) { create(:need, ngo: ngo, project: project, quantity: 2) }
 
   describe "taking the slot" do
     it "counts against the need it fulfils" do
@@ -55,7 +55,7 @@ RSpec.describe Assignment do
     # Necessidade de base não tem obra: é o caso normal da necessidade que
     # existe sem obra ativa, e alocar nela não põe ninguém em equipe nenhuma.
     context "with a need that hangs from a base" do
-      let(:base_need) { create(:need, mission_base: mission_base, project: nil) }
+      let(:base_need) { create(:need, ngo: ngo, project: nil) }
       let(:assignment) { create(:assignment, need: base_need, candidacy: create(:candidacy, need: base_need)) }
 
       before { assignment }

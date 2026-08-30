@@ -302,7 +302,7 @@ commitado descreve o banco de produção, e uma tabela de teste dentro dele
 mentiria para o `database_consistency` e para quem lê o arquivo.
 
 Ele existe porque a #32 instala a infraestrutura antes de existir domínio —
-`Organization`, `MissionBase`, `Project`, `SiteSurvey` e `ProgressReport` são
+`Ngo`, `Ngo`, `Project`, `SiteSurvey` e `ProgressReport` são
 das tranches seguintes. Um modelo de aplicação criado só para o teste colocaria
 em `app/` código que ninguém chama, e a cobertura 100% cobraria spec dele.
 

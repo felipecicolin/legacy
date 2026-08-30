@@ -29,7 +29,7 @@
                                      choices: Need.urgencies.keys.map { |v| [t(v, scope: :urgencies), v] }) %>
       <%= render SelectComponent.new(name: :country_id, label: t(".country"), include_blank: t(".any"),
                                      selected: filters.country_id,
-                                     choices: Country.where(id: MissionBase.select(:country_id)).map { |c| [c.name, c.id] }) %>
+                                     choices: Country.where(id: Ngo.select(:country_id)).map { |c| [c.name, c.id] }) %>
     </div>
   <% end %>
   <%= render "needs/need_cards", needs: dashboard.open_needs(filters), visibility: dashboard.visibility,

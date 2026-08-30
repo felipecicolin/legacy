@@ -2,7 +2,7 @@
 
 FactoryBot.define do
   factory :partnership do
-    organization
+    ngo
     owner { association :profile }
     kind { :financial }
     tier { :supporter }

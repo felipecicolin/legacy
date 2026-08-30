@@ -85,7 +85,7 @@ RSpec.describe SubscriberBenefit do
   end
 
   it "returns no address when the subscriber has no user" do
-    subscription = build(:subscription, subscriber: build(:organization))
+    subscription = build(:subscription, subscriber: build(:ngo))
 
     expect(build(:subscriber_benefit, subscription:).delivery_address).to be_nil
   end

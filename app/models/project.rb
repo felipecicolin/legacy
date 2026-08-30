@@ -29,7 +29,7 @@ class Project < ApplicationRecord
 
   has_rich_text :scope_description
 
-  belongs_to :mission_base
+  belongs_to :ngo
   has_many :progress_reports, dependent: :destroy
   has_many :needs, dependent: :destroy
   has_many :deployments, dependent: :nullify
@@ -115,13 +115,13 @@ class Project < ApplicationRecord
   # A obra herda o nível da base na criação, e a herança só APERTA — mesma
   # regra da base em relação ao país.
   def inherit_base_sensitivity
-    return unless mission_base && own_rank
+    return unless ngo && own_rank
     return if base_rank <= own_rank
 
-    self.sensitivity_level = mission_base.sensitivity_level
+    self.sensitivity_level = ngo.sensitivity_level
   end
 
-  def base_rank = Sensitive::LEVELS.fetch(mission_base.sensitivity_level.to_sym)
+  def base_rank = Sensitive::LEVELS.fetch(ngo.sensitivity_level.to_sym)
 
   # `[]` e não `fetch`: com `validate: true` um nível inválido chega até aqui
   # como string solta, e é a validação do enum que tem de reprová-lo — não um
@@ -132,9 +132,9 @@ class Project < ApplicationRecord
   # depois, e uma obra que ficasse mais aberta que a base dela seria justamente
   # a porta que a promoção da base tentou fechar.
   def not_less_restrictive_than_base
-    return unless mission_base && own_rank
+    return unless ngo && own_rank
     return if own_rank >= base_rank
 
-    errors.add(:sensitivity_level, :below_mission_base)
+    errors.add(:sensitivity_level, :below_ngo)
   end
 end

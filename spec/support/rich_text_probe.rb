@@ -3,7 +3,7 @@
 # Modelo de teste para o Action Text.
 #
 # Existe porque a #32 instala a infraestrutura antes de existir domínio: nenhum
-# dos modelos que vão usar texto rico (`Organization`, `MissionBase`, `Project`,
+# dos modelos que vão usar texto rico (`Ngo`, `Ngo`, `Project`,
 # `SiteSurvey`, `ProgressReport`) foi escrito ainda, e criar um modelo de
 # aplicação só para o teste colocaria em `app/` código que ninguém chama.
 #

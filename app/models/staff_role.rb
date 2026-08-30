@@ -11,7 +11,7 @@ class StaffRole < ApplicationRecord
   # O nome do enum não é `level` porque o rótulo de UI sai de `<enum no
   # plural>.<valor>` (ver docs/i18n.md): um `levels:` solto no topo do locale
   # não diria de que escala se trata, ao lado de `sensitivity_levels` e
-  # `from_levels`. Mesma razão de `Organization#organization_kind`.
+  # `from_levels`. Mesma razão de `Ngo#ngo_kind`.
   #
   # A ordem é crescente em alcance, e é ela que o `Authorization::Context` lê
   # para traduzir papel em nível de visibilidade.

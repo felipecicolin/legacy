@@ -114,6 +114,6 @@ paginar dentro de um Turbo Frame que já carrega três grupos pede uma decisão 
 desenho — paginar cada grupo ou a lista toda — que vale tomar com a tela de
 listagem (#50, #52) na mão, e não antes.
 
-**"Ver todos" por grupo.** Ele levaria a `mission_bases#index` e
+**"Ver todos" por grupo.** Ele levaria a `ngos#index` e
 `projects#index`, que ainda são placeholders de outras issues. Um link para uma
 tela vazia é pior que nenhum link.

@@ -6,7 +6,7 @@ RSpec.describe "Volunteer view screen" do
   let(:password) { "s3nha-de-teste-longa" }
   let(:user) { create(:user, password: password) }
   let(:profile) { create(:profile, user: user) }
-  let(:mission_base) { create(:mission_base, :active) }
+  let(:ngo) { create(:ngo, :active) }
 
   def body_fits?
     page.evaluate_script("document.body.scrollWidth <= document.documentElement.clientWidth")
@@ -21,7 +21,7 @@ RSpec.describe "Volunteer view screen" do
 
   before do
     create(:profile_skill, profile: profile, skill: create(:skill))
-    create_list(:need, 4, mission_base: mission_base)
+    create_list(:need, 4, ngo: ngo)
     sign_in
   end
 

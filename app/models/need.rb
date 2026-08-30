@@ -15,7 +15,7 @@ class Need < ApplicationRecord
   has_rich_text :description
   attaches_scrubbed_files :references
 
-  belongs_to :mission_base
+  belongs_to :ngo
   belongs_to :project, optional: true
   belongs_to :skill, optional: true
   has_many :candidacies, dependent: :destroy
@@ -124,15 +124,15 @@ class Need < ApplicationRecord
   # obra, e os dois rollups discordam — sem erro em lugar nenhum.
   def project_belongs_to_the_same_base
     return unless project
-    return if project.mission_base_id == mission_base_id
+    return if project.ngo_id == ngo_id
 
-    errors.add(:project, :other_mission_base)
+    errors.add(:project, :other_ngo)
   end
 
   # Herda da obra quando há obra, e da base quando não há. Só APERTA, como toda
   # herança de sensibilidade neste domínio: abrir é `promote_visibility!`.
   def inherit_sensitivity
-    source = project || mission_base
+    source = project || ngo
     return unless source
     return if Sensitive::LEVELS.fetch(source.sensitivity_level.to_sym) <= own_rank
 

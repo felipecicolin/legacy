@@ -188,8 +188,8 @@ RSpec.describe Profile do
   # contaria onde ele esteve — é o caminho lateral que se esquece.
   describe "#visible_participations" do
     let(:profile) { create(:profile) }
-    let(:risky_base) { create(:mission_base, country: create(:country, high_risk: true)) }
-    let(:confidential) { create(:project, mission_base: risky_base) }
+    let(:risky_base) { create(:ngo, country: create(:country, high_risk: true)) }
+    let(:confidential) { create(:project, ngo: risky_base) }
 
     before do
       create(:project_participation, profile: profile, project: create(:project))

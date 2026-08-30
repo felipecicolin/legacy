@@ -57,9 +57,11 @@ class ApplicationPolicy
     StaffRole.staff_levels.fetch(context.staff_level.to_s) >= StaffRole.staff_levels.fetch(level.to_s)
   end
 
+  # O caso especial da organização morreu com a fusão: ela não tinha
+  # sensibilidade e por isso respondia pelo estado de aprovação. A ONG tem, então
+  # o caminho genérico serve — e quem pergunta pelo estado é a `NgoPolicy`.
   def visible_record?
     return false unless record
-    return record.approved? if record.is_a?(Organization)
 
     record.class.visible_to(context.visibility).exists?(record.id)
   end

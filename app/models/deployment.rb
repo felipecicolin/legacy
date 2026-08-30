@@ -8,7 +8,7 @@
 # obra aberta é o caso normal. É a mesma separação que `Need` faz. Ver
 # docs/mobilization.md.
 class Deployment < ApplicationRecord
-  belongs_to :mission_base
+  belongs_to :ngo
   belongs_to :project, optional: true
   has_many :deployment_members, dependent: :destroy
   has_many :members, through: :deployment_members, source: :profile
@@ -51,9 +51,9 @@ class Deployment < ApplicationRecord
   # para a base B pela obra faz os dois rollups discordarem, sem erro nenhum.
   def project_belongs_to_the_same_base
     return unless project
-    return if project.mission_base_id == mission_base_id
+    return if project.ngo_id == ngo_id
 
-    errors.add(:project, :other_mission_base)
+    errors.add(:project, :other_ngo)
   end
 
   # A capacidade é do avião e da casa, não uma sugestão: passar dela é

@@ -31,7 +31,7 @@ RSpec.describe Project do
     # A imutabilidade não depende de `attr_readonly` nem de callback: `code` é
     # coluna GERADA, e o Postgres recusa escrita nela por qualquer caminho —
     # inclusive `update_all` e SQL cru, que é onde o `attr_readonly` de
-    # `Organization#slug` não alcança.
+    # `Ngo#slug` não alcança.
     #
     # Sem leitura de volta depois da recusa, de propósito: o Postgres aborta a
     # transação ao reprovar o statement, e a transação aqui é a do exemplo.
@@ -142,9 +142,9 @@ RSpec.describe Project do
 
   describe "sensitivity" do
     it "inherits the level of its base" do
-      base = create(:mission_base, country: create(:country, high_risk: true))
+      base = create(:ngo, country: create(:country, high_risk: true))
 
-      expect(create(:project, mission_base: base)).to be_confidential
+      expect(create(:project, ngo: base)).to be_confidential
     end
 
     it "keeps its own level when the base is more open" do
@@ -155,7 +155,7 @@ RSpec.describe Project do
     # pode deixar para trás uma obra mais aberta que ela.
     it "refuses to stay more open than a base that was tightened later" do
       project = create(:project)
-      project.mission_base.update_column(:sensitivity_level, Sensitive::LEVELS.fetch(:confidential))
+      project.ngo.update_column(:sensitivity_level, Sensitive::LEVELS.fetch(:confidential))
 
       expect(project.reload).not_to be_valid
     end
@@ -177,7 +177,7 @@ RSpec.describe Project do
     end
 
     it "survives having no base yet, so the presence validation is the one that speaks" do
-      expect(build(:project, mission_base: nil)).not_to be_valid
+      expect(build(:project, ngo: nil)).not_to be_valid
     end
   end
 

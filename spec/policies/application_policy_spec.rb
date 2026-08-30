@@ -48,10 +48,10 @@ RSpec.describe ApplicationPolicy do
   end
 
   def member_policy
-    organization = create(:organization)
+    ngo = create(:ngo)
     record = SensitiveTestRecord.create!(code: "PB-03")
-    record.define_singleton_method(:organization) { organization }
-    create(:membership, profile:, organization:, role: :member, accepted_at: Time.current)
+    record.define_singleton_method(:ngo) { ngo }
+    create(:membership, profile:, ngo:, role: :member, accepted_at: Time.current)
     described_class.new(context, record)
   end
 
@@ -62,9 +62,9 @@ RSpec.describe ApplicationPolicy do
     described_class.new(Authorization::Context.for(admin), record)
   end
 
-  def organization_visible?(status)
-    organization = create(:organization, organization_status: status)
-    described_class.new(anonymous, organization).send(:visible_record?)
+  def ngo_visible?(*traits)
+    ngo = create(:ngo, *traits)
+    described_class.new(anonymous, ngo).send(:visible_record?)
   end
 
   it "stores the authorization context and record" do
@@ -106,11 +106,14 @@ RSpec.describe ApplicationPolicy do
     expect([public_policy.send(:visible_record?), signed_policy.send(:visible_record?)]).to eq([true, true])
   end
 
-  it "uses organization approval for organization records" do
-    expect([organization_visible?(:approved), organization_visible?(:pending)]).to eq([true, false])
+  # A ONG deixou de ter caminho próprio aqui. Antes da fusão ela não tinha
+  # sensibilidade e por isso respondia pelo estado de aprovação; agora ela tem,
+  # e o caminho genérico serve — quem pergunta pelo estado é a `NgoPolicy`.
+  it "reads an ngo through the same clearance as any sensitive record" do
+    expect([ngo_visible?(:listed), ngo_visible?(:active)]).to eq([true, false])
   end
 
-  it "raises clearance for organization members and platform admins" do
+  it "raises clearance for ngo members and platform admins" do
     expect([member_policy.send(:visible_record?), admin_policy.send(:visible_record?)]).to eq([true, true])
   end
 

@@ -19,15 +19,15 @@ module DevelopmentSeeds
     ].freeze
 
     BASES = [
-      { slug: "vale-verde", name: "Base do Vale Verde", base_kind: :mission_base, country: "XA", public: true },
-      { slug: "escola-aurora", name: "Escola Aurora", base_kind: :school, country: "XA" },
-      { slug: "clinica-do-porto", name: "Clínica do Porto", base_kind: :clinic, country: "XB" },
-      { slug: "casa-norte", name: "Casa Norte", base_kind: :housing, country: "XC" },
+      { slug: "vale-verde", name: "ONG do Vale Verde", ngo_kind: :association, country: "XA", public: true },
+      { slug: "escola-aurora", name: "Escola Aurora", ngo_kind: :school, country: "XA" },
+      { slug: "clinica-do-porto", name: "Clínica do Porto", ngo_kind: :clinic, country: "XB" },
+      { slug: "casa-norte", name: "Casa Norte", ngo_kind: :housing, country: "XC" },
       # Sem obra nenhuma, e aberta ao público de propósito: é o caso que
-      # motivou separar base de obra, e a tela de detalhe (#53) existe para
+      # motivou separar ONG de obra, e a tela de detalhe (#53) existe para
       # provar que ele renderiza completo. Um seed sem ele deixaria a prova
       # dependendo de alguém montar o caso à mão.
-      { slug: "casa-do-rio", name: "Casa do Rio", base_kind: :ngo, country: "XB", public: true },
+      { slug: "casa-do-rio", name: "Casa do Rio", ngo_kind: :association, country: "XB", public: true },
     ].freeze
 
     # Os cinco estados aparecem, porque é a listagem com os cinco lado a lado
@@ -88,11 +88,11 @@ module DevelopmentSeeds
     end
 
     def upsert_base(entry, countries)
-      MissionBase.find_or_initialize_by(slug: entry.fetch(:slug)).tap do |base|
+      Ngo.find_or_initialize_by(slug: entry.fetch(:slug)).tap do |base|
         base.country = countries.fetch(entry.fetch(:country))
         base.name = entry.fetch(:name)
-        base.base_kind = entry.fetch(:base_kind)
-        base.base_status = :active
+        base.ngo_kind = entry.fetch(:ngo_kind)
+        base.ngo_status = :active
         base.save!
         open_to_the_public(base) if entry[:public]
       end
@@ -114,7 +114,7 @@ module DevelopmentSeeds
     # exercitar a matriz de transições.
     def upsert_project(entry, bases)
       base = bases.fetch(entry.fetch(:base))
-      project = MissionBase.find(base.id).projects.find_or_initialize_by(title: entry.fetch(:title))
+      project = Ngo.find(base.id).projects.find_or_initialize_by(title: entry.fetch(:title))
       project.save! if project.new_record?
       advance(project, entry.fetch(:status))
     end

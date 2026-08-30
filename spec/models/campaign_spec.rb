@@ -52,14 +52,14 @@ RSpec.describe Campaign do
     end
 
     it "rejects a campaign whose base is not active" do
-      campaign.mission_base.update!(base_status: :pending)
+      campaign.ngo.update!(ngo_status: :pending)
 
       expect(campaign.reload).not_to be_accepting_contributions
       expect(described_class.visible).not_to include(campaign)
     end
 
     it "returns false when its base is absent" do
-      expect(build(:campaign, mission_base: nil).accepting_contributions?).to be_nil
+      expect(build(:campaign, ngo: nil).accepting_contributions?).to be_nil
     end
   end
 
@@ -86,7 +86,7 @@ RSpec.describe Campaign do
     end
 
     it "rejects a less restrictive level when an existing campaign is changed" do
-      campaign.mission_base.update_column(:sensitivity_level, Sensitive::LEVELS.fetch(:confidential))
+      campaign.ngo.update_column(:sensitivity_level, Sensitive::LEVELS.fetch(:confidential))
       campaign.update_column(:sensitivity_level, Sensitive::LEVELS.fetch(:public))
 
       expect(campaign).not_to be_valid
@@ -94,8 +94,8 @@ RSpec.describe Campaign do
   end
 
   describe "visibility and aggregation" do
-    let(:aggregate_base) { create(:mission_base, :active) }
-    let(:aggregate_campaigns) { create_list(:campaign, 3, mission_base: aggregate_base) }
+    let(:aggregate_base) { create(:ngo, :active) }
+    let(:aggregate_campaigns) { create_list(:campaign, 3, ngo: aggregate_base) }
     let(:aggregate_total) do
       aggregate_campaigns.each_with_index { |record, index| record.update_column(:raised_cents, (index + 1) * 100) }
       described_class.aggregate_by_country
@@ -110,8 +110,8 @@ RSpec.describe Campaign do
     end
 
     it "does not aggregate fewer than the configured minimum" do
-      base = create(:mission_base, :active)
-      create_list(:campaign, 2, mission_base: base).each { |record| record.update_column(:raised_cents, 0) }
+      base = create(:ngo, :active)
+      create_list(:campaign, 2, ngo: base).each { |record| record.update_column(:raised_cents, 0) }
 
       expect(described_class.aggregate_by_country).to be_empty
       expect(described_class.aggregate_by_country(minimum_count: 2)).to eq(base.country_id => 0)
@@ -120,15 +120,15 @@ RSpec.describe Campaign do
 
   describe "sensitivity" do
     it "inherits a confidential base and rejects an explicit open level" do
-      base = create(:mission_base, country: create(:country, high_risk: true), base_status: :active)
-      records = [build(:campaign, mission_base: base), build(:campaign, mission_base: base, sensitivity_level: :public)]
+      base = create(:ngo, country: create(:country, high_risk: true), ngo_status: :active)
+      records = [build(:campaign, ngo: base), build(:campaign, ngo: base, sensitivity_level: :public)]
 
       expect(records.map(&:valid?)).to eq([true, true])
       expect(records).to all(be_confidential)
     end
 
     it "does not blow up when a level or base is absent" do
-      expect(build(:campaign, mission_base: nil)).not_to be_valid
+      expect(build(:campaign, ngo: nil)).not_to be_valid
       invalid = build(:campaign).tap { |record| record.sensitivity_level = "secret" }
       missing_level = build(:campaign, sensitivity_level: nil)
 

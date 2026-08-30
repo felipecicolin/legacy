@@ -6,19 +6,19 @@ RSpec.describe Membership do
   subject(:membership) { build(:membership) }
 
   it { is_expected.to belong_to(:profile) }
-  it { is_expected.to belong_to(:organization) }
+  it { is_expected.to belong_to(:ngo) }
 
   it "refuses a second membership for the same pair" do
     existing = create(:membership)
 
-    expect(build(:membership, profile: existing.profile, organization: existing.organization)).not_to be_valid
+    expect(build(:membership, profile: existing.profile, ngo: existing.ngo)).not_to be_valid
   end
 
   # A validação acima é ergonomia; quem garante a unicidade sob concorrência é
   # o índice, e por isso este exemplo passa por cima dela.
   it "lets the database refuse the duplicate pair" do
     existing = create(:membership)
-    duplicate = build(:membership, profile: existing.profile, organization: existing.organization)
+    duplicate = build(:membership, profile: existing.profile, ngo: existing.ngo)
 
     expect { duplicate.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
   end
@@ -42,30 +42,30 @@ RSpec.describe Membership do
       owner.role = :member
       owner.validate
 
-      expect(owner.errors.full_messages).to eq(["A organização precisa de pelo menos um proprietário."])
+      expect(owner.errors.full_messages).to eq(["A ONG precisa de pelo menos um proprietário."])
     end
 
     # `destroy_all` na associação instancia cada registro e chama `destroy!`, e
     # é por isso que a remoção em massa reprova em vez de passar por baixo.
-    # `delete_all` continua fora do alcance — ver docs/organizations.md.
+    # `delete_all` continua fora do alcance — ver docs/ngos.md.
     it "survives a mass removal" do
       owner = create(:membership, role: :owner)
 
-      expect { owner.organization.memberships.destroy_all }.to raise_error(ActiveRecord::RecordNotDestroyed)
+      expect { owner.ngo.memberships.destroy_all }.to raise_error(ActiveRecord::RecordNotDestroyed)
     end
 
     # Apagar a organização inteira é a exceção: a posse vai junto com a coisa
     # possuída, e recusar seria impedir de apagar a própria organização.
-    it "goes away with the organization" do
+    it "goes away with the ngo" do
       owner = create(:membership, role: :owner)
 
-      expect { owner.organization.destroy }.to change(described_class, :count).by(-1)
+      expect { owner.ngo.destroy }.to change(described_class, :count).by(-1)
     end
 
     # A cascata que vem de `Profile` também marca `destroyed_by_association`, e
     # tratá-la como isenta deixaria uma organização viva sem dono. Aqui a
     # recusa volta como `false` e desfaz a transação inteira — a mensagem fica
-    # no vínculo, não na pessoa; ver docs/organizations.md.
+    # no vínculo, não na pessoa; ver docs/ngos.md.
     it "keeps the person who holds it from being erased" do
       owner = create(:membership, role: :owner)
 
@@ -78,32 +78,32 @@ RSpec.describe Membership do
     # A asserção é pelo TIPO do erro, e não por `update` ter voltado `false`:
     # um `false` sozinho passaria igual se quem recusasse fosse outra validação
     # qualquer, e a guarda do owner tivesse parado de disparar em silêncio.
-    it "cannot be moved to another organization" do
+    it "cannot be moved to another ngo" do
       owner = create(:membership, role: :owner)
-      owner.organization = create(:organization)
+      owner.ngo = create(:ngo)
       owner.validate
 
       expect(owner.errors).to be_of_kind(:base, :last_owner)
     end
 
     # E a contagem tem de sair da organização de ORIGEM: saindo de
-    # `organization`, esta gravação contaria o owner do DESTINO e passaria,
+    # `ngo`, esta gravação contaria o owner do DESTINO e passaria,
     # deixando a de origem sem nenhum.
-    it "cannot be moved into an organization that has an owner of its own" do
+    it "cannot be moved into an ngo that has an owner of its own" do
       owner = create(:membership, role: :owner)
-      destination = create(:membership, role: :owner).organization
-      owner.attributes = { organization: destination, role: :member }
+      destination = create(:membership, role: :owner).ngo
+      owner.attributes = { ngo: destination, role: :member }
 
       expect(owner).not_to be_valid
     end
 
-    # Limpar `organization_id` num PATCH levantava `NoMethodError` no meio do
+    # Limpar `ngo_id` num PATCH levantava `NoMethodError` no meio do
     # request: a validação de presença do `belongs_to` registra o erro, mas não
     # interrompe as outras validações, e a guarda ia buscar `nil.memberships`.
-    it "turns a cleared organization into a form error" do
+    it "turns a cleared ngo into a form error" do
       owner = create(:membership, role: :owner)
 
-      expect(owner.update(organization: nil, role: :member)).to be(false)
+      expect(owner.update(ngo: nil, role: :member)).to be(false)
     end
 
     # Aceitar o convite é a gravação mais comum do vínculo, e não mexe em papel
@@ -118,21 +118,21 @@ RSpec.describe Membership do
   describe "an owner with company" do
     it "can be moved away" do
       owner = create(:membership, role: :owner)
-      create(:membership, role: :owner, organization: owner.organization)
+      create(:membership, role: :owner, ngo: owner.ngo)
 
-      expect(owner.update(organization: create(:organization))).to be(true)
+      expect(owner.update(ngo: create(:ngo))).to be(true)
     end
 
     it "can be removed" do
       owner = create(:membership, role: :owner)
-      create(:membership, role: :owner, organization: owner.organization)
+      create(:membership, role: :owner, ngo: owner.ngo)
 
       expect { owner.destroy! }.to change(described_class, :count).by(-1)
     end
 
     it "can be demoted" do
       owner = create(:membership, role: :owner)
-      create(:membership, role: :owner, organization: owner.organization)
+      create(:membership, role: :owner, ngo: owner.ngo)
       owner.update!(role: :member)
 
       expect(owner).to be_member
@@ -174,9 +174,9 @@ RSpec.describe Membership do
     # depende de a tabela estar vazia, que é estado global entre exemplos.
     it "is listed apart from the accepted ones" do
       invited = create(:membership)
-      create(:membership, :accepted, organization: invited.organization)
+      create(:membership, :accepted, ngo: invited.ngo)
 
-      expect(invited.organization.memberships.pending).to contain_exactly(invited)
+      expect(invited.ngo.memberships.pending).to contain_exactly(invited)
     end
   end
 
@@ -191,9 +191,9 @@ RSpec.describe Membership do
 
     it "is listed apart from the pending ones" do
       joined = create(:membership, :accepted)
-      create(:membership, organization: joined.organization)
+      create(:membership, ngo: joined.ngo)
 
-      expect(joined.organization.memberships.accepted).to contain_exactly(joined)
+      expect(joined.ngo.memberships.accepted).to contain_exactly(joined)
     end
   end
 

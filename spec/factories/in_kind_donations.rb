@@ -2,7 +2,7 @@
 
 FactoryBot.define do
   factory :in_kind_donation do
-    donor { association :organization }
+    donor { association :ngo }
     category { :material }
     sequence(:title) { |n| "Material doado #{n}" }
     quantity { 1 }

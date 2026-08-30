@@ -157,6 +157,6 @@ antes da FK deixaria o banco em desacordo com o gate de consistência.
 
 Foi o que aconteceu com `memberships` / `organizations`: elas chegaram com a
 #20, junto com o `Membership` do outro lado. Ver
-[Organizações e vínculos](organizations.md) — inclusive para o que a cascata
+[ONGs e vínculos](ngos.md) — inclusive para o que a cascata
 `dependent: :destroy` daqui faz quando a pessoa é a última dona de uma
 organização.

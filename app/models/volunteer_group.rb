@@ -4,7 +4,7 @@
 # É o quarto modelo de voluntariado do material institucional, e o único que
 # não é uma pessoa. Ver docs/mobilization.md.
 class VolunteerGroup < ApplicationRecord
-  belongs_to :organization
+  belongs_to :ngo
   belongs_to :coordinator, class_name: "Profile", inverse_of: :coordinated_volunteer_groups
   has_many :volunteer_engagements, dependent: :restrict_with_error
   has_many :candidacies, dependent: :destroy

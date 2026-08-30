@@ -11,7 +11,7 @@ class Campaign < ApplicationRecord
   MINIMUM_AGGREGATE_COUNT = 3
   SLUG_SUFFIX_BYTES = 3
 
-  belongs_to :mission_base
+  belongs_to :ngo
   belongs_to :project, optional: true
   has_many :contributions, dependent: :restrict_with_error
   has_many :subscriptions, dependent: :nullify
@@ -23,7 +23,7 @@ class Campaign < ApplicationRecord
 
   enum :status, STATUSES, validate: true
 
-  scope :visible, -> { active.joins(:mission_base).merge(MissionBase.visible) }
+  scope :visible, -> { active.joins(:ngo).merge(Ngo.visible) }
   scope :visible_to, ->(context) { visible.where(sensitivity_level: context.allowed_levels) }
   scope :hidden_from, ->(context) { where.not(id: visible_to(context).select(:id)) }
 
@@ -64,11 +64,11 @@ class Campaign < ApplicationRecord
   end
 
   def accepting_contributions?
-    (active? || reached?) && mission_base&.base_status_active?
+    (active? || reached?) && ngo&.ngo_status_active?
   end
 
   def self.aggregate_by_country(minimum_count: MINIMUM_AGGREGATE_COUNT)
-    for_aggregate.group("mission_bases.country_id")
+    for_aggregate.group("ngos.country_id")
                  .having("COUNT(campaigns.id) >= ?", minimum_count).sum(:raised_cents)
   end
 

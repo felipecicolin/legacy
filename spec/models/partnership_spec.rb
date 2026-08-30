@@ -3,8 +3,8 @@
 require "rails_helper"
 
 RSpec.describe Partnership do
-  let(:organization) { create(:organization, organization_status: :approved) }
-  let(:partnership) { create(:partnership, organization:) }
+  let(:ngo) { create(:ngo, ngo_status: :active) }
+  let(:partnership) { create(:partnership, ngo:) }
 
   it "publishes active current partnerships" do
     expect(described_class.publicly_visible).to include(partnership)
@@ -20,13 +20,13 @@ RSpec.describe Partnership do
     expect(described_class.publicly_visible).not_to include(partnership)
   end
 
-  it "hides brands for pending organizations" do
+  it "hides brands for pending ngos" do
     expect(described_class.visible_to(Visibility::Context.anonymous)).not_to include(create(:partnership))
   end
 
   it "keeps cash and in-kind totals separate" do
-    create(:contribution, :confirmed, contributor: organization, provider_reference: "SIM-partner")
-    create(:in_kind_donation, donor: organization, status: :accepted, estimated_value_cents: 3_000)
+    create(:contribution, :confirmed, contributor: ngo, provider_reference: "SIM-partner")
+    create(:in_kind_donation, donor: ngo, status: :accepted, estimated_value_cents: 3_000)
 
     expect(partnership.consolidated_totals).to eq(cash_cents: 25_000, in_kind_cents: 3_000)
   end
@@ -40,17 +40,15 @@ RSpec.describe Partnership do
   end
 
   it "inherits confidential sensitivity from a high-risk country" do
-    organization.mission_bases.create!(country: create(:country, high_risk: true), name: "Base de risco",
-                                       base_kind: :mission_base)
-    partnership = build(:partnership, organization:, sensitivity_level: :public)
+    ngo.update!(country: create(:country, high_risk: true))
+    partnership = build(:partnership, ngo:, sensitivity_level: :public)
 
     expect(partnership.valid? && partnership.confidential?).to be(true)
   end
 
   it "rejects a less restrictive level when an existing partnership is changed" do
-    organization.mission_bases.create!(country: create(:country, high_risk: true), name: "Base de risco",
-                                       base_kind: :mission_base)
-    partnership = create(:partnership, organization:)
+    ngo.update!(country: create(:country, high_risk: true))
+    partnership = create(:partnership, ngo:)
     partnership.update_column(:sensitivity_level, Sensitive::LEVELS.fetch(:public))
 
     expect(partnership).not_to be_valid
@@ -62,9 +60,9 @@ RSpec.describe Partnership do
     expect(partnership.send(:sensitivity_rank)).to be_nil
   end
 
-  it "rejects invalid dates and absent organizations" do
+  it "rejects invalid dates and absent ngos" do
     invalid = build(:partnership, starts_on: Date.current, ends_on: Date.current - 1.day)
-    missing = build(:partnership, organization: nil)
+    missing = build(:partnership, ngo: nil)
 
     expect([invalid, missing].map(&:valid?)).to eq([false, false])
   end

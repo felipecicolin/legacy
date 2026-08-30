@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_30_190000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_30_200000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -100,7 +100,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_190000) do
     t.string "currency", limit: 3, default: "BRL", null: false
     t.date "ends_on"
     t.bigint "goal_cents", null: false
-    t.bigint "mission_base_id", null: false
+    t.bigint "ngo_id", null: false
     t.bigint "project_id"
     t.bigint "raised_cents", default: 0, null: false
     t.integer "sensitivity_level", default: 1, null: false
@@ -109,7 +109,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_190000) do
     t.integer "status", default: 0, null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false
-    t.index ["mission_base_id", "status"], name: "index_campaigns_on_mission_base_id_and_status"
+    t.index ["ngo_id", "status"], name: "index_campaigns_on_ngo_id_and_status"
     t.index ["project_id", "status"], name: "index_campaigns_on_project_id_and_status"
     t.index ["slug"], name: "index_campaigns_on_slug", unique: true
     t.check_constraint "goal_cents > 0", name: "campaigns_goal_positive"
@@ -202,12 +202,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_190000) do
     t.string "currency", limit: 3, default: "BRL", null: false
     t.date "departs_on", null: false
     t.integer "deployment_status", default: 0, null: false
-    t.bigint "mission_base_id", null: false
     t.string "name", null: false
+    t.bigint "ngo_id", null: false
     t.bigint "project_id"
     t.date "returns_on", null: false
     t.datetime "updated_at", null: false
-    t.index ["mission_base_id", "deployment_status"], name: "index_deployments_on_mission_base_id_and_deployment_status"
+    t.index ["ngo_id", "deployment_status"], name: "index_deployments_on_ngo_id_and_deployment_status"
     t.index ["project_id"], name: "index_deployments_on_project_id"
     t.check_constraint "capacity IS NULL OR capacity > 0", name: "deployments_capacity_is_positive"
     t.check_constraint "cost_per_person_cents IS NULL OR cost_per_person_cents >= 0", name: "deployments_cost_not_negative"
@@ -298,37 +298,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_190000) do
   create_table "memberships", force: :cascade do |t|
     t.datetime "accepted_at"
     t.datetime "created_at", null: false
-    t.bigint "organization_id", null: false
+    t.bigint "ngo_id", null: false
     t.bigint "profile_id", null: false
     t.integer "role", null: false
     t.datetime "updated_at", null: false
-    t.index ["organization_id", "role"], name: "index_memberships_on_organization_id_and_role"
-    t.index ["profile_id", "organization_id"], name: "index_memberships_on_profile_id_and_organization_id", unique: true
-  end
-
-  create_table "mission_bases", force: :cascade do |t|
-    t.string "address"
-    t.integer "base_kind", null: false
-    t.integer "base_status", default: 0, null: false
-    t.bigint "country_id", null: false
-    t.datetime "created_at", null: false
-    t.date "established_on"
-    t.decimal "latitude", precision: 9, scale: 6
-    t.decimal "longitude", precision: 9, scale: 6
-    t.string "name", null: false
-    t.bigint "organization_id"
-    t.integer "people_served"
-    t.bigint "region_id"
-    t.integer "sensitivity_level", default: 1, null: false
-    t.string "slug", null: false
-    t.datetime "updated_at", null: false
-    t.index ["country_id", "base_status"], name: "index_mission_bases_on_country_id_and_base_status"
-    t.index ["organization_id"], name: "index_mission_bases_on_organization_id"
-    t.index ["region_id"], name: "index_mission_bases_on_region_id"
-    t.index ["sensitivity_level"], name: "index_mission_bases_on_sensitivity_level"
-    t.index ["slug"], name: "index_mission_bases_on_slug", unique: true
-    t.check_constraint "people_served IS NULL OR people_served >= 0", name: "mission_bases_people_served_not_negative"
-    t.check_constraint "sensitivity_level <> 2 OR NULLIF(btrim(address::text), ''::text) IS NULL AND NULLIF(btrim(latitude::text), ''::text) IS NULL AND NULLIF(btrim(longitude::text), ''::text) IS NULL", name: "mission_bases_confidential_has_no_location"
+    t.index ["ngo_id", "role"], name: "index_memberships_on_ngo_id_and_role"
+    t.index ["profile_id", "ngo_id"], name: "index_memberships_on_profile_id_and_ngo_id", unique: true
   end
 
   create_table "need_fulfillments", force: :cascade do |t|
@@ -349,10 +324,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_190000) do
     t.string "currency", limit: 3, default: "BRL", null: false
     t.bigint "estimated_value_cents"
     t.integer "fulfilled_quantity", default: 0, null: false
-    t.bigint "mission_base_id", null: false
     t.integer "need_kind", null: false
     t.integer "need_status", default: 0, null: false
     t.date "needed_by"
+    t.bigint "ngo_id", null: false
     t.bigint "project_id"
     t.integer "quantity", default: 1, null: false
     t.boolean "requires_professional_registration", default: false, null: false
@@ -361,8 +336,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_190000) do
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.integer "urgency", default: 1, null: false
-    t.index ["mission_base_id", "need_status"], name: "index_needs_on_mission_base_id_and_need_status"
     t.index ["need_kind", "need_status", "urgency"], name: "index_needs_on_need_kind_and_need_status_and_urgency"
+    t.index ["ngo_id", "need_status"], name: "index_needs_on_ngo_id_and_need_status"
     t.index ["project_id", "need_status"], name: "index_needs_on_project_id_and_need_status"
     t.index ["skill_id"], name: "index_needs_on_skill_id"
     t.check_constraint "estimated_value_cents IS NULL OR estimated_value_cents >= 0", name: "needs_estimated_value_not_negative"
@@ -370,24 +345,37 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_190000) do
     t.check_constraint "quantity > 0", name: "needs_quantity_is_positive"
   end
 
-  create_table "organizations", force: :cascade do |t|
+  create_table "ngos", force: :cascade do |t|
+    t.string "address"
+    t.bigint "country_id"
     t.datetime "created_at", null: false
+    t.date "established_on"
+    t.decimal "latitude", precision: 9, scale: 6
     t.string "legal_document"
+    t.decimal "longitude", precision: 9, scale: 6
     t.string "name", null: false
-    t.integer "organization_kind", null: false
-    t.integer "organization_status", default: 0, null: false
+    t.integer "ngo_kind", null: false
+    t.integer "ngo_status", default: 0, null: false
+    t.integer "people_served"
+    t.bigint "region_id"
+    t.integer "sensitivity_level", default: 1, null: false
     t.string "slug", null: false
     t.datetime "updated_at", null: false
     t.string "website"
-    t.index ["organization_kind", "organization_status"], name: "idx_on_organization_kind_organization_status_29282c9012"
-    t.index ["slug"], name: "index_organizations_on_slug", unique: true
+    t.index ["country_id", "ngo_status"], name: "index_ngos_on_country_id_and_ngo_status"
+    t.index ["ngo_kind", "ngo_status"], name: "index_ngos_on_ngo_kind_and_ngo_status"
+    t.index ["region_id"], name: "index_ngos_on_region_id"
+    t.index ["sensitivity_level"], name: "index_ngos_on_sensitivity_level"
+    t.index ["slug"], name: "index_ngos_on_slug", unique: true
+    t.check_constraint "people_served IS NULL OR people_served >= 0", name: "ngos_people_served_not_negative"
+    t.check_constraint "sensitivity_level <> 2 OR NULLIF(btrim(address::text), ''::text) IS NULL AND NULLIF(btrim(latitude::text), ''::text) IS NULL AND NULLIF(btrim(longitude::text), ''::text) IS NULL", name: "ngos_confidential_has_no_location"
   end
 
   create_table "partnerships", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.date "ends_on"
     t.integer "kind", null: false
-    t.bigint "organization_id", null: false
+    t.bigint "ngo_id", null: false
     t.bigint "owner_id"
     t.integer "sensitivity_level", default: 1, null: false
     t.date "starts_on", null: false
@@ -395,7 +383,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_190000) do
     t.integer "tier", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["kind", "tier", "status"], name: "index_partnerships_on_kind_and_tier_and_status"
-    t.index ["organization_id", "status"], name: "index_partnerships_on_organization_id_and_status"
+    t.index ["ngo_id", "status"], name: "index_partnerships_on_ngo_id_and_status"
     t.index ["owner_id"], name: "index_partnerships_on_owner_id"
     t.check_constraint "sensitivity_level >= 0 AND sensitivity_level <= 2", name: "partnerships_sensitivity_level_valid"
   end
@@ -496,7 +484,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_190000) do
     t.datetime "created_at", null: false
     t.string "currency", limit: 3, default: "BRL", null: false
     t.bigint "funding_target_cents", default: 0, null: false
-    t.bigint "mission_base_id", null: false
+    t.bigint "ngo_id", null: false
     t.integer "physical_progress", default: 0, null: false
     t.date "planned_end_on"
     t.date "planned_start_on"
@@ -505,7 +493,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_190000) do
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.index ["code"], name: "index_projects_on_code", unique: true
-    t.index ["mission_base_id", "status"], name: "index_projects_on_mission_base_id_and_status"
+    t.index ["ngo_id", "status"], name: "index_projects_on_ngo_id_and_status"
     t.index ["status", "sensitivity_level"], name: "index_projects_on_status_and_sensitivity_level"
     t.check_constraint "funding_target_cents >= 0", name: "projects_funding_target_not_negative"
     t.check_constraint "physical_progress >= 0 AND physical_progress <= 100", name: "projects_physical_progress_within_range"
@@ -824,14 +812,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_190000) do
     t.integer "engagement_area", null: false
     t.integer "engagement_model", null: false
     t.integer "engagement_status", default: 0, null: false
-    t.bigint "organization_id"
+    t.bigint "ngo_id"
     t.bigint "profile_id", null: false
     t.date "started_on", null: false
     t.datetime "updated_at", null: false
     t.bigint "volunteer_group_id"
     t.integer "weekly_hours"
     t.index ["engagement_model", "engagement_area", "engagement_status"], name: "idx_on_engagement_model_engagement_area_engagement__c56218c508"
-    t.index ["organization_id"], name: "index_volunteer_engagements_on_organization_id"
+    t.index ["ngo_id"], name: "index_volunteer_engagements_on_ngo_id"
     t.index ["profile_id", "engagement_status"], name: "idx_on_profile_id_engagement_status_8c05c156e4"
     t.index ["volunteer_group_id"], name: "index_volunteer_engagements_on_volunteer_group_id"
     t.check_constraint "ended_on IS NULL OR ended_on >= started_on", name: "volunteer_engagements_end_after_it_starts"
@@ -846,10 +834,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_190000) do
     t.integer "expected_size"
     t.integer "group_status", default: 0, null: false
     t.string "name", null: false
-    t.bigint "organization_id", null: false
+    t.bigint "ngo_id", null: false
     t.datetime "updated_at", null: false
     t.index ["coordinator_id"], name: "index_volunteer_groups_on_coordinator_id"
-    t.index ["organization_id", "group_status"], name: "index_volunteer_groups_on_organization_id_and_group_status"
+    t.index ["ngo_id", "group_status"], name: "index_volunteer_groups_on_ngo_id_and_group_status"
     t.check_constraint "available_until IS NULL OR available_from IS NULL OR available_until >= available_from", name: "volunteer_groups_window_ends_after_it_starts"
     t.check_constraint "expected_size IS NULL OR expected_size > 0", name: "volunteer_groups_expected_size_is_positive"
   end
@@ -860,7 +848,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_190000) do
   add_foreign_key "assignments", "needs"
   add_foreign_key "budget_lines", "budgets"
   add_foreign_key "budgets", "projects"
-  add_foreign_key "campaigns", "mission_bases"
+  add_foreign_key "campaigns", "ngos"
   add_foreign_key "campaigns", "projects"
   add_foreign_key "candidacies", "needs"
   add_foreign_key "candidacies", "profiles"
@@ -871,7 +859,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_190000) do
   add_foreign_key "credentials", "profiles"
   add_foreign_key "deployment_members", "deployments"
   add_foreign_key "deployment_members", "profiles"
-  add_foreign_key "deployments", "mission_bases"
+  add_foreign_key "deployments", "ngos"
   add_foreign_key "deployments", "projects", on_delete: :nullify
   add_foreign_key "event_registrations", "contributions", on_delete: :nullify
   add_foreign_key "event_registrations", "events"
@@ -882,16 +870,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_190000) do
   add_foreign_key "expenses", "profiles", column: "recorded_by_id"
   add_foreign_key "expenses", "projects"
   add_foreign_key "in_kind_donations", "campaigns", on_delete: :nullify
-  add_foreign_key "memberships", "organizations"
+  add_foreign_key "memberships", "ngos"
   add_foreign_key "memberships", "profiles"
-  add_foreign_key "mission_bases", "countries"
-  add_foreign_key "mission_bases", "organizations", on_delete: :nullify
-  add_foreign_key "mission_bases", "regions"
   add_foreign_key "need_fulfillments", "needs"
-  add_foreign_key "needs", "mission_bases"
+  add_foreign_key "needs", "ngos"
   add_foreign_key "needs", "projects"
   add_foreign_key "needs", "skills"
-  add_foreign_key "partnerships", "organizations"
+  add_foreign_key "ngos", "countries"
+  add_foreign_key "ngos", "regions"
+  add_foreign_key "partnerships", "ngos"
   add_foreign_key "partnerships", "profiles", column: "owner_id", on_delete: :nullify
   add_foreign_key "profile_skills", "profiles"
   add_foreign_key "profile_skills", "skills"
@@ -904,7 +891,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_190000) do
   add_foreign_key "project_photos", "profiles", column: "taken_by_id", on_delete: :nullify
   add_foreign_key "project_photos", "progress_reports", on_delete: :nullify
   add_foreign_key "project_photos", "projects"
-  add_foreign_key "projects", "mission_bases"
+  add_foreign_key "projects", "ngos"
   add_foreign_key "receipts", "contributions"
   add_foreign_key "regions", "countries"
   add_foreign_key "sensitivity_changes", "users", column: "author_id"
@@ -923,9 +910,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_190000) do
   add_foreign_key "subscriber_benefits", "subscriptions"
   add_foreign_key "subscriptions", "campaigns", on_delete: :nullify
   add_foreign_key "subscriptions", "subscription_plans"
-  add_foreign_key "volunteer_engagements", "organizations", on_delete: :nullify
+  add_foreign_key "volunteer_engagements", "ngos", on_delete: :nullify
   add_foreign_key "volunteer_engagements", "profiles"
   add_foreign_key "volunteer_engagements", "volunteer_groups"
-  add_foreign_key "volunteer_groups", "organizations"
+  add_foreign_key "volunteer_groups", "ngos"
   add_foreign_key "volunteer_groups", "profiles", column: "coordinator_id"
 end

@@ -14,7 +14,7 @@ RSpec.describe DevelopmentSeeds do
   def load_seeds = described_class.load_all!
 
   def bases_visible_at(clearance)
-    MissionBase.visible_to(Visibility::Context.new(clearance: clearance)).count
+    Ngo.visible_to(Visibility::Context.new(clearance: clearance)).count
   end
 
   # Idempotência não é conveniência: o seed roda de novo toda vez que alguém
@@ -22,7 +22,7 @@ RSpec.describe DevelopmentSeeds do
   # violação de índice único.
   it "loads twice without duplicating anything" do
     load_seeds
-    counts = -> { [MissionBase.count, Project.count, ProjectParticipation.count, Need.count] }
+    counts = -> { [Ngo.count, Project.count, ProjectParticipation.count, Need.count] }
     first = counts.call
 
     load_seeds

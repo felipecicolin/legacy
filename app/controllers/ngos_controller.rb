@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class MissionBasesController < ApplicationController
+class NgosController < ApplicationController
   allow_unauthenticated_access
 
   def index
@@ -16,15 +16,15 @@ class MissionBasesController < ApplicationController
   # locais estritos, e o que ela não recebe não está lá para ser lido por
   # engano — que é o que uma ivar esquecida vira: `nil` em silêncio.
   def show
-    mission_base = policy_scope(MissionBase).find_by!(slug: params.expect(:id))
-    authorize mission_base
+    ngo = policy_scope(Ngo).find_by!(slug: params.expect(:id))
+    authorize ngo
 
-    render :show, locals: { mission_base: mission_base, presenter: presenter_for(mission_base) }
+    render :show, locals: { ngo: ngo, presenter: presenter_for(ngo) }
   end
 
   private
 
-  def presenter_for(mission_base)
-    MissionBasePresenter.new(mission_base, pundit_user.visibility)
+  def presenter_for(ngo)
+    NgoPresenter.new(ngo, pundit_user.visibility)
   end
 end

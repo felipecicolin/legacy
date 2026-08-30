@@ -2,7 +2,7 @@
 
 FactoryBot.define do
   factory :campaign do
-    mission_base { association :mission_base, :active }
+    ngo { association :ngo, :active }
     sequence(:title) { |n| "Campanha da base #{n}" }
     goal_cents { 300_000 }
     starts_on { Date.current }
@@ -14,7 +14,7 @@ FactoryBot.define do
 
     trait :with_project do
       after(:build) do |campaign|
-        campaign.project = build(:project, mission_base: campaign.mission_base)
+        campaign.project = build(:project, ngo: campaign.ngo)
       end
     end
   end

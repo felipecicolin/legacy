@@ -9,7 +9,7 @@ A diferença não é retórica. "Que tipo de usuário" pede uma coluna em `users
 uma coluna em `users` obriga a escolher um papel por pessoa — o que o domínio
 não permite. A mesma pessoa é dona de uma igreja, representante de uma empresa
 e voluntária numa obra, ao mesmo tempo. Ver
-[Identidade](identity.md) e [Organizações](organizations.md).
+[Identidade](identity.md) e [ONGs](ngos.md).
 
 ## Onde cada papel mora
 

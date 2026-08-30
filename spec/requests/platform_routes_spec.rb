@@ -13,8 +13,8 @@ RSpec.describe "Platform routes" do
     expect(Rails.application.routes.recognize_path("/obras/OB-0247", method: :get)).to eq(
       controller: "projects", action: "show", code: "OB-0247",
     )
-    expect(Rails.application.routes.recognize_path("/bases", method: :get)).to eq(
-      controller: "mission_bases", action: "index",
+    expect(Rails.application.routes.recognize_path("/ongs", method: :get)).to eq(
+      controller: "ngos", action: "index",
     )
     expect(Rails.application.routes.recognize_path("/campanhas", method: :get)).to eq(
       controller: "campaigns", action: "index",
@@ -47,7 +47,7 @@ RSpec.describe "Platform routes" do
     sign_in(user)
 
     requests = [
-      [:get, "/bases"],
+      [:get, "/ongs"],
       [:get, "/bases/1"],
       [:get, "/bases/1/needs"],
       [:get, "/obras"],
