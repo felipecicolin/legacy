@@ -19,8 +19,9 @@ RSpec.describe "Investor view screen" do
     click_on I18n.t("sessions.new.submit")
     # `click_on` volta antes de a navegação terminar. Sem esperar o redirect, o
     # `visit` seguinte corre sem sessão — e o exemplo de viewport passa medindo
-    # a tela de login, que é pior do que falhar.
-    expect(page).to have_current_path(root_path, wait: 5)
+    # a tela de login, que é pior do que falhar. O destino é a dash: a raiz
+    # despacha em vez de renderizar.
+    expect(page).to have_current_path(investor_path, wait: 5)
   end
 
   before do
