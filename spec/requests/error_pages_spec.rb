@@ -14,13 +14,18 @@ RSpec.describe "Error pages" do
     Rails.application.env_config["action_dispatch.show_detailed_exceptions"] = original_detailed
   end
 
+  # A gaveta do `AppShellComponent`, e não o que quer que o layout carregue no
+  # momento: ela é a assinatura DESTE layout. A tarja de dado simulado, que
+  # ocupava este lugar até ser removida, vivia nos dois — provava que havia um
+  # layout, não qual. Página de erro é servida sem sessão, como a tela de
+  # acesso, e é justamente por isso que a distinção importa aqui.
   it "renders every error page through the application layout" do
     %i[error_not_found error_forbidden error_unprocessable_entity error_internal_server_error].each do |route|
       get public_send("#{route}_path")
 
       status = route == :error_unprocessable_entity ? 422 : route.to_s.delete_prefix("error_").to_sym
       expect(response).to have_http_status(status)
-      expect(response.body).to include("data-simulated=\"true\"")
+      expect(response.body).to include("app-shell-drawer")
       expect(response.body).to include("Voltar ao início")
     end
   end
