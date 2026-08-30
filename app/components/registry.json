@@ -93,7 +93,7 @@
           "kind": "key"
         },
         {
-          "name": "options",
+          "name": "html_options",
           "kind": "keyrest"
         }
       ],
@@ -114,7 +114,7 @@
       "examples": [
         {
           "name": "playground",
-          "source": "  def playground(variant: \"default\")\n    render(CardComponent.new(variant: variant)) do |card|\n      card.with_header { \"Resumo da obra\" }\n      \"O conteúdo do cartão respeita os tokens do design system.\"\n    end\n  end"
+          "source": "  def playground(variant: \"default\")\n    render(CardComponent.new(variant: variant)) do |card|\n      card.with_header { \"Resumo da obra\" }\n      \"O conteúdo do cartão respeita os tokens do design system.\"\n    end\n  end\nend"
         }
       ]
     },

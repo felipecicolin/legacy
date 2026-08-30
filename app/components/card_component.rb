@@ -6,10 +6,10 @@ class CardComponent < ApplicationComponent
   renders_one :header
   renders_one :footer
 
-  def initialize(variant: "default", **options)
+  def initialize(variant: "default", **html_options)
     validate_inclusion!(:variant, variant, VARIANTS)
     @variant = variant
-    super(**options)
+    super(**html_options)
   end
 
   def computed_classes

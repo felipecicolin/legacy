@@ -3,26 +3,34 @@
 require "rails_helper"
 
 RSpec.describe CardComponent, type: :component do
+  def render_card_with(header: nil, footer: nil)
+    render_inline(described_class.new) do |card|
+      card.with_header { header } if header
+      card.with_footer { footer } if footer
+      "Conteúdo"
+    end
+  end
+
   describe "variants" do
     it "renders the default variant" do
       render_inline(described_class.new) { "Conteúdo" }
 
       expect(page).to have_css("div.bg-card.border.border-border.rounded-lg")
-      expect(page).not_to have_css("div.shadow-sm")
+      expect(page).to have_no_css("div.shadow-sm")
     end
 
     it "renders the elevated variant" do
       render_inline(described_class.new(variant: "elevated")) { "Conteúdo" }
 
       expect(page).to have_css("div.bg-card.shadow-sm.rounded-lg")
-      expect(page).not_to have_css("div.border-border")
+      expect(page).to have_no_css("div.border-border")
     end
 
     it "renders the outlined variant" do
       render_inline(described_class.new(variant: "outlined")) { "Conteúdo" }
 
       expect(page).to have_css("div.bg-transparent.border.border-border.rounded-lg")
-      expect(page).not_to have_css("div.bg-card")
+      expect(page).to have_no_css("div.bg-card")
     end
   end
 
@@ -34,36 +42,26 @@ RSpec.describe CardComponent, type: :component do
   it "renders without a header or footer" do
     render_inline(described_class.new) { "Conteúdo" }
 
-    expect(page).not_to have_css("header")
-    expect(page).not_to have_css("footer")
+    expect(page).to have_no_css("header")
+    expect(page).to have_no_css("footer")
   end
 
   it "renders a header without a footer" do
-    render_inline(described_class.new) do |card|
-      card.with_header { "Cabeçalho" }
-      "Conteúdo"
-    end
+    render_card_with(header: "Cabeçalho")
 
     expect(page).to have_css("header", text: "Cabeçalho")
-    expect(page).not_to have_css("footer")
+    expect(page).to have_no_css("footer")
   end
 
   it "renders a footer without a header" do
-    render_inline(described_class.new) do |card|
-      card.with_footer { "Rodapé" }
-      "Conteúdo"
-    end
+    render_card_with(footer: "Rodapé")
 
-    expect(page).not_to have_css("header")
+    expect(page).to have_no_css("header")
     expect(page).to have_css("footer", text: "Rodapé")
   end
 
   it "renders both slots" do
-    render_inline(described_class.new) do |card|
-      card.with_header { "Cabeçalho" }
-      card.with_footer { "Rodapé" }
-      "Conteúdo"
-    end
+    render_card_with(header: "Cabeçalho", footer: "Rodapé")
 
     expect(page).to have_css("header", text: "Cabeçalho")
     expect(page).to have_css("footer", text: "Rodapé")

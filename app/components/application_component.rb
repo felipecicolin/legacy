@@ -6,6 +6,7 @@ class ApplicationComponent < ViewComponent::Base
   attr_reader :html_options
 
   def initialize(**html_options)
+    super()
     @html_options = html_options
   end
 
