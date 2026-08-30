@@ -80,7 +80,7 @@ RSpec.describe DevelopmentSeeds do
     it "records each one once, however many times it runs" do
       first_run
 
-      expect { load_seeds }.not_to(change { SensitivityChange.count })
+      expect { load_seeds }.not_to change(SensitivityChange, :count)
     end
   end
 end
