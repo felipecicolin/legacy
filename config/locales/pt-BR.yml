@@ -217,9 +217,7 @@ pt-BR:
   layouts:
     application:
       nav:
-        campaigns: Campanhas
         investor: Investimentos
-        ngos: ONGs
         search: Buscar
         team: Obras
       sign_out: Sair

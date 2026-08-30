@@ -30,18 +30,9 @@
             <%= render IconComponent.new(name: "hard-hat", size: :md) %>
             <span><%= t("layouts.application.nav.team") %></span>
           <% end %>
-          <%# Destinos ainda não construídos mantêm a forma da coluna, mas
-              apontam para lugar nenhum até que suas telas existam. %>
-          <%= render ButtonComponent.new(variant: :ghost, size: :md, href: "#",
-                                         classes: "w-full justify-start gap-3 text-base text-accent-foreground/75") do %>
-            <%= render IconComponent.new(name: "building", size: :md) %>
-            <span><%= t("layouts.application.nav.ngos") %></span>
-          <% end %>
-          <%= render ButtonComponent.new(variant: :ghost, size: :md, href: "#",
-                                         classes: "w-full justify-start gap-3 text-base text-accent-foreground/75") do %>
-            <%= render IconComponent.new(name: "hand-heart", size: :md) %>
-            <span><%= t("layouts.application.nav.campaigns") %></span>
-          <% end %>
+          <%# Só destino que existe entra na coluna. Link que não leva a lugar
+              nenhum é pior que ausência: ele promete tela, cobra um clique e
+              devolve nada. Quando ONGs e Campanhas tiverem as suas, voltam. %>
           <% here = current_page?(search_path) %>
           <%= render ButtonComponent.new(variant: :ghost, size: :md, href: search_path,
                                          aria: { current: ("page" if here) },
