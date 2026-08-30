@@ -117,6 +117,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_140100) do
     t.index ["reference"], name: "index_payment_transactions_on_reference"
   end
 
+  create_table "profile_skills", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "profile_id", null: false
+    t.integer "proficiency", null: false
+    t.bigint "skill_id", null: false
+    t.datetime "updated_at", null: false
+    t.integer "years_of_experience"
+    t.index ["profile_id", "skill_id"], name: "index_profile_skills_on_profile_id_and_skill_id", unique: true
+    t.index ["skill_id"], name: "index_profile_skills_on_skill_id"
+  end
+
   create_table "profiles", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "display_name", null: false
@@ -159,6 +170,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_140100) do
     t.string "user_agent"
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_sessions_on_user_id"
+  end
+
+  create_table "skills", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "category", null: false
+    t.datetime "created_at", null: false
+    t.string "key", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["category", "position"], name: "index_skills_on_category_and_position"
+    t.index ["key"], name: "index_skills_on_key", unique: true
   end
 
   create_table "solid_cable_messages", force: :cascade do |t|
@@ -353,6 +375,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_140100) do
   add_foreign_key "credentials", "profiles"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "profiles"
+  add_foreign_key "profile_skills", "profiles"
+  add_foreign_key "profile_skills", "skills"
   add_foreign_key "profiles", "users"
   add_foreign_key "regions", "countries"
   add_foreign_key "sensitivity_changes", "users", column: "author_id"

@@ -17,8 +17,6 @@ RSpec.describe EnumTranslationAudit do
     end
   end
 
-  # O conjunto real ainda é vazio, então o guarda precisa provar que reprovaria.
-  #
   # O enum falso NÃO pode se chamar `status`: `statuses.draft` é o exemplo
   # canônico do docs/i18n.md, e o dia em que o primeiro modelo trouxer essa
   # chave para o locale o `I18n.exists?` passaria a devolver true e este
