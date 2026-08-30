@@ -300,6 +300,49 @@ pt-BR:
     member: Membro
     owner: Proprietário
     representative: Representante
+  searches:
+    countries:
+      title:
+        one: 1 país
+        other: "%{count} países"
+    empty:
+      no_match_description: Ajuste o termo ou limpe os filtros.
+      no_match_title: Nada corresponde a essa busca
+      nothing_yet_description: Assim que houver base e obra cadastradas, elas aparecem aqui.
+      nothing_yet_title: Ainda não há o que buscar
+    filters:
+      any: Qualquer
+      base_kind: Tipo de base
+      country: País
+      min_progress: Avanço mínimo
+      status: Situação da obra
+    mission_bases:
+      caption: Bases que correspondem à busca
+      country: País
+      kind: Tipo
+      name: Base
+      title:
+        one: 1 base
+        other: "%{count} bases"
+    projects:
+      base: Base
+      caption: Obras que correspondem à busca
+      code: Código
+      name: Obra
+      status: Situação
+      title:
+        one: 1 obra
+        other: "%{count} obras"
+    show:
+      subtitle: Obra, base ou país — os três na mesma caixa.
+      title: Buscar
+    view_toggle:
+      count:
+        one: 1 resultado
+        other: "%{count} resultados"
+        zero: Nenhum resultado
+      grid: Grade
+      table: Tabela
   sensitivity_levels:
     confidential: Confidencial
     public: Pública

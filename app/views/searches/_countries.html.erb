@@ -1,0 +1,15 @@
+<%# locals: (countries:, search:) %>
+<% if countries.any? %>
+  <section class="mt-8">
+    <h2 class="text-lg font-semibold text-foreground"><%= t(".title", count: countries.size) %></h2>
+    <%# País não leva a uma página de país: ele é um RECORTE. O link volta para
+        a própria busca com o filtro aplicado, que é o que a issue pede. %>
+    <div class="mt-3 flex flex-wrap gap-2">
+      <% countries.each do |country| %>
+        <%= render ButtonComponent.new(label: country.name, variant: :outline, size: :sm,
+                                       href: search_path(search.to_query.merge(country_id: country.id)),
+                                       data: { turbo_frame: "search_results" }) %>
+      <% end %>
+    </div>
+  </section>
+<% end %>

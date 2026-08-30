@@ -1,0 +1,12 @@
+<%# locals: (search:) %>
+<%# Os três casos do estado vazio são coisas diferentes, e tratá-los como um só
+    é o erro comum. O terceiro nunca é dito em voz alta: para quem não alcança
+    o registro, a resposta é IDÊNTICA à de "não existe" — buscar não pode virar
+    oráculo. Ver docs/search.md. %>
+<% if search.searching? || search.filtering? %>
+  <%= render EmptyStateComponent.new(icon: "search", title: t(".no_match_title"),
+                                     description: t(".no_match_description"), classes: "mt-6") %>
+<% else %>
+  <%= render EmptyStateComponent.new(icon: "clock", title: t(".nothing_yet_title"),
+                                     description: t(".nothing_yet_description"), classes: "mt-6") %>
+<% end %>

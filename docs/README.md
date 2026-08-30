@@ -40,6 +40,9 @@ acrescenta nada. Então:
 - [i18n](i18n.md) — o que a `rails-i18n` traduz e o que sobrou para nós, os
   formatos pt-BR e o raciocínio por trás de cada um, onde cada chave mora, a
   convenção de rótulo de enum e o guarda que a cobra.
+- [Busca](search.md) — por que três consultas em vez de uma `UNION`, por que
+  buscar não pode virar oráculo, por que o `unaccent` não tem índice, e os três
+  casos do estado vazio dos quais um não se diz.
 - [Mobilização — necessidade, voluntariado e envio](mobilization.md) — por que a
   necessidade tem duas chaves reais em vez de um polimorfismo, por que o
   voluntariado tem duas camadas e o que a fusão apagaria, e por que não há

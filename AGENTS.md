@@ -530,6 +530,19 @@ GPS dentro.
   `db/seeds/development/` só declara um módulo com `load!` — carregá-lo não
   pode gravar. Idempotente, determinístico, datas relativas a hoje.
 
+## Busca
+
+> O raciocínio: [`docs/search.md`](docs/search.md).
+
+- **Buscar não pode virar oráculo.** Resultado fora do alcance não aparece nem
+  tarjado, e a resposta é **idêntica** à de um termo que não casa nada. Vale
+  também para o filtro de país, que só oferece país com base alcançável.
+- **`unaccent()` na consulta, dos dois lados**, e **sem índice funcional**: o
+  embrulho imutável obrigatório não é dumpado no `schema.rb`, e o
+  `db:schema:load` morre. Mesma família da sequence de `Project#code`.
+- **O estado inteiro vive na query string**, e valor inválido é **ignorado**,
+  não recusado — a URL é escrita por gente.
+
 ## Mobilização — necessidade, voluntariado e envio
 
 > O raciocínio de cada decisão: [`docs/mobilization.md`](docs/mobilization.md).
