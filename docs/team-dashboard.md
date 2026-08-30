@@ -62,6 +62,20 @@ não `accent` de propósito: gasto contra orçamento é leitura de **atenção**
 não de conquista. 90% arrecadado é boa notícia; 90% do orçamento executado com
 40% de avanço físico não é.
 
+## A raiz despacha, não renderiza
+
+`HomeController` deixou de ter tela. Ela existia como andaime da autenticação —
+uma página que dizia "você está autenticado" porque, sem rota raiz, um login
+bem-sucedido levanta exceção. A **rota** continua sendo necessária pelo mesmo
+motivo; a página não.
+
+Agora ela decide: quem tem participação ativa numa obra vai para o painel da
+obra, o resto vai para o do investidor. É o critério de quem tem trabalho hoje.
+
+Não é ainda o alternador com padrão lembrado: guardar "a última usada" pede uma
+coluna de preferência que não existe. Quando ela existir, muda só este
+controller — nenhuma das duas dashes sabe que ele existe.
+
 ## O que ainda não está aqui
 
 O **fórum técnico da obra** — tópicos e mensagens, restritos a quem tem
