@@ -26,6 +26,10 @@ RSpec.describe Receipt do
     expect(first.simulated_mark).to eq("DADO SIMULADO — sem valor financeiro real")
   end
 
+  it "includes the simulated mark in the generated PDF" do
+    expect(first.pdf.download).to include(I18n.t("receipts.simulated_mark").b)
+  end
+
   it "does not add the simulated mark to a real receipt" do
     contribution = build(:contribution, :confirmed, simulated: false, provider_reference: "REAL-receipt")
     receipt = build(:receipt, contribution:)

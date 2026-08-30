@@ -29,6 +29,7 @@ Rails.application.routes.draw do
 
   namespace :admin do
     root to: "dashboard#show"
+    resource :fundraising, path: "arrecadacao", controller: "fundraising", only: :show
   end
 
   match "/404", to: "errors#not_found", via: :all, as: :error_not_found

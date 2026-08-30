@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_30_220000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_30_230100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -212,6 +212,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_220000) do
     t.check_constraint "capacity IS NULL OR capacity > 0", name: "deployments_capacity_is_positive"
     t.check_constraint "cost_per_person_cents IS NULL OR cost_per_person_cents >= 0", name: "deployments_cost_not_negative"
     t.check_constraint "returns_on >= departs_on", name: "deployments_returns_after_it_departs"
+  end
+
+  create_table "disbursements", force: :cascade do |t|
+    t.bigint "amount_cents", null: false
+    t.bigint "campaign_id"
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "BRL", null: false
+    t.string "description", null: false
+    t.date "executed_on"
+    t.bigint "ngo_id", null: false
+    t.string "reference", null: false
+    t.date "scheduled_on", null: false
+    t.integer "sensitivity_level", default: 1, null: false
+    t.boolean "simulated", default: true, null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["campaign_id"], name: "index_disbursements_on_campaign_id"
+    t.index ["ngo_id", "status"], name: "index_disbursements_on_ngo_id_and_status"
+    t.index ["reference"], name: "index_disbursements_on_reference", unique: true
+    t.index ["status", "scheduled_on"], name: "index_disbursements_on_status_and_scheduled_on"
+    t.check_constraint "amount_cents > 0", name: "disbursements_amount_positive"
+    t.check_constraint "sensitivity_level >= 0 AND sensitivity_level <= 2", name: "disbursements_sensitivity_level_valid"
   end
 
   create_table "event_registrations", force: :cascade do |t|
@@ -878,6 +900,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_220000) do
   add_foreign_key "deployment_members", "profiles"
   add_foreign_key "deployments", "ngos"
   add_foreign_key "deployments", "projects", on_delete: :nullify
+  add_foreign_key "disbursements", "campaigns", on_delete: :nullify
+  add_foreign_key "disbursements", "ngos"
   add_foreign_key "event_registrations", "contributions", on_delete: :nullify
   add_foreign_key "event_registrations", "events"
   add_foreign_key "event_registrations", "profiles"

@@ -54,7 +54,7 @@
             <div class="min-w-0">
               <dt class="text-sm font-medium text-muted-foreground"><%= label %></dt>
               <dd class="mt-1 font-semibold text-foreground tabular-nums">
-                <%= number_to_percentage(share_percentage(value, target), precision: 0) %>
+                <%= number_to_percentage(SharePercentage.call(value, target), precision: 0) %>
               </dd>
               <%# Só o absoluto: o percentual logo acima já diz a razão, e
                   repetir "de R$ Y" só produz truncamento. %>
@@ -63,7 +63,7 @@
               </dd>
               <dd class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 <span class="block h-full rounded-full <%= tone %>"
-                      style="width: <%= share_percentage(value, target) %>%"></span>
+                      style="width: <%= SharePercentage.call(value, target) %>%"></span>
               </dd>
             </div>
           <% end %>

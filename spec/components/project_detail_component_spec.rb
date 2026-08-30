@@ -3,9 +3,9 @@
 require "rails_helper"
 
 RSpec.describe ProjectDetailComponent, type: :component do
-  it "renders the six anchored sections with the project presenter" do
+  it "renders the three grouped tabs with the project presenter" do
     render_detail
-    expect_anchored_sections
+    expect_tab_structure
   end
 
   private
@@ -16,11 +16,14 @@ RSpec.describe ProjectDetailComponent, type: :component do
     render_inline(described_class.new(presenter:))
   end
 
-  def expect_anchored_sections
-    aggregate_failures do
-      expect(page).to have_css("h1", text: "Obra renderizada")
-      %w[progress phases team needs funding].each { |section| expect(page).to have_css("##{section}") }
-      expect(page).to have_css("#reports turbo-frame#project-reports")
-    end
+  def expect_tab_structure
+    expect(page).to have_css("h1", text: "Obra renderizada")
+    expect(page).to have_css("[role='tablist'] [role='tab']", count: 3)
+    expect_panels
+  end
+
+  def expect_panels
+    expect(page).to have_css("[role='tabpanel']", count: 3, visible: :all)
+    expect(page).to have_css("turbo-frame#project-reports", visible: :all)
   end
 end

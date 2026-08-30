@@ -13,12 +13,8 @@ pt-BR:
     total: 'Total orçado: %{value}'
   navigation:
     funding: Prestação de contas
-    needs: Necessidades
     people: Equipe e necessidades
-    phases: Etapas
     progress: Andamento
-    reports: Relatórios
-    team: Equipe
   needs:
     apply: Quero ajudar
     empty: Não há necessidades abertas neste momento.
@@ -26,7 +22,6 @@ pt-BR:
     title: Necessidades abertas
   phases:
     direct: 'Avanço direto registrado: %{value}.'
-    title: Etapas
     weight: Peso %{weight} · contribuição de %{contribution}
     weighted: 'Total ponderado: %{value}.'
   progress:

@@ -1,0 +1,70 @@
+---
+pt-BR:
+  benefits:
+    caption: Benefícios pendentes das assinaturas
+    due_on: Entrega prevista
+    kind: Benefício
+    status: Situação
+    title: Próximos benefícios
+  campaigns:
+    caption: Campanhas e seus valores em dinheiro e em espécie
+    cash: Em dinheiro
+    deadline: Prazo
+    goal: Meta em dinheiro
+    hidden: "%{count} campanhas confidenciais em agregado: %{cash} em dinheiro e %{in_kind} em espécie."
+    in_kind: Em espécie
+    name: Campanha
+    ngo: Base
+    progress: Percentual da meta
+    status: Situação
+    title: Campanhas
+  cash: Dinheiro
+  cash_total: Total em dinheiro
+  channels:
+    event_store: Eventos e loja
+    in_kind: Doações em espécie
+    one_off: Doações pontuais
+    recurring: Assinaturas recorrentes
+  channels_title: Entradas por canal
+  disbursements:
+    amount: Valor
+    caption: Repasses para as bases
+    description: Descrição
+    executed_on: Executado em
+    executed_total: Total executado
+    hidden: "%{count} repasses restritos em agregado: %{amount}."
+    ngo: Base
+    reference: Referência
+    scheduled_on: Agendado para
+    scheduled_total: Total agendado
+    status: Situação
+    title: Repasses
+  in_kind: Em espécie
+  in_kind_section:
+    caption: Doações de materiais e de inteligência
+    category: Categoria
+    expected: Entrega
+    intelligence: Inteligência e serviços
+    item: Doação
+    material: Materiais e equipamentos
+    status: Situação
+    title: Doações em espécie
+    value: Valor estimado
+  in_kind_total: Total em espécie
+  not_available: A definir
+  simulation_mark: DADOS SIMULADOS — sem valor financeiro real
+  simulation_short: Simulado
+  subscriptions:
+    amount: Valor do ciclo
+    caption: Assinaturas por situação
+    interval: Intervalo
+    monthly_revenue: Receita recorrente mensal
+    next_charge: Próxima cobrança
+    plan: Plano
+    status: Situação
+    title: Assinaturas
+  subtitle: De onde vem e para onde foi, com dinheiro e espécie em contabilidades separadas.
+  title: Painel de arrecadação
+  totals_title: Totais da arrecadação
+  trend:
+    title: Arrecadação por mês e canal

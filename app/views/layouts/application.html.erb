@@ -9,48 +9,83 @@
       <% if authenticated? %>
         <% shell.with_navigation do %>
           <%# Ícone MAIS rótulo, nunca só ícone: navegação sem texto custa
-              descoberta. E o item atual fica marcado — coluna sem estado ativo
-              é lista de links sem contexto. Os quatro últimos ainda não têm
-              destino, e a opacidade menor diz isso antes do clique. %>
-          <% [[:investor, investor_path, "wallet"], [:team, team_path, "hard-hat"],
-              [:ngos, "#", "building"], [:projects, "#", "blueprint"],
-              [:campaigns, "#", "hand-heart"], [:search, "#", "search"]].each do |key, path, icon| %>
-            <% here = path != "#" && current_page?(path) %>
-            <%= render ButtonComponent.new(
-                  variant: :ghost, size: :md, href: path,
-                  aria: { current: ("page" if here) },
-                  classes: class_names(
-                    "w-full justify-start gap-3 text-base text-accent-foreground hover:bg-accent-foreground/10",
-                    "bg-accent-foreground/15 font-semibold" => here,
-                    "text-accent-foreground/75" => path == "#",
-                  ),
-                ) do %>
-              <%= render IconComponent.new(name: icon, size: :md) %>
-              <span><%= t(key, scope: "layouts.application.nav") %></span>
-            <% end %>
+              descoberta. E o item atual fica marcado para dar contexto. %>
+          <% here = current_page?(investor_path) %>
+          <%= render ButtonComponent.new(variant: :ghost, size: :md, href: investor_path,
+                                         aria: { current: ("page" if here) },
+                                         classes: class_names(
+                                           "w-full justify-start gap-3 text-base text-accent-foreground hover:bg-accent-foreground/10",
+                                           "bg-accent-foreground/15 font-semibold" => here,
+                                         )) do %>
+            <%= render IconComponent.new(name: "wallet", size: :md) %>
+            <span><%= t("layouts.application.nav.investor") %></span>
+          <% end %>
+          <% here = current_page?(team_path) %>
+          <%= render ButtonComponent.new(variant: :ghost, size: :md, href: team_path,
+                                         aria: { current: ("page" if here) },
+                                         classes: class_names(
+                                           "w-full justify-start gap-3 text-base text-accent-foreground hover:bg-accent-foreground/10",
+                                           "bg-accent-foreground/15 font-semibold" => here,
+                                         )) do %>
+            <%= render IconComponent.new(name: "hard-hat", size: :md) %>
+            <span><%= t("layouts.application.nav.team") %></span>
+          <% end %>
+          <%# Destinos ainda não construídos mantêm a forma da coluna, mas
+              apontam para lugar nenhum até que suas telas existam. %>
+          <%= render ButtonComponent.new(variant: :ghost, size: :md, href: "#",
+                                         classes: "w-full justify-start gap-3 text-base text-accent-foreground/75") do %>
+            <%= render IconComponent.new(name: "building", size: :md) %>
+            <span><%= t("layouts.application.nav.ngos") %></span>
+          <% end %>
+          <%= render ButtonComponent.new(variant: :ghost, size: :md, href: "#",
+                                         classes: "w-full justify-start gap-3 text-base text-accent-foreground/75") do %>
+            <%= render IconComponent.new(name: "blueprint", size: :md) %>
+            <span><%= t("layouts.application.nav.projects") %></span>
+          <% end %>
+          <%= render ButtonComponent.new(variant: :ghost, size: :md, href: "#",
+                                         classes: "w-full justify-start gap-3 text-base text-accent-foreground/75") do %>
+            <%= render IconComponent.new(name: "hand-heart", size: :md) %>
+            <span><%= t("layouts.application.nav.campaigns") %></span>
+          <% end %>
+          <%= render ButtonComponent.new(variant: :ghost, size: :md, href: "#",
+                                         classes: "w-full justify-start gap-3 text-base text-accent-foreground/75") do %>
+            <%= render IconComponent.new(name: "search", size: :md) %>
+            <span><%= t("layouts.application.nav.search") %></span>
           <% end %>
         <% end %>
       <% end %>
-      <% if authenticated? && Current.user.profile %>
+      <% if authenticated? %>
         <% shell.with_footer do %>
-          <%# Nome, e-mail e sair na MESMA linha: `min-w-0` mais `truncate` é o
-              par que impede o e-mail longo de empurrar o botão para baixo. %>
-          <div class="flex items-center gap-2">
-            <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary
-                         text-sm font-semibold text-primary-foreground"
-                  aria-hidden="true"><%= Current.user.profile.display_name.first %></span>
-            <span class="min-w-0 flex-1">
-              <span class="block truncate font-medium"><%= Current.user.profile.display_name %></span>
-              <span class="block truncate text-sm opacity-80"><%= Current.user.email_address %></span>
-            </span>
-            <%= render ButtonComponent.new(variant: :ghost, size: :icon, href: session_path,
-                                           aria: { label: t("layouts.application.sign_out") },
-                                           classes: "shrink-0 text-accent-foreground hover:bg-accent-foreground/10",
-                                           data: { turbo_method: :delete }) do %>
-              <%= render IconComponent.new(name: "arrow-right", size: :md) %>
-              <span class="sr-only"><%= t("layouts.application.sign_out") %></span>
-            <% end %>
-          </div>
+          <% if Current.user.profile %>
+            <%# Nome, e-mail e sair na MESMA linha: `min-w-0` mais `truncate` é o
+                par que impede o e-mail longo de empurrar o botão para baixo. %>
+            <div class="flex items-center gap-2">
+              <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary
+                           text-sm font-semibold text-primary-foreground"
+                    aria-hidden="true"><%= Current.user.profile.display_name.first %></span>
+              <span class="min-w-0 flex-1">
+                <span class="block truncate font-medium"><%= Current.user.profile.display_name %></span>
+                <span class="block truncate text-sm opacity-80"><%= Current.user.email_address %></span>
+              </span>
+              <%= render ButtonComponent.new(variant: :ghost, size: :icon, href: session_path,
+                                             aria: { label: t("layouts.application.sign_out") },
+                                             classes: "shrink-0 text-accent-foreground hover:bg-accent-foreground/10",
+                                             data: { turbo_method: :delete }) do %>
+                <%= render IconComponent.new(name: "arrow-right", size: :md) %>
+                <span class="sr-only"><%= t("layouts.application.sign_out") %></span>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="flex justify-end">
+              <%= render ButtonComponent.new(variant: :ghost, size: :icon, href: session_path,
+                                             aria: { label: t("layouts.application.sign_out") },
+                                             classes: "shrink-0 text-accent-foreground hover:bg-accent-foreground/10",
+                                             data: { turbo_method: :delete }) do %>
+                <%= render IconComponent.new(name: "arrow-right", size: :md) %>
+                <span class="sr-only"><%= t("layouts.application.sign_out") %></span>
+              <% end %>
+            </div>
+          <% end %>
         <% end %>
       <% end %>
       <%= render "shared/flash" %>

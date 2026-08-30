@@ -49,7 +49,7 @@ class AnonymizedRollup
   private
 
   def grouped_projects
-    Project.hidden_from(@visibility).joins(:mission_base)
-           .group("mission_bases.country_id", "mission_bases.region_id")
+    Project.hidden_from(@visibility).joins(:ngo)
+           .group("ngos.country_id", "ngos.region_id")
   end
 end

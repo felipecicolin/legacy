@@ -41,6 +41,7 @@ pt-BR:
         password_digest: Senha
     errors:
       messages:
+        after_scheduled: Deve ser posterior ou igual à data agendada.
         after_start: Deve ser posterior à data inicial.
         approved_report_is_immutable: Relatório aprovado não é editado. A correção é um relatório novo.
         before_start: não pode ser anterior à data de início.

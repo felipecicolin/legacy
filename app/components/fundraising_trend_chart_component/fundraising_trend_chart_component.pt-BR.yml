@@ -1,0 +1,8 @@
+---
+pt-BR:
+  aria_label: Série mensal de arrecadação por canal
+  legend:
+    event_store: Eventos e loja
+    in_kind: Doações em espécie
+    one_off: Doações pontuais
+    recurring: Assinaturas recorrentes

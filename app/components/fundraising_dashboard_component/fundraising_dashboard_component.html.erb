@@ -1,0 +1,212 @@
+<div class="col-span-full min-w-0">
+  <%= render PageHeaderComponent.new(title: t("fundraising_dashboard_component.title"),
+                                     subtitle: t("fundraising_dashboard_component.subtitle")) %>
+
+  <div class="space-y-6">
+    <p class="rounded-lg border border-warning bg-warning-soft px-4 py-3 text-body text-warning"
+       data-simulated="true" role="note">
+      <%= t("fundraising_dashboard_component.simulation_mark") %>
+    </p>
+
+    <section aria-labelledby="fundraising-channels-title">
+      <h2 id="fundraising-channels-title" class="mb-3 text-section text-foreground">
+        <%= t("fundraising_dashboard_component.channels_title") %>
+      </h2>
+      <div class="grid min-w-0 gap-4 tablet:grid-cols-2 desktop:grid-cols-4">
+        <% presenter.channels.all.each do |channel| %>
+          <%= render CardComponent.new(classes: "min-w-0") do %>
+            <div class="flex items-start justify-between gap-3">
+              <h3 class="text-body font-semibold text-foreground"><%= channel_label(channel.key) %></h3>
+              <span class="shrink-0 rounded-full bg-warning-soft px-2 py-1 text-label text-warning"
+                    data-simulated="true"><%= t("fundraising_dashboard_component.simulation_short") %></span>
+            </div>
+            <dl class="mt-5 space-y-3">
+              <div class="flex items-baseline justify-between gap-3">
+                <dt class="text-label text-muted-foreground"><%= t("fundraising_dashboard_component.cash") %></dt>
+                <dd class="font-mono text-lg text-foreground"><%= money(channel.cash_cents) %></dd>
+              </div>
+              <div class="flex items-baseline justify-between gap-3">
+                <dt class="text-label text-muted-foreground"><%= t("fundraising_dashboard_component.in_kind") %></dt>
+                <dd class="font-mono text-lg text-foreground"><%= money(channel.in_kind_cents) %></dd>
+              </div>
+            </dl>
+          <% end %>
+        <% end %>
+      </div>
+    </section>
+
+    <%= render CardComponent.new(variant: "outlined", classes: "min-w-0") do %>
+      <div class="flex flex-wrap items-baseline justify-between gap-3">
+        <h2 class="text-section text-foreground"><%= t("fundraising_dashboard_component.totals_title") %></h2>
+        <span class="text-label text-warning" data-simulated="true">
+          <%= t("fundraising_dashboard_component.simulation_short") %>
+        </span>
+      </div>
+      <dl class="mt-5 grid gap-5 tablet:grid-cols-2">
+        <div>
+          <dt class="text-label text-muted-foreground"><%= t("fundraising_dashboard_component.cash_total") %></dt>
+          <dd class="mt-1 font-mono text-2xl text-foreground"><%= money(presenter.cash_total_cents) %></dd>
+        </div>
+        <div>
+          <dt class="text-label text-muted-foreground"><%= t("fundraising_dashboard_component.in_kind_total") %></dt>
+          <dd class="mt-1 font-mono text-2xl text-foreground"><%= money(presenter.in_kind_total_cents) %></dd>
+        </div>
+      </dl>
+    <% end %>
+
+    <%= render CardComponent.new(id: "campaigns", classes: "min-w-0") do |card| %>
+      <% card.with_header do %>
+        <h2 class="text-section text-foreground"><%= t("fundraising_dashboard_component.campaigns.title") %></h2>
+      <% end %>
+      <%= render TableComponent.new(rows: presenter.campaigns.rows,
+                                    caption: t("fundraising_dashboard_component.campaigns.caption")) do |table| %>
+        <% table.with_column(header: t("fundraising_dashboard_component.campaigns.name")) { |row| row.title } %>
+        <% table.with_column(header: t("fundraising_dashboard_component.campaigns.ngo")) { |row| row.ngo_name } %>
+        <% table.with_column(header: t("fundraising_dashboard_component.campaigns.goal"), align: :right) do |row| %>
+          <%= money(row.goal_cents) %>
+        <% end %>
+        <% table.with_column(header: t("fundraising_dashboard_component.campaigns.cash"), align: :right) do |row| %>
+          <%= money(row.cash_raised_cents) %>
+        <% end %>
+        <% table.with_column(header: t("fundraising_dashboard_component.campaigns.in_kind"), align: :right) do |row| %>
+          <%= money(row.in_kind_raised_cents) %>
+        <% end %>
+        <% table.with_column(header: t("fundraising_dashboard_component.campaigns.progress"), align: :right) do |row| %>
+          <%= number_to_percentage(row.progress_percentage, precision: 0) %>
+        <% end %>
+        <% table.with_column(header: t("fundraising_dashboard_component.campaigns.deadline")) do |row| %>
+          <%= date_label(row.ends_on) %>
+        <% end %>
+        <% table.with_column(header: t("fundraising_dashboard_component.campaigns.status")) do |row| %>
+          <%= status_badge(row.status, row.status_label) %>
+        <% end %>
+      <% end %>
+      <% if presenter.campaigns.hidden.count.positive? %>
+        <p class="mt-4 text-body text-muted-foreground">
+          <%= t("fundraising_dashboard_component.campaigns.hidden", count: presenter.campaigns.hidden.count,
+                 cash: money(presenter.campaigns.hidden.cash_raised_cents),
+                 in_kind: money(presenter.campaigns.hidden.in_kind_raised_cents)) %>
+        </p>
+      <% end %>
+    <% end %>
+
+    <%= render CardComponent.new(id: "subscriptions", classes: "min-w-0") do |card| %>
+      <% card.with_header do %>
+        <div class="flex flex-wrap items-baseline justify-between gap-3">
+          <h2 class="text-section text-foreground"><%= t("fundraising_dashboard_component.subscriptions.title") %></h2>
+          <p class="font-mono text-body text-foreground">
+            <span class="font-sans text-label text-muted-foreground"><%= t("fundraising_dashboard_component.subscriptions.monthly_revenue") %></span>
+            <%= money(presenter.subscriptions.monthly_recurring_cents) %>
+          </p>
+        </div>
+      <% end %>
+      <%= render TableComponent.new(rows: presenter.subscriptions.rows,
+                                    caption: t("fundraising_dashboard_component.subscriptions.caption")) do |table| %>
+        <% table.with_column(header: t("fundraising_dashboard_component.subscriptions.plan")) { |row| row.plan_key } %>
+        <% table.with_column(header: t("fundraising_dashboard_component.subscriptions.amount"), align: :right) do |row| %>
+          <%= money(row.amount_cents) %>
+        <% end %>
+        <% table.with_column(header: t("fundraising_dashboard_component.subscriptions.interval")) { |row| row.interval_label } %>
+        <% table.with_column(header: t("fundraising_dashboard_component.subscriptions.status")) do |row| %>
+          <%= status_badge(row.status, row.status_label) %>
+        <% end %>
+        <% table.with_column(header: t("fundraising_dashboard_component.subscriptions.next_charge")) do |row| %>
+          <%= date_label(row.next_charge_on) %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%= render CardComponent.new(id: "benefits", variant: "outlined", classes: "min-w-0") do |card| %>
+      <% card.with_header do %>
+        <h2 class="text-section text-foreground"><%= t("fundraising_dashboard_component.benefits.title") %></h2>
+      <% end %>
+      <%= render TableComponent.new(rows: presenter.subscriptions.benefits,
+                                    caption: t("fundraising_dashboard_component.benefits.caption")) do |table| %>
+        <% table.with_column(header: t("fundraising_dashboard_component.benefits.kind")) { |row| row.kind_label } %>
+        <% table.with_column(header: t("fundraising_dashboard_component.benefits.due_on")) do |row| %>
+          <%= date_label(row.due_on) %>
+        <% end %>
+        <% table.with_column(header: t("fundraising_dashboard_component.benefits.status")) do |row| %>
+          <%= status_badge(row.status, row.status_label) %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%= render CardComponent.new(id: "in-kind", classes: "min-w-0") do |card| %>
+      <% card.with_header do %>
+        <h2 class="text-section text-foreground"><%= t("fundraising_dashboard_component.in_kind_section.title") %></h2>
+      <% end %>
+      <dl class="mb-5 grid gap-4 tablet:grid-cols-2">
+        <div class="rounded-lg bg-secondary p-4">
+          <dt class="text-label text-muted-foreground"><%= t("fundraising_dashboard_component.in_kind_section.material") %></dt>
+          <dd class="mt-1 font-mono text-xl text-foreground"><%= money(presenter.in_kind.material_cents) %></dd>
+        </div>
+        <div class="rounded-lg bg-secondary p-4">
+          <dt class="text-label text-muted-foreground"><%= t("fundraising_dashboard_component.in_kind_section.intelligence") %></dt>
+          <dd class="mt-1 font-mono text-xl text-foreground"><%= money(presenter.in_kind.intelligence_cents) %></dd>
+        </div>
+      </dl>
+      <%= render TableComponent.new(rows: presenter.in_kind.rows,
+                                    caption: t("fundraising_dashboard_component.in_kind_section.caption")) do |table| %>
+        <% table.with_column(header: t("fundraising_dashboard_component.in_kind_section.item")) { |row| row.title } %>
+        <% table.with_column(header: t("fundraising_dashboard_component.in_kind_section.category")) { |row| row.category_label } %>
+        <% table.with_column(header: t("fundraising_dashboard_component.in_kind_section.value"), align: :right) do |row| %>
+          <%= row.estimated_value_cents ? money(row.estimated_value_cents) : t("fundraising_dashboard_component.not_available") %>
+        <% end %>
+        <% table.with_column(header: t("fundraising_dashboard_component.in_kind_section.status")) do |row| %>
+          <%= status_badge(row.status, row.status_label) %>
+        <% end %>
+        <% table.with_column(header: t("fundraising_dashboard_component.in_kind_section.expected")) do |row| %>
+          <%= date_label(row.delivered_on || row.expected_on) %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%= render CardComponent.new(id: "disbursements", classes: "min-w-0") do |card| %>
+      <% card.with_header do %>
+        <h2 class="text-section text-foreground"><%= t("fundraising_dashboard_component.disbursements.title") %></h2>
+      <% end %>
+      <dl class="mb-5 grid gap-4 tablet:grid-cols-2">
+        <div>
+          <dt class="text-label text-muted-foreground"><%= t("fundraising_dashboard_component.disbursements.scheduled_total") %></dt>
+          <dd class="mt-1 font-mono text-xl text-foreground"><%= money(presenter.disbursements.scheduled_cents) %></dd>
+        </div>
+        <div>
+          <dt class="text-label text-muted-foreground"><%= t("fundraising_dashboard_component.disbursements.executed_total") %></dt>
+          <dd class="mt-1 font-mono text-xl text-foreground"><%= money(presenter.disbursements.executed_cents) %></dd>
+        </div>
+      </dl>
+      <%= render TableComponent.new(rows: presenter.disbursements.rows,
+                                    caption: t("fundraising_dashboard_component.disbursements.caption")) do |table| %>
+        <% table.with_column(header: t("fundraising_dashboard_component.disbursements.reference")) { |row| row.reference } %>
+        <% table.with_column(header: t("fundraising_dashboard_component.disbursements.description")) { |row| row.description } %>
+        <% table.with_column(header: t("fundraising_dashboard_component.disbursements.ngo")) { |row| row.ngo_name } %>
+        <% table.with_column(header: t("fundraising_dashboard_component.disbursements.amount"), align: :right) do |row| %>
+          <%= money(row.amount_cents) %>
+        <% end %>
+        <% table.with_column(header: t("fundraising_dashboard_component.disbursements.scheduled_on")) do |row| %>
+          <%= date_label(row.scheduled_on) %>
+        <% end %>
+        <% table.with_column(header: t("fundraising_dashboard_component.disbursements.executed_on")) do |row| %>
+          <%= date_label(row.executed_on) %>
+        <% end %>
+        <% table.with_column(header: t("fundraising_dashboard_component.disbursements.status")) do |row| %>
+          <%= status_badge(row.status, row.status_label) %>
+        <% end %>
+      <% end %>
+      <% if presenter.disbursements.hidden.count.positive? %>
+        <p class="mt-4 text-body text-muted-foreground">
+          <%= t("fundraising_dashboard_component.disbursements.hidden", count: presenter.disbursements.hidden.count,
+                 amount: money(presenter.disbursements.hidden.amount_cents)) %>
+        </p>
+      <% end %>
+    <% end %>
+
+    <%= render CardComponent.new(id: "trend", variant: "outlined", classes: "min-w-0") do |card| %>
+      <% card.with_header do %>
+        <h2 class="text-section text-foreground"><%= t("fundraising_dashboard_component.trend.title") %></h2>
+      <% end %>
+      <%= render FundraisingTrendChartComponent.new(points: presenter.trend.points) %>
+    <% end %>
+  </div>
+</div>
