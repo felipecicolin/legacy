@@ -414,6 +414,30 @@ Texto rico é `has_rich_text`, com Trix e Active Storage por trás. Quatro regra
   `actiontext`. A cópia é UMD: `import "trix"`, nunca
   `import Trix from "trix"`.
 
+## Foto e identidade contextual
+
+> Por quê, armadilhas e limites:
+> [`docs/photo-policy.md`](docs/photo-policy.md).
+
+- **Anexo de foto entra por `attaches_scrubbed_photo`**, nunca por
+  `has_one_attached` direto. O EXIF é destruído na ingestão — os bytes com GPS
+  não chegam ao storage. Blob pronto e signed id são **recusados**: não há como
+  limpar o que já foi armazenado.
+- **Quem decide se uma pessoa aparece pelo nome é o recurso ao lado dela**, não
+  o perfil: `ProfilePresenter#name_for(context)`, com `subject:` obrigatório. O
+  rótulo de papel chega traduzido de quem chama — papel é vocabulário de #20,
+  #21 e #31.
+- **Arquivo é servido por controller que autoriza.** As rotas do Active Storage
+  são interceptadas em `config/routes.rb`; os nomes continuam sendo os do
+  engine. Não use `blob.url` nem redirecione para o serviço: a URL assinada não
+  passa por autorização nenhuma.
+
+**Armadilha:** o override do writer de anexo tem de ser definido na **classe**,
+não num módulo. O writer do `has_one_attached` mora em
+`GeneratedAssociationMethods`, um módulo incluído — e um override num módulo
+incluído depois perde a disputa **sem erro nenhum**, com a foto subindo com o
+GPS dentro.
+
 ## Banco de dados
 
 - `bundle exec database_consistency` cobra FK sem índice, `NOT NULL` faltando,

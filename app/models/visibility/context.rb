@@ -15,9 +15,28 @@ module Visibility
       Sensitive::LEVELS.select { |_level, rank| rank <= ceiling }.keys
     end
 
+    # Três perguntas diferentes com a mesma resposta hoje, e três nomes de
+    # propósito: o dia em que uma delas mudar de regra — identificar gente pode
+    # pedir mais que ver a obra — o call site já está escrito na pergunta certa,
+    # e não num predicado genérico que atenderia às três por acidente.
+
     # Registro confidential não guarda coordenada nenhuma; para os demais, ver
     # o ponto exato exige alcançar o nível do próprio registro.
-    def can_see_precise_location?(record)
+    def can_see_precise_location?(record) = reaches?(record)
+
+    # Se a pessoa ao lado deste recurso aparece pelo nome público ou só pelo
+    # papel. Quem decide é o recurso, não o perfil: `Profile` não tem nível de
+    # sensibilidade, e o risco de nomear alguém vem da obra a que ela está
+    # ligada. Ver `ProfilePresenter`.
+    def can_identify?(record) = reaches?(record)
+
+    # Se o arquivo anexado a este registro pode ser entregue. Ver
+    # `AuthorizedBlobDelivery`.
+    def can_see_attachment?(record) = reaches?(record)
+
+    private
+
+    def reaches?(record)
       allowed_levels.include?(record.sensitivity_level.to_sym)
     end
   end

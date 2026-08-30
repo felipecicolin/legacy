@@ -47,6 +47,13 @@ acrescenta nada. Então:
   confidencial não *guarda* coordenada em vez de só não mostrá-la, como a
   promoção de nível é auditada, e o que sustenta o agregado anonimizado.
 
+- [Identidade contextual e política de foto](photo-policy.md) — por que quem
+  decide o nome que aparece é o recurso e não o perfil, por que o EXIF é
+  destruído na ingestão em vez de filtrado na exibição, as duas armadilhas
+  silenciosas do override de anexo, como a rota do Active Storage é
+  interceptada sem copiar o arquivo de rotas do engine, e onde cada uma
+  dessas defesas para.
+
 - [Action Text](action-text.md) — por que texto rico nasce sem anexo embutido,
   as duas camadas que cobram isso, a corrida que a barra do Trix perde se a
   tradução chegar um tique atrasada, por que o CSS do Trix fica verbatim, e o
