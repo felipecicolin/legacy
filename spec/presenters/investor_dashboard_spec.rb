@@ -139,4 +139,25 @@ RSpec.describe InvestorDashboard do
   it "hands the view the visibility of the context that asked" do
     expect(dashboard.visibility.clearance).to eq(:restricted)
   end
+
+  # R$ 250 comprando 3.750 pessoas por ano dá 6 centavos por pessoa.
+  it "answers what each person reached in a year cost" do
+    funded_project
+
+    expect(dashboard.cost_per_person_cents).to eq(6)
+  end
+
+  # Sem alcance não há divisão possível, e um zero diria que sai de graça.
+  it "answers no cost per person when nothing was reached" do
+    funded_project(reach: nil)
+
+    expect(dashboard.cost_per_person_cents).to be_nil
+  end
+
+  # Projeção, não medição: o horizonte é premissa, e a tela o imprime junto.
+  it "projects the reach over the stated horizon" do
+    funded_project
+
+    expect(dashboard.projected_reach).to eq(3_750 * described_class::PROJECTION_YEARS)
+  end
 end

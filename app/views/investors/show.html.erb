@@ -1,7 +1,7 @@
 <%= render PageHeaderComponent.new(title: t(".title"), subtitle: t(".subtitle")) %>
 
 <% if dashboard.investor? %>
-  <dl class="mt-6 grid gap-4 tablet:grid-cols-2 desktop:grid-cols-4">
+  <dl class="mt-6 grid gap-4 tablet:grid-cols-3">
     <%= render StatCardComponent.new(label: t(".invested"),
                                      value: money_from_cents(dashboard.invested_cents),
                                      class: "border-primary bg-primary-soft") %>
@@ -10,14 +10,33 @@
     <%= render StatCardComponent.new(label: t(".people_reached"),
                                      value: number_with_delimiter(dashboard.people_reached),
                                      hint: t(".per_year")) %>
-    <%# Sem obra com meta e estimativa não há multiplicador, e um zero mentiria
-        dizendo que o dinheiro não alcança ninguém. %>
-    <%= render StatCardComponent.new(
-          label: t(".multiplier"),
-          value: dashboard.people_per_base ? number_with_delimiter(dashboard.people_per_base) : t(".no_multiplier"),
-          hint: t(".per_base", amount: money_from_cents(InvestorDashboard::MULTIPLIER_BASE_CENTS)),
-        ) %>
   </dl>
+
+  <%# ROI social. Duas das três medidas saem EXATAS do que existe; a terceira é
+      projeção, e o horizonte dela vai impresso ao lado do número — projeção com
+      a premissa escondida é chute com aparência de dado. %>
+  <section class="mt-8">
+    <h2 class="text-section text-foreground"><%= t(".roi_title") %></h2>
+    <p class="mt-1 text-body text-muted-foreground"><%= t(".roi_subtitle") %></p>
+
+    <dl class="mt-4 grid gap-4 tablet:grid-cols-3">
+      <%= render StatCardComponent.new(
+            label: t(".multiplier"),
+            value: dashboard.people_per_base ? number_with_delimiter(dashboard.people_per_base) : t(".no_multiplier"),
+            hint: t(".per_base", amount: money_from_cents(InvestorDashboard::MULTIPLIER_BASE_CENTS)),
+          ) %>
+      <%= render StatCardComponent.new(
+            label: t(".cost_per_person"),
+            value: dashboard.cost_per_person_cents ? money_from_cents(dashboard.cost_per_person_cents) : t(".no_multiplier"),
+            hint: t(".cost_per_person_hint"),
+          ) %>
+      <%= render StatCardComponent.new(
+            label: t(".projected_reach"),
+            value: number_with_delimiter(dashboard.projected_reach),
+            hint: t(".projected_reach_hint", years: InvestorDashboard::PROJECTION_YEARS),
+          ) %>
+    </dl>
+  </section>
 
   <section class="mt-8">
     <h2 class="text-section text-foreground"><%= t(".projects_title") %></h2>

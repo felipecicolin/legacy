@@ -190,13 +190,25 @@
       <section class="min-w-0">
         <h2 class="mb-4 text-section text-foreground"><%= t(".team.title") %></h2>
         <% if presenter.team_members.empty? %>
-          <p class="mt-5 text-body text-muted-foreground"><%= t(".team.empty") %></p>
+          <p class="text-body text-muted-foreground"><%= t(".team.empty") %></p>
         <% else %>
-          <ul class="mt-5 divide-y divide-border">
+          <%# Duas colunas com o papel EMBAIXO do nome: em linha cheia o papel
+              ficava a mil pixels da pessoa, e o olho precisava atravessar a
+              tela para juntar os dois. %>
+          <ul class="grid gap-x-8 gap-y-3 tablet:grid-cols-2">
             <% presenter.team_members.each do |member| %>
-              <li class="flex min-w-0 items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
-                <span class="min-w-0 truncate text-body text-foreground"><%= presenter.member_name(member) %></span>
-                <span class="shrink-0 text-label text-muted-foreground"><%= member.participation_role_label %></span>
+              <li class="flex min-w-0 items-center gap-3 rounded-lg border border-border bg-card p-3">
+                <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted
+                             text-sm font-semibold text-foreground"
+                      aria-hidden="true"><%= presenter.member_name(member).first %></span>
+                <span class="min-w-0">
+                  <span class="block truncate text-body font-medium text-foreground">
+                    <%= presenter.member_name(member) %>
+                  </span>
+                  <span class="block truncate text-sm text-muted-foreground">
+                    <%= member.participation_role_label %>
+                  </span>
+                </span>
               </li>
             <% end %>
           </ul>
@@ -206,25 +218,34 @@
       <section class="min-w-0 border-t border-border pt-8">
         <h2 class="mb-4 text-section text-foreground"><%= t(".needs.title") %></h2>
         <% if presenter.needs.empty? %>
-          <p class="mt-5 text-body text-muted-foreground"><%= t(".needs.empty") %></p>
+          <p class="text-body text-muted-foreground"><%= t(".needs.empty") %></p>
         <% else %>
-          <ul class="mt-5 space-y-4">
+          <%# Duas colunas: o cartão tinha três linhas curtas ocupando a largura
+              inteira. E o que falta vira número em destaque — é o dado que
+              decide se alguém age. %>
+          <ul class="grid gap-4 tablet:grid-cols-2">
             <% presenter.needs.each do |need| %>
-              <li class="min-w-0 rounded-lg border border-border bg-card p-4">
-                <div class="flex min-w-0 flex-wrap items-start justify-between gap-3">
+              <li class="flex min-w-0 flex-col gap-4 rounded-lg border border-border bg-card p-4">
+                <div class="flex min-w-0 items-start justify-between gap-4">
                   <div class="min-w-0">
                     <h3 class="text-body font-semibold text-foreground"><%= need.title %></h3>
                     <p class="mt-1 text-sm text-muted-foreground"><%= need.need_kind_label %></p>
                   </div>
-                  <span class="shrink-0 rounded-full bg-primary-soft px-2 py-1 text-label text-primary">
-                    <%= t(".needs.remaining", remaining: need.remaining_quantity, total: need.quantity) %>
-                  </span>
+                  <div class="shrink-0 text-right">
+                    <p class="text-2xl font-semibold tracking-tight text-foreground tabular-nums">
+                      <%= number_with_delimiter(need.remaining_quantity) %>
+                    </p>
+                    <p class="text-sm text-muted-foreground tabular-nums">
+                      <%= t(".needs.remaining", remaining: need.remaining_quantity, total: need.quantity) %>
+                    </p>
+                  </div>
                 </div>
-                <div class="mt-4">
-                  <%= render ButtonComponent.new(label: t(".needs.apply"), variant: :soft, size: :sm,
-                                                 href: helpers.new_need_candidacy_path(need)) %>
-                </div>
-              </li>
+                <% if need.served_by_person? %>
+                  <div class="mt-auto">
+                    <%= render ButtonComponent.new(label: t(".needs.apply"), variant: :soft, size: :sm,
+                                                   href: helpers.new_need_candidacy_path(need)) %>
+                  </div>
+                <% end %>
             <% end %>
           </ul>
         <% end %>
@@ -248,7 +269,7 @@
               <% table.with_column(header: t(".budget.spent"), align: :right) do |row| %>
                 <%= number_to_currency(row.spent_cents / 100.0) %>
                 <% if row.over_budget %>
-                  <span class="mt-1 block text-label text-destructive"><%= t(".budget.exceeded") %></span>
+                  <span class="mt-1 block text-sm font-medium text-destructive"><%= t(".budget.exceeded") %></span>
                 <% end %>
               <% end %>
             <% end %>

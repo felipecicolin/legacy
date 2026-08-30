@@ -52,6 +52,11 @@ class Need < ApplicationRecord
   before_validation :inherit_sensitivity, on: :create
   before_save :derive_status
 
+  # Candidatura é PESSOA se oferecendo, e isso só responde a necessidade que
+  # pede gente. Material, equipamento e dinheiro são atendidos por doação — um
+  # "quero ajudar" ali convida a um formulário que não resolve o pedido.
+  def served_by_person? = need_kind_skill? || need_kind_team?
+
   def need_kind_label
     I18n.t(need_kind, scope: :need_kinds)
   end

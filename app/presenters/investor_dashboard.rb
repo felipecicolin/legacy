@@ -12,6 +12,9 @@ class InvestorDashboard
   # "0,047 pessoas por real" é o mesmo número e não se lê.
   MULTIPLIER_BASE_CENTS = 100_000
 
+  # Horizonte da projeção de alcance acumulado. Ver `projected_reach`.
+  PROJECTION_YEARS = 5
+
   def initialize(profile, context)
     @profile = profile
     @context = context
@@ -47,6 +50,22 @@ class InvestorDashboard
   # O denominador é o que ENTROU EM OBRA, não o total aportado: dinheiro sem
   # obra vinculada não tem alcance para dividir, e mantê-lo embaixo faria o
   # multiplicador cair sem que obra nenhuma tivesse mudado.
+  # Quanto custou cada pessoa alcançada num ano. É o inverso do multiplicador e
+  # a leitura que responde "meu real rende bem aqui?" — a única forma de ROI
+  # social que sai EXATA do que existe: dinheiro que entrou em obra dividido
+  # pelo alcance atribuído a ele.
+  def cost_per_person_cents
+    return if people_reached.zero?
+
+    reach_denominator_cents / people_reached
+  end
+
+  # Projeção, não medição. Cinco anos é ASSUNÇÃO: a obra não guarda vida útil,
+  # e sem essa coluna qualquer horizonte é escolha de quem desenha a tela. Por
+  # isso o horizonte vai impresso ao lado do número — projeção sem premissa à
+  # vista é chute com aparência de dado.
+  def projected_reach = people_reached * PROJECTION_YEARS
+
   def people_per_base
     return if reach_denominator_cents.zero?
 

@@ -121,6 +121,8 @@ pt-BR:
       active_projects: Obras ativas
       code: Código
       contributed: Aportado
+      cost_per_person: Custo por pessoa
+      cost_per_person_hint: por pessoa alcançada a cada ano
       empty_description: Assim que a primeira contribuição for confirmada, ela aparece aqui com o alcance que financia.
       empty_title: Você ainda não fez nenhum aporte
       hidden_aggregate:
@@ -137,9 +139,13 @@ pt-BR:
       per_base: pessoas por ano a cada %{amount}
       per_year: por ano, pela fatia que você financia
       project: Obra
+      projected_reach: Alcance projetado
+      projected_reach_hint: pessoas em %{years} anos, mantido o alcance atual
       projects_caption: Obras ativas que você financia, com a fatia aportada e o alcance atribuído a ela
       projects_title: Obras que você financia
       reach: Alcance/ano
+      roi_subtitle: O que o aporte devolve, e sob que premissa.
+      roi_title: ROI social
       status: Situação
       subtitle: Quanto entrou, em que obras, e quantas pessoas isso alcança.
       title: Seus aportes

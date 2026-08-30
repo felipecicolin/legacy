@@ -163,4 +163,14 @@ RSpec.describe Need do
       expect(build(:need, ngo: ngo, currency: "REAIS")).not_to be_valid
     end
   end
+
+  # Candidatura é pessoa se oferecendo: um "quero ajudar" numa necessidade de
+  # 400 telhas convida a um formulário que não atende o pedido.
+  describe "#served_by_person?" do
+    it "answers yes only for the kinds a person can be" do
+      answers = Need.need_kinds.keys.select { |kind| build(:need, need_kind: kind).served_by_person? }
+
+      expect(answers).to contain_exactly("skill", "team")
+    end
+  end
 end
