@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_30_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_30_140100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -75,7 +75,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_140000) do
     t.datetime "updated_at", null: false
     t.integer "verification_status", default: 0, null: false
     t.index ["profile_id", "kind"], name: "index_credentials_on_profile_id_and_kind"
-    t.index ["profile_id"], name: "index_credentials_on_profile_id"
     t.index ["verification_status", "expires_on"], name: "index_credentials_on_verification_status_and_expires_on"
   end
 
