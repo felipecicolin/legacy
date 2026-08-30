@@ -221,4 +221,16 @@ RSpec.describe Project do
     expect { described_class.connection.execute(corrupt) }
       .to raise_error(ActiveRecord::StatementInvalid, /physical_progress/)
   end
+
+  # Obra em levantamento ainda não tem estimativa, e um zero mentiria dizendo
+  # que ela não alcança ninguém. Ver docs/investor-dashboard.md.
+  describe "the annual reach estimate" do
+    it "refuses a negative estimate" do
+      expect(build(:project, estimated_annual_reach: -1)).not_to be_valid
+    end
+
+    it "accepts an estimate that was never made" do
+      expect(build(:project, estimated_annual_reach: nil)).to be_valid
+    end
+  end
 end

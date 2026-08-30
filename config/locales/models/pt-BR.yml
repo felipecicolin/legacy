@@ -29,6 +29,8 @@ pt-BR:
         sensitivity_level: Visibilidade
         slug: Endereço público
         website: Site
+      project:
+        estimated_annual_reach: Pessoas estimadas por ano
       staff_role:
         staff_level: Nível
         user: Usuário

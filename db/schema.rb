@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_30_200000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_30_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -483,6 +483,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_200000) do
     t.serial "code_number", null: false
     t.datetime "created_at", null: false
     t.string "currency", limit: 3, default: "BRL", null: false
+    t.integer "estimated_annual_reach"
     t.bigint "funding_target_cents", default: 0, null: false
     t.bigint "ngo_id", null: false
     t.integer "physical_progress", default: 0, null: false
@@ -495,6 +496,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_200000) do
     t.index ["code"], name: "index_projects_on_code", unique: true
     t.index ["ngo_id", "status"], name: "index_projects_on_ngo_id_and_status"
     t.index ["status", "sensitivity_level"], name: "index_projects_on_status_and_sensitivity_level"
+    t.check_constraint "estimated_annual_reach IS NULL OR estimated_annual_reach >= 0", name: "projects_estimated_annual_reach_not_negative"
     t.check_constraint "funding_target_cents >= 0", name: "projects_funding_target_not_negative"
     t.check_constraint "physical_progress >= 0 AND physical_progress <= 100", name: "projects_physical_progress_within_range"
   end

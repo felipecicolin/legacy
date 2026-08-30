@@ -116,6 +116,38 @@ pt-BR:
     monthly: Mensal
     quarterly: Trimestral
     yearly: Anual
+  investors:
+    no_profile:
+      empty_description: Complete seu perfil para acompanhar os aportes e o alcance que eles financiam.
+      empty_title: Seu perfil ainda não existe
+      title: Seus aportes
+    show:
+      active_projects: Obras ativas
+      code: Código
+      contributed: Aportado
+      empty_description: Assim que a primeira contribuição for confirmada, ela aparece aqui com o alcance que financia.
+      empty_title: Você ainda não fez nenhum aporte
+      hidden_aggregate:
+        one: 1 obra que você financia não pode ser detalhada neste acesso · %{amount} · %{reach} pessoas por ano.
+        other: "%{count} obras que você financia não podem ser detalhadas neste acesso · %{amount} · %{reach} pessoas por ano."
+      hidden_withheld: Algumas obras que você financia ficam fora destes números — são poucas demais para agregar sem identificá-las.
+      invested: Total aportado
+      multiplier: Multiplicador
+      ngo: ONG
+      no_multiplier: Sem base
+      no_projects_description: Seus aportes entraram em campanhas sem obra vinculada, ou em obras já concluídas.
+      no_projects_title: Nenhuma obra ativa no momento
+      people_reached: Pessoas alcançadas
+      per_base: pessoas por ano a cada %{amount}
+      per_year: por ano, pela fatia que você financia
+      project: Obra
+      projects_caption: Obras ativas que você financia, com a fatia aportada e o alcance atribuído a ela
+      projects_title: Obras que você financia
+      reach: Alcance/ano
+      status: Situação
+      subtitle: Quanto entrou, em que obras, e quantas pessoas isso alcança.
+      title: Seus aportes
+      unlinked: "%{amount} foram para campanhas sem obra vinculada: contam no total aportado e não têm obra a que atribuir alcance."
   kinds:
     campaign: Campanha
     campaign_launch: Lançamento de campanha
@@ -363,9 +395,9 @@ pt-BR:
       nothing_yet_title: Ainda não há o que buscar
     filters:
       any: Qualquer
-      ngo_kind: Tipo de ONG
       country: País
       min_progress: Avanço mínimo
+      ngo_kind: Tipo de ONG
       status: Situação da obra
     ngos:
       caption: ONGs que correspondem à busca

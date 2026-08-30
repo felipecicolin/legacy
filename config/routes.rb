@@ -20,6 +20,10 @@ Rails.application.routes.draw do
   resources :needs, path: "necessidades", only: %i[index show] do
     resource :candidacy, only: %i[new create]
   end
+  # Uma dash por tipo de pessoa que entra. Hoje só a do investidor existe; o
+  # alternador entre elas só faz sentido quando houver a segunda.
+  resource :investor, path: "investidor", only: :show
+
   resource :search, only: :show
 
   namespace :admin do

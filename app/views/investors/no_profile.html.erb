@@ -1,0 +1,5 @@
+<%= render PageHeaderComponent.new(title: t(".title")) %>
+<%# Entrar não é ter perfil. Quem chegou aqui sem um precisa de caminho, não de
+    um painel de zeros que se lê como "seu dinheiro sumiu". %>
+<%= render EmptyStateComponent.new(icon: "users", title: t(".empty_title"),
+                                   description: t(".empty_description"), classes: "mt-6") %>

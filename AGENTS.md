@@ -384,6 +384,28 @@ de rótulo (`<enum no plural>.*`) já existe com outro sentido, o enum ganha nom
 próprio** — foi por isso que as colunas aqui são `ngo_kind` e `ngo_status`, e
 não `kind` e `status`.
 
+## Dashes por tipo de pessoa
+
+> A atribuição proporcional, o multiplicador e o que a visibilidade faz com
+> cada número: [`docs/investor-dashboard.md`](docs/investor-dashboard.md).
+
+Três tipos entram: **investidor**, **time da obra** e **ONG**. Nenhum deles é
+tabela — os três são projeção sobre `Contribution`/`Subscription`,
+`ProjectParticipation` e `Membership`. Quatro regras:
+
+- **Uma dash por tipo, uma rota por dash.** A mesma pessoa acumula os três, e é
+  ela quem escolhe — nunca uma precedência que esconde parte do sistema sem
+  avisar.
+- **Alcance atribuído é proporcional e sobre a META**
+  (`estimativa_anual × aportado ÷ meta`). Creditar a obra inteira a cada
+  financiador multiplica o impacto pelo número de financiadores; dividir pelo
+  arrecadado encolhe o de quem já deu toda vez que outra pessoa dá.
+- **Dinheiro é exato, alcance é agregado.** O extrato é do próprio investidor e
+  não esconde nada; o que a obra confidencial esconde vira agregado, com o piso
+  de `Campaign::MINIMUM_AGGREGATE_COUNT` — reaproveitado, nunca redefinido.
+- **Número que encolheu por restrição de acesso é dito na tela.** Sem a frase,
+  um total menor se lê como conta errada, não como dado protegido.
+
 ## Pagamentos
 
 > A fronteira, o simulador determinístico e a marca de dado simulado:

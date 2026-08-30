@@ -56,6 +56,12 @@ class Project < ApplicationRecord
   validates :code, uniqueness: true, allow_nil: true
   validates :funding_target_cents, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validates :physical_progress, numericality: { in: 0..100, only_integer: true }
+
+  # `allow_nil` porque obra em levantamento ainda não tem a estimativa, e um
+  # zero mentiria dizendo que ela não alcança ninguém. Ver
+  # docs/investor-dashboard.md.
+  validates :estimated_annual_reach, numericality: { only_integer: true, greater_than_or_equal_to: 0 },
+                                     allow_nil: true
   validates :currency, presence: true, length: { is: 3 }
 
   validate :transition_is_allowed, on: :update
