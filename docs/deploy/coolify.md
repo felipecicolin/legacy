@@ -117,7 +117,7 @@ suficiente para o app conectar no lugar errado sem erro nenhum.
 | --- | --- | --- |
 | `RAILS_MASTER_KEY` | conteúdo de `config/master.key` | O arquivo é gitignored e não entra na imagem (`.dockerignore`). Sem ele o app não decifra as credentials e não sobe |
 | `DATABASE_URL` | a URL interna do serviço Postgres | O Coolify oferece essa variável pronta ao vincular o banco à aplicação |
-| `APP_HOST` | o host público da demo, sem esquema (`demo.exemplo.org`) | O link do e-mail de recuperação de senha é gerado com ele. Sem a variável **o container não sobe** — é de propósito: um host errado só apareceria na caixa de entrada de outra pessoa |
+| `APP_HOST` | `legacy-demo.example.org`, sem esquema | O link do e-mail de recuperação de senha é gerado com ele. O nome é deliberadamente neutro e não sugere uma organização real. Sem a variável **o container não sobe** — é de propósito: um host errado só apareceria na caixa de entrada de outra pessoa |
 | `SOLID_QUEUE_IN_PUMA` | `true` | Sem ela o `config/puma.rb` não carrega o plugin, e o `recurring.yml` — que limpa jobs finalizados de hora em hora — nunca roda |
 | `RAILS_MAX_THREADS` | opcional, default `5` | Entra no `max_connections` pela fórmula acima |
 | `RAILS_DB_POOL` | opcional | Sobrescreve a fórmula, se o pool precisar de ajuste fino |
@@ -149,12 +149,29 @@ faz proxy para o Puma em 3000. A terminação TLS é do Traefik do Coolify — n
 defina `TLS_DOMAIN`, ou o Thruster tentaria emitir certificado por conta
 própria.
 
-### Volume
+### Volume persistente do Active Storage
 
-Nenhum, por enquanto. O `config.active_storage.service = :local` aponta para
-`/rails/storage`, mas ainda não há upload nenhum na aplicação. **No dia em que
-houver, ou monta-se um volume persistente em `/rails/storage`, ou troca-se o
-service por S3/R2** — sem isso, todo arquivo enviado some no próximo deploy.
+No recurso da aplicação no Coolify, crie um volume persistente montado em
+`/rails/storage`. Esse é o caminho usado pelo service `local` em
+`config/storage.yml`; o nome do volume pode ser `legacy-demo-storage`, sem
+referência a uma organização real. Faça o mount antes de habilitar qualquer
+upload, porque sem ele todo arquivo enviado some no próximo deploy.
+
+A alternativa é trocar o service por S3/R2 e configurar as credenciais como
+secrets do Coolify. Não use as duas estratégias ao mesmo tempo: o app deve ter
+uma única origem persistente para os anexos.
+
+### Recarga do seed
+
+Para ensaiar a demo do começo, execute no terminal do container:
+
+```sh
+CONFIRM_DEMO_SEED_RELOAD=1 bin/rails demo:reload_seed
+```
+
+O comando delega para `db:seed:replant`, que recria os dados e carrega o seed
+de forma idempotente. A confirmação explícita é obrigatória e não existe rota
+HTTP equivalente, então um acesso acidental à aplicação não apaga o banco.
 
 ---
 
@@ -178,16 +195,18 @@ justificar separar, o caminho é o mesmo — o `bin/jobs` já existe.
 
 ## Pendências conhecidas
 
-Nenhuma bloqueia o deploy, mas todas viram bug no dia em que a funcionalidade
-correspondente existir:
+Nenhuma bloqueia o deploy, mas a configuração abaixo é obrigatória antes da
+funcionalidade correspondente existir:
 
-- **Active Storage sem volume**, conforme acima.
+- **Volume persistente do Active Storage**, montado no Coolify em
+  `/rails/storage`, ou service S3/R2 configurado.
 
 Duas pendências que estavam aqui saíram com a autenticação (#9):
 
 - **A rota raiz existe** (`root "home#show"`) e exige sessão, então o domínio
   deixa de responder 404. É espaço reservado até #8 e #57.
-- **O host do mailer virou `APP_HOST`**, obrigatório. O primeiro mailer com link
+- **O host do mailer virou `APP_HOST`**, obrigatório, com o valor neutro
+  `legacy-demo.example.org`. O primeiro mailer com link
   — o de recuperação de senha — entrou nessa issue, que era exatamente o gatilho
   registrado aqui. **Adicione a variável no Coolify antes do próximo deploy**,
   ou o container não sobe.
