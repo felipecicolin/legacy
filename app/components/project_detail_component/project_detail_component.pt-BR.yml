@@ -12,7 +12,6 @@ pt-BR:
     spent: Gasto
     title: Prestação de contas
     total: 'Total orçado: %{value}'
-  code: Obra
   navigation:
     funding: Prestação de contas
     needs: Necessidades

@@ -1,6 +1,7 @@
 <div class="col-span-full min-w-0">
-  <div class="mb-2 flex flex-wrap items-center justify-between gap-3">
-    <span class="text-sm text-muted-foreground tabular-nums"><%= t(".code") %> <%= presenter.code %></span>
+  <%# O código já está na trilha logo abaixo: repetir "Obra OB-0001" acima
+      dela era a mesma informação duas vezes, com dois estilos. %>
+  <div class="mb-2 flex justify-end">
     <%= render StatusBadgeComponent.new(status: presenter.status) %>
   </div>
 
