@@ -388,6 +388,7 @@ não `kind` e `status`.
 
 > A atribuição proporcional, o multiplicador e o que a visibilidade faz com
 > cada número: [`docs/investor-dashboard.md`](docs/investor-dashboard.md).
+> O painel da obra: [`docs/team-dashboard.md`](docs/team-dashboard.md).
 
 Três tipos entram: **investidor**, **time da obra** e **ONG**. Nenhum deles é
 tabela — os três são projeção sobre `Contribution`/`Subscription`,
@@ -405,6 +406,10 @@ tabela — os três são projeção sobre `Contribution`/`Subscription`,
   de `Campaign::MINIMUM_AGGREGATE_COUNT` — reaproveitado, nunca redefinido.
 - **Número que encolheu por restrição de acesso é dito na tela.** Sem a frase,
   um total menor se lê como conta errada, não como dado protegido.
+- **Vínculo não é chave.** A obra que o leitor não alcança não aparece no painel
+  dele nem quando ele está na equipe: `ProjectParticipation` responde "faz
+  parte", `sensitivity_level` responde "alcança", e deixar a primeira responder
+  pela segunda é uma porta lateral em volta da visibilidade.
 
 ## Pagamentos
 

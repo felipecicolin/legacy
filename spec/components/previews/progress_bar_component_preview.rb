@@ -8,4 +8,8 @@ class ProgressBarComponentPreview < ViewComponent::Preview
   def funding
     render(ProgressBarComponent.new(kind: "funding", value: 184_000, target: 300_000))
   end
+
+  def spending
+    render(ProgressBarComponent.new(kind: "spending", value: 233_000, target: 385_000))
+  end
 end

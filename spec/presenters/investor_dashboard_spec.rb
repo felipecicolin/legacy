@@ -62,8 +62,11 @@ RSpec.describe InvestorDashboard do
     expect(dashboard.people_reached).to eq(0)
   end
 
+  # A obra não entra em execução sem coordenação, e chegar a `completed` passa
+  # obrigatoriamente por lá — o caminho do teste é o caminho real.
   it "leaves a finished project out of the active list" do
     project = funded_project
+    create(:project_participation, :coordinator, project: project, profile: create(:profile))
     project.update!(status: :in_progress)
     project.update!(status: :completed)
 
