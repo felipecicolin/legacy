@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_30_130100) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_30_130200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -52,17 +52,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_130100) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "countries", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "currency_code", limit: 3
+    t.integer "default_sensitivity", default: 1, null: false
+    t.boolean "high_risk", default: false, null: false
+    t.string "iso3_code", limit: 3, null: false
+    t.string "iso_code", limit: 2, null: false
+    t.datetime "updated_at", null: false
+    t.index ["iso3_code"], name: "index_countries_on_iso3_code", unique: true
+    t.index ["iso_code"], name: "index_countries_on_iso_code", unique: true
+  end
+
   create_table "credentials", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.date "expires_on"
     t.date "issued_on"
-    t.integer "kind", null: false
     t.string "issuing_body", null: false
+    t.integer "kind", null: false
     t.string "number", null: false
     t.bigint "profile_id", null: false
     t.datetime "updated_at", null: false
     t.integer "verification_status", default: 0, null: false
     t.index ["profile_id", "kind"], name: "index_credentials_on_profile_id_and_kind"
+    t.index ["profile_id"], name: "index_credentials_on_profile_id"
     t.index ["verification_status", "expires_on"], name: "index_credentials_on_verification_status_and_expires_on"
   end
 
@@ -116,6 +129,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_130100) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_profiles_on_user_id", unique: true
+  end
+
+  create_table "regions", force: :cascade do |t|
+    t.string "code"
+    t.bigint "country_id", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["country_id", "name"], name: "index_regions_on_country_id_and_name", unique: true
   end
 
   create_table "sensitivity_changes", force: :cascade do |t|
@@ -325,6 +347,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_130100) do
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "profiles"
   add_foreign_key "profiles", "users"
+  add_foreign_key "regions", "countries"
   add_foreign_key "sensitivity_changes", "users", column: "author_id"
   add_foreign_key "sessions", "users"
   add_foreign_key "solid_queue_batch_executions", "solid_queue_batches", column: "batch_id", on_delete: :cascade

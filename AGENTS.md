@@ -417,6 +417,30 @@ frente:
   um `Visibility::Context` e devolvem relação. Nunca escreva um segundo caminho
   de SQL que decida visibilidade — é ele que vai divergir.
 
+## Vocabulário curado — países e habilidades
+
+> Por que YAML, a curadoria pendente e as armadilhas:
+> [`docs/vocabulary.md`](docs/vocabulary.md).
+
+A lista de países (ISO 3166-1 inteiro) e a taxonomia de habilidades vivem em
+`db/vocabulary/*.yml`. Cinco regras:
+
+- **O YAML é a fonte; o seed lê, não redigita.** `db/seeds.rb` carrega por
+  `Country.load_vocabulary!`, idempotente e casando pelo `iso_code` — a
+  curadoria editada depois alcança a linha que já existe.
+- **Chave em inglês no YAML, rótulo em português no locale**
+  (`config/locales/vocabulary/pt-BR.yml`). Nome de país **não é coluna**:
+  `Country#name` resolve `countries.<iso_code>`.
+- **`high_risk` é decisão editorial da equipe, e hoje está vazia.** Não se
+  infere de índice de terceiro. Marcar um país é editar a linha dele, com dono
+  e data registrados na issue.
+- **O gancho só aperta.** `high_risk` empurra `default_sensitivity` para
+  `confidential`; desmarcar não devolve o país ao default, e marcar **não**
+  alcança obra já gravada — mudança de política é promoção auditada.
+- **Chave de vocabulário sem rótulo (e rótulo sem chave) reprova** em
+  `spec/models/vocabulary/catalog_spec.rb`. É ele que sustenta a entrada
+  `{countries,skill_categories,skills}.*` no `ignore_unused` do i18n-tasks.
+
 ## Action Text
 
 > As decisões, as medições e as armadilhas:
@@ -609,6 +633,12 @@ avaliar qualquer módulo. Sintoma: todo `/assets/*.js` com 200 no painel de rede
 e `window.Turbo`, `window.Stimulus` e `window.Trix` os três `undefined`. Um
 `import` que erra sozinho leva junto Turbo, Stimulus e tudo mais que o
 `application.js` alcança.
+
+**`NO` é `false` em YAML, e a Noruega some sem erro.** Vale para o código na
+lista curada e para a chave no locale: sem aspas, o parser devolve booleano, o
+arquivo carrega, e o país deixa de existir sem uma linha de aviso. Os códigos
+vão entre aspas nos dois lugares, e `spec/models/country_spec.rb` pede o nome
+da Noruega em particular — ver [`docs/vocabulary.md`](docs/vocabulary.md).
 
 **O parser do herb lê marcação dentro de `<%# … %>`.** Comentário ERB não é zona
 neutra: um `<body>` ou um `<%= … %>` citado na explicação vira erro de

@@ -1,9 +1,13 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
+# frozen_string_literal: true
+
+# Carga do vocabulário curado. O seed lê `db/vocabulary/`, nunca redigita a
+# lista aqui: a lista que ninguém abre é a que fica errada.
 #
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+# Idempotente — casa pelo `iso_code` e atualiza a linha existente, para que uma
+# mudança de curadoria (marcar um país como `high_risk`) alcance também os
+# países já gravados. Ver docs/vocabulary.md.
+Country.load_vocabulary!
+
+# Regiões não entram aqui: carregar a subdivisão administrativa do mundo
+# inteiro é dado para manter em dia sem ninguém para reclamar quando
+# envelhecer. Região nasce junto com a obra que fica nela.

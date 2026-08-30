@@ -1,0 +1,47 @@
+# Habilidades — taxonomia curada.
+#
+# É taxonomia, não tag livre. Tag livre produz "engenharia civil", "eng. civil"
+# e "Engenharia Civil" como três coisas diferentes, e o matching entre
+# voluntário e obra quebra em silêncio: ninguém vê a vaga que existe.
+#
+# A chave é estável e em inglês — ela vira identificador no banco. O rótulo em
+# português vive em `config/locales/vocabulary/pt-BR.yml`, sob `skills.<key>`,
+# e o nome da categoria sob `skill_categories.<category>`. Chave sem rótulo
+# reprova em `spec/models/vocabulary/catalog_spec.rb`.
+#
+# `position` ordena a lista dentro da categoria, em passos de 10 para caber
+# uma habilidade nova entre duas sem renumerar as outras. Empate dentro da
+# mesma categoria reprova no mesmo spec: duas habilidades com a mesma posição
+# fazem a ordem da tela depender do banco.
+- { key: civil_engineering, category: engineering, position: 10 }
+- { key: structural_engineering, category: engineering, position: 20 }
+- { key: geotechnical_engineering, category: engineering, position: 30 }
+- { key: hydraulic_engineering, category: engineering, position: 40 }
+- { key: sanitation_engineering, category: engineering, position: 50 }
+- { key: electrical_engineering, category: engineering, position: 60 }
+- { key: surveying, category: engineering, position: 70 }
+- { key: water_well_drilling, category: engineering, position: 80 }
+- { key: architecture, category: architecture, position: 10 }
+- { key: construction_drafting, category: architecture, position: 20 }
+- { key: urban_planning, category: architecture, position: 30 }
+- { key: landscape_design, category: architecture, position: 40 }
+- { key: interior_design, category: architecture, position: 50 }
+- { key: accessibility_design, category: architecture, position: 60 }
+- { key: masonry, category: trade, position: 10 }
+- { key: concrete_work, category: trade, position: 20 }
+- { key: carpentry, category: trade, position: 30 }
+- { key: joinery, category: trade, position: 40 }
+- { key: welding, category: trade, position: 50 }
+- { key: plumbing, category: trade, position: 60 }
+- { key: electrical_installation, category: trade, position: 70 }
+- { key: roofing, category: trade, position: 80 }
+- { key: painting, category: trade, position: 90 }
+- { key: solar_installation, category: trade, position: 100 }
+- { key: project_management, category: support, position: 10 }
+- { key: cost_estimation, category: support, position: 20 }
+- { key: procurement, category: support, position: 30 }
+- { key: logistics, category: support, position: 40 }
+- { key: occupational_safety, category: support, position: 50 }
+- { key: quality_inspection, category: support, position: 60 }
+- { key: community_liaison, category: support, position: 70 }
+- { key: technical_translation, category: support, position: 80 }
