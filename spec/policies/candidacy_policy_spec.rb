@@ -44,6 +44,13 @@ RSpec.describe CandidacyPolicy do
 
       expect(policy_for(candidacy, as: member).create?).to be(false)
     end
+
+    # Entrar não é ter perfil, e sem perfil não há como coordenar coisa
+    # nenhuma. O `&.` da comparação existe para este caminho, e sem ele a
+    # policy levantaria `NoMethodError` em vez de recusar.
+    it "refuses someone who signed in without a profile" do
+      expect(policy_for(candidacy, as: create(:user)).create?).to be(false)
+    end
   end
 
   describe "#show?" do
