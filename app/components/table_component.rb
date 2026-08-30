@@ -6,7 +6,7 @@ class TableComponent < ApplicationComponent
   ALIGNMENT_CLASSES = {
     left: "text-left",
     center: "text-center",
-    right: "font-mono text-right",
+    right: "text-right tabular-nums",
   }.freeze
 
   class Column < ViewComponent::Base
@@ -62,11 +62,18 @@ class TableComponent < ApplicationComponent
   end
 
   def cell_classes(column)
-    class_merge("px-4 py-4 align-top text-body", ALIGNMENT_CLASSES.fetch(column.align))
+    class_merge("px-4 py-3 align-middle text-body", ALIGNMENT_CLASSES.fetch(column.align))
+  end
+
+  # O cabeçalho não é dado: ele é menor, mais escuro e mais pesado que a
+  # célula, para a varredura vertical começar por ele e não competir com os
+  # números.
+  def header_classes(column)
+    class_merge(cell_classes(column), "py-2.5 text-sm font-semibold text-foreground")
   end
 
   def header_attributes(column)
-    attributes = { scope: "col", class: cell_classes(column) }
+    attributes = { scope: "col", class: header_classes(column) }
     return attributes unless column.direction
 
     attributes.merge(aria: { sort: column.direction })

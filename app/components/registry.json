@@ -625,6 +625,43 @@
       ]
     },
     {
+      "name": "StatCardComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "label",
+          "kind": "keyreq"
+        },
+        {
+          "name": "value",
+          "kind": "keyreq"
+        },
+        {
+          "name": "hint",
+          "kind": "key"
+        },
+        {
+          "name": "html_options",
+          "kind": "keyrest"
+        }
+      ],
+      "constants": {},
+      "slots": [],
+      "stimulus_controller": "stat-card-component",
+      "template": "app/components/stat_card_component/stat_card_component.html.erb",
+      "preview": "spec/components/previews/stat_card_component_preview.rb",
+      "examples": [
+        {
+          "name": "default",
+          "source": "  def default\n    render(StatCardComponent.new(label: \"Total aportado\", value: \"R$ 56.000,00\"))\n  end"
+        },
+        {
+          "name": "with_hint",
+          "source": "  def with_hint\n    render(StatCardComponent.new(label: \"Pessoas alcançadas\", value: \"15.787\",\n                                 hint: \"por ano, pela fatia que você financia\"))\n  end"
+        }
+      ]
+    },
+    {
       "name": "StatusBadgeComponent",
       "category": "ui",
       "params": [

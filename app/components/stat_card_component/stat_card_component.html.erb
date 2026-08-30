@@ -1,0 +1,12 @@
+<%= tag.div(**html_attributes) do %>
+  <%# Sem `text-label` aqui: ele carrega `letter-spacing: 0.08em`, e rótulo
+      espaçado em cada cartão é o que dá à tela aquele ar de gerado. %>
+  <dt class="text-sm font-medium text-muted-foreground"><%= label %></dt>
+  <%# `tabular-nums` porque a coluna de números precisa alinhar dígito com
+      dígito; `tracking-tight` porque número grande com espaçamento padrão
+      parece esticado. %>
+  <dd class="mt-1.5 text-3xl font-semibold tracking-tight text-foreground tabular-nums"><%= value %></dd>
+  <% if hint.present? %>
+    <dd class="mt-1 text-sm leading-snug text-muted-foreground"><%= hint %></dd>
+  <% end %>
+<% end %>

@@ -1,44 +1,25 @@
 <%= render PageHeaderComponent.new(title: t(".title"), subtitle: t(".subtitle")) %>
 
 <% if dashboard.investor? %>
-  <dl class="mt-6 grid gap-3 tablet:grid-cols-2 desktop:grid-cols-4">
-    <%= render CardComponent.new do %>
-      <dt class="text-label text-muted-foreground"><%= t(".invested") %></dt>
-      <dd class="mt-1 font-mono text-2xl text-foreground">
-        <%= money_from_cents(dashboard.invested_cents) %>
-      </dd>
-    <% end %>
-
-    <%= render CardComponent.new do %>
-      <dt class="text-label text-muted-foreground"><%= t(".active_projects") %></dt>
-      <dd class="mt-1 font-mono text-2xl text-foreground">
-        <%= number_with_delimiter(dashboard.active_count) %>
-      </dd>
-    <% end %>
-
-    <%= render CardComponent.new do %>
-      <dt class="text-label text-muted-foreground"><%= t(".people_reached") %></dt>
-      <dd class="mt-1 font-mono text-2xl text-foreground">
-        <%= number_with_delimiter(dashboard.people_reached) %>
-      </dd>
-      <dd class="text-label text-muted-foreground"><%= t(".per_year") %></dd>
-    <% end %>
-
-    <%= render CardComponent.new do %>
-      <dt class="text-label text-muted-foreground"><%= t(".multiplier") %></dt>
-      <dd class="mt-1 font-mono text-2xl text-foreground">
-        <%# Sem obra com meta e estimativa não há multiplicador, e um zero
-            mentiria dizendo que o dinheiro não alcança ninguém. %>
-        <%= dashboard.people_per_base ? number_with_delimiter(dashboard.people_per_base) : t(".no_multiplier") %>
-      </dd>
-      <dd class="text-label text-muted-foreground">
-        <%= t(".per_base", amount: money_from_cents(InvestorDashboard::MULTIPLIER_BASE_CENTS)) %>
-      </dd>
-    <% end %>
+  <dl class="mt-6 grid gap-4 tablet:grid-cols-2 desktop:grid-cols-4">
+    <%= render StatCardComponent.new(label: t(".invested"),
+                                     value: money_from_cents(dashboard.invested_cents)) %>
+    <%= render StatCardComponent.new(label: t(".active_projects"),
+                                     value: number_with_delimiter(dashboard.active_count)) %>
+    <%= render StatCardComponent.new(label: t(".people_reached"),
+                                     value: number_with_delimiter(dashboard.people_reached),
+                                     hint: t(".per_year")) %>
+    <%# Sem obra com meta e estimativa não há multiplicador, e um zero mentiria
+        dizendo que o dinheiro não alcança ninguém. %>
+    <%= render StatCardComponent.new(
+          label: t(".multiplier"),
+          value: dashboard.people_per_base ? number_with_delimiter(dashboard.people_per_base) : t(".no_multiplier"),
+          hint: t(".per_base", amount: money_from_cents(InvestorDashboard::MULTIPLIER_BASE_CENTS)),
+        ) %>
   </dl>
 
   <section class="mt-8">
-    <h2 class="text-lg font-semibold text-foreground"><%= t(".projects_title") %></h2>
+    <h2 class="text-section text-foreground"><%= t(".projects_title") %></h2>
 
     <% if dashboard.active_stakes.any? %>
       <%= render TableComponent.new(rows: dashboard.active_stakes, caption: t(".projects_caption"),
@@ -49,8 +30,12 @@
         <% table.with_column(header: t(".status")) do |stake| %>
           <%= render StatusBadgeComponent.new(status: stake.project.status, size: :sm) %>
         <% end %>
-        <% table.with_column(header: t(".contributed")) { |stake| money_from_cents(stake.contributed_cents) } %>
-        <% table.with_column(header: t(".reach")) { |stake| number_with_delimiter(stake.attributed_reach) } %>
+        <% table.with_column(header: t(".contributed"), align: :right) do |stake| %>
+          <%= money_from_cents(stake.contributed_cents) %>
+        <% end %>
+        <% table.with_column(header: t(".reach"), align: :right) do |stake| %>
+          <%= number_with_delimiter(stake.attributed_reach) %>
+        <% end %>
       <% end %>
     <% else %>
       <%= render EmptyStateComponent.new(icon: "hard-hat", title: t(".no_projects_title"),

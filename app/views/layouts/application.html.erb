@@ -8,10 +8,15 @@
     <%= render AppShellComponent.new do |shell| %>
       <% if authenticated? %>
         <% shell.with_navigation do %>
-          <%= render ButtonComponent.new(label: t("layouts.application.nav.investor"), variant: :ghost,
-                                         size: :sm, href: investor_path, classes: "w-full justify-start") %>
-          <%= render ButtonComponent.new(label: t("layouts.application.nav.team"), variant: :ghost,
-                                         size: :sm, href: team_path, classes: "w-full justify-start") %>
+          <%# `nav-state-active`: a localização atual tem de ser visível na
+              navegação, senão a coluna vira lista de links sem contexto. %>
+          <% { investor: investor_path, team: team_path }.each do |key, path| %>
+            <%= render ButtonComponent.new(label: t(key, scope: "layouts.application.nav"),
+                                           variant: :ghost, size: :sm, href: path,
+                                           aria: { current: ("page" if current_page?(path)) },
+                                           classes: class_names("w-full justify-start",
+                                                                "bg-muted font-semibold" => current_page?(path))) %>
+          <% end %>
           <%# Destinos ainda não construídos. Ficam visíveis para a coluna
               mostrar a forma que ela vai ter, e apontam para lugar nenhum de
               propósito — um link que promete tela inexistente é pior. %>
