@@ -130,21 +130,21 @@ RSpec.describe Profile do
     profile = create(:profile)
     create(:credential, profile: profile)
 
-    expect(profile).not_to have_valid_professional_registration
+    expect(profile).not_to be_valid_professional_registration
   end
 
   it "blocks professional registration when its verified credential is expired" do
     profile = create(:profile)
     create(:credential, profile: profile, verification_status: :verified, expires_on: Date.current)
 
-    expect(profile).not_to have_valid_professional_registration
+    expect(profile).not_to be_valid_professional_registration
   end
 
   it "allows professional registration with a current verified credential" do
     profile = create(:profile)
     create(:credential, profile: profile, verification_status: :verified)
 
-    expect(profile).to have_valid_professional_registration
+    expect(profile).to be_valid_professional_registration
   end
 
   it "removes credential documents when the profile is destroyed" do

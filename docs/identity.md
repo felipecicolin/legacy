@@ -147,7 +147,7 @@ genérica de blobs: a rota de download exige sessão e procura a credencial pelo
 perfil do usuário autenticado. Para outra pessoa, ou para um id inexistente, a
 resposta é `404`, sem revelar se o registro existe.
 
-O gate de candidatura é `Profile#has_valid_professional_registration?`. Ele
+O gate de candidatura é `Profile#valid_professional_registration?`. Ele
 passa somente quando existe uma credencial `verified` cuja `expires_on` ainda é
 futura. A data é consultada em tempo de leitura; não existe job de expiração.
 Uma credencial sem validade também não passa, porque não há como provar que o

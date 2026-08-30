@@ -7,6 +7,10 @@ pt-BR:
     confidential: Confidencial
     public: Pública
     restricted: Restrita
+  home:
+    show:
+      signed_in_as: Você entrou como %{email}.
+      title: Você está autenticado
   kinds:
     cau: CAU
     certificate: Certificado
@@ -16,15 +20,6 @@ pt-BR:
     other_professional: Outro registro profissional
     refund: Estorno
     schedule_recurring: Agendamento recorrente
-  verification_statuses:
-    expired: Expirada
-    pending: Pendente
-    rejected: Rejeitada
-    verified: Verificada
-  home:
-    show:
-      signed_in_as: Você entrou como %{email}.
-      title: Você está autenticado
   layouts:
     application:
       sign_out: Sair
@@ -77,3 +72,8 @@ pt-BR:
     confidential: Confidencial
     public: Pública
     restricted: Restrita
+  verification_statuses:
+    expired: Expirada
+    pending: Pendente
+    rejected: Rejeitada
+    verified: Verificada

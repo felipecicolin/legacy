@@ -2,18 +2,18 @@
 pt-BR:
   activerecord:
     attributes:
+      credential:
+        expires_on: Data de validade
+        issued_on: Data de emissão
+        issuing_body: Órgão emissor
+        kind: Tipo
+        number: Número
+        verification_status: Situação da verificação
       user:
         email_address: E-mail
         password: Senha
         password_confirmation: Confirmação de senha
         password_digest: Senha
-      credential:
-        kind: Tipo
-        number: Número
-        issuing_body: Órgão emissor
-        issued_on: Data de emissão
-        expires_on: Data de validade
-        verification_status: Situação da verificação
     errors:
       messages:
         confidential_precise_location: Registro confidencial não guarda coordenada nem endereço.
