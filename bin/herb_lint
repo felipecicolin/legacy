@@ -27,13 +27,20 @@ require "open3"
 
 ROOT = File.expand_path("..", __dir__)
 RULES_DIR = File.join(ROOT, ".herb", "rules")
+HERB_BIN = File.join(ROOT, "node_modules", ".bin", "herb-lint")
 
 def strip_ansi(output)
   output.dup.force_encoding("UTF-8").scrub.gsub(/\e\[[0-9;]*m/, "")
 end
 
 def herb(*args)
-  output, status = Open3.capture2e("bundle", "exec", "herb", "lint", *args, chdir: ROOT)
+  unless File.executable?(HERB_BIN)
+    warn "[ bin/herb_lint ] Executável local do Herb não encontrado: #{HERB_BIN}"
+    warn MISSING_PACKAGE_HINT
+    exit 1
+  end
+
+  output, status = Open3.capture2e("node", HERB_BIN, *args, chdir: ROOT)
   [output, status]
 end
 

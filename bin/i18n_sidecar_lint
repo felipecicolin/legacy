@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+require "date"
+
 # Enforces i18n sidecar STRUCTURE for ViewComponents.
 #
 # ViewComponent v4 owns each component's translations through a per-component

@@ -32,6 +32,7 @@ class Project < ApplicationRecord
 
   belongs_to :ngo
   has_many :progress_reports, dependent: :destroy
+  has_many :project_phases, -> { order(:position, :id) }, dependent: :destroy, inverse_of: :project
   has_many :needs, dependent: :destroy
   has_many :deployments, dependent: :nullify
   has_many :site_surveys, dependent: :destroy

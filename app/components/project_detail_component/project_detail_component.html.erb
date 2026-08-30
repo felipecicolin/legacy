@@ -1,0 +1,234 @@
+<div class="col-span-full min-w-0">
+  <div class="mb-2 flex flex-wrap items-center justify-between gap-3">
+    <span class="font-mono text-label text-muted-foreground"><%= t(".code") %> <%= presenter.code %></span>
+    <%= render StatusBadgeComponent.new(status: presenter.status) %>
+  </div>
+
+  <%= render PageHeaderComponent.new(title: presenter.title, subtitle: presenter.location) do |header| %>
+    <% header.with_breadcrumb(label: t(".breadcrumb"), href: projects_path) %>
+    <% header.with_breadcrumb(label: presenter.code) %>
+    <% header.with_actions do %>
+      <% if presenter.admin? %>
+        <%= render ButtonComponent.new(label: t(".admin_action"), variant: :outline, size: :sm,
+                                       href: admin_root_path) %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <div class="grid min-w-0 gap-6 desktop:grid-cols-12">
+    <nav class="hidden desktop:col-span-2 desktop:block" aria-label="<%= t(".section_navigation") %>">
+      <ul class="sticky top-6 space-y-3 border-l border-border pl-4 text-label text-muted-foreground">
+        <li><a class="hover:text-foreground" href="#progress"><%= t(".navigation.progress") %></a></li>
+        <li><a class="hover:text-foreground" href="#phases"><%= t(".navigation.phases") %></a></li>
+        <li><a class="hover:text-foreground" href="#reports"><%= t(".navigation.reports") %></a></li>
+        <li><a class="hover:text-foreground" href="#team"><%= t(".navigation.team") %></a></li>
+        <li><a class="hover:text-foreground" href="#needs"><%= t(".navigation.needs") %></a></li>
+        <li><a class="hover:text-foreground" href="#funding"><%= t(".navigation.funding") %></a></li>
+      </ul>
+    </nav>
+
+    <div class="grid min-w-0 gap-4 desktop:col-span-10 desktop:grid-cols-2">
+    <%= render CardComponent.new(id: "progress", variant: "default") do %>
+      <details open>
+        <summary class="cursor-pointer list-none text-section text-foreground"><%= t(".progress.title") %></summary>
+        <div class="mt-5 grid gap-6 tablet:grid-cols-2">
+          <div class="min-w-0">
+            <div class="mb-2 flex items-baseline justify-between gap-3">
+              <h3 class="text-body font-semibold text-foreground"><%= t(".progress.physical") %></h3>
+              <span class="font-mono text-sm text-foreground"><%= number_to_percentage(presenter.physical_progress, precision: 0) %></span>
+            </div>
+            <%= render ProgressBarComponent.new(kind: "physical", value: presenter.physical_progress) %>
+            <p class="mt-3 text-sm text-muted-foreground">
+              <% if presenter.progress_report %>
+                <%= t(".progress.reported", date: l(presenter.progress_report.reported_on),
+                      author: presenter.report_author(presenter.progress_report,
+                                                       role_label: t(".reports.reporter"))) %>
+              <% else %>
+                <%= t(".progress.direct") %>
+              <% end %>
+            </p>
+          </div>
+
+          <div class="min-w-0" data-simulated="true">
+            <div class="mb-2 flex items-baseline justify-between gap-3">
+              <h3 class="text-body font-semibold text-foreground"><%= t(".progress.funding") %></h3>
+              <span class="font-mono text-sm text-foreground"><%= number_to_currency(presenter.funding_value / 100.0) %></span>
+            </div>
+            <%= render ProgressBarComponent.new(kind: "funding", value: presenter.funding_value / 100.0,
+                                                 target: presenter.funding_target / 100.0) %>
+            <p class="mt-3 text-sm text-muted-foreground">
+              <%= t(".progress.goal", value: number_to_currency(presenter.funding_target / 100.0)) %>
+            </p>
+            <p class="mt-1 text-label text-warning"><%= t(".simulated") %></p>
+          </div>
+        </div>
+      </details>
+    <% end %>
+
+    <%= render CardComponent.new(id: "phases", variant: "outlined") do %>
+      <details open>
+        <summary class="cursor-pointer list-none text-section text-foreground"><%= t(".phases.title") %></summary>
+        <p class="mt-5 text-body text-muted-foreground">
+          <% if presenter.stages.empty? %>
+            <%= t(".phases.direct", value: number_to_percentage(presenter.physical_progress, precision: 0)) %>
+          <% else %>
+            <%= t(".phases.weighted", value: number_to_percentage(presenter.physical_progress, precision: 0)) %>
+          <% end %>
+        </p>
+        <% unless presenter.stages.empty? %>
+          <ol class="mt-5 space-y-5">
+            <% presenter.stages.each do |stage| %>
+              <li>
+                <div class="mb-2 flex items-baseline justify-between gap-3">
+                  <span class="text-body font-semibold text-foreground"><%= stage.name %></span>
+                  <span class="font-mono text-sm text-foreground"><%= number_to_percentage(stage.physical_progress, precision: 0) %></span>
+                </div>
+                <%= render ProgressBarComponent.new(kind: "physical", value: stage.physical_progress) %>
+                <p class="mt-2 text-label text-muted-foreground">
+                  <%= t(".phases.weight", weight: stage.weight,
+                         contribution: number_to_percentage(presenter.phase_contribution(stage), precision: 1)) %>
+                </p>
+              </li>
+            <% end %>
+          </ol>
+        <% end %>
+      </details>
+    <% end %>
+
+    <%= render CardComponent.new(id: "reports", variant: "default", class: "desktop:col-span-2") do %>
+      <details open>
+        <summary class="cursor-pointer list-none text-section text-foreground"><%= t(".reports.title") %></summary>
+        <%= helpers.turbo_frame_tag "project-reports" do %>
+          <% if presenter.reports.empty? %>
+            <p class="mt-5 text-body text-muted-foreground"><%= t(".reports.empty") %></p>
+          <% else %>
+            <ol class="mt-5 space-y-8 border-l border-border pl-5">
+              <% presenter.reports.each do |report| %>
+                <li class="relative min-w-0">
+                  <span class="absolute -left-7 top-1 h-3 w-3 rounded-full bg-primary" aria-hidden="true"></span>
+                  <div class="flex flex-wrap items-baseline justify-between gap-2">
+                    <time class="font-mono text-sm text-muted-foreground" datetime="<%= report.reported_on.iso8601 %>">
+                      <%= l(report.reported_on) %>
+                    </time>
+                    <span class="text-sm text-muted-foreground">
+                      <%= t(".reports.by", name: presenter.report_author(report,
+                                                                         role_label: t(".reports.reporter"))) %>
+                    </span>
+                  </div>
+                  <p class="mt-3 text-body text-foreground">
+                    <%= report.summary.to_plain_text.presence || t(".reports.no_summary") %>
+                  </p>
+                  <% if report.blockers.to_plain_text.presence %>
+                    <p class="mt-2 rounded-sm bg-warning-soft px-3 py-2 text-sm text-warning">
+                      <span class="font-semibold"><%= t(".reports.blockers") %></span>
+                      <%= report.blockers.to_plain_text %>
+                    </p>
+                  <% end %>
+                  <% if report.project_photos.any? %>
+                    <div class="mt-4 grid min-w-0 gap-4 tablet:grid-cols-2">
+                      <% report.project_photos.each do |photo| %>
+                        <%= render ImageFrameComponent.new(
+                              attachment: photo.image,
+                              alt: photo.caption.presence || t(".reports.photo_alt"),
+                              ratio: "16/9",
+                            ) do |frame| %>
+                          <% frame.with_caption { presenter.photo_caption(photo) } %>
+                        <% end %>
+                      <% end %>
+                    </div>
+                  <% end %>
+                </li>
+              <% end %>
+            </ol>
+            <% if presenter.more_reports? %>
+              <div class="mt-6">
+                <%= render ButtonComponent.new(label: t(".reports.load_more"), variant: :outline, size: :sm,
+                                               href: helpers.project_path(presenter.code,
+                                                                  reports_page: presenter.next_reports_page),
+                                               data: { turbo_frame: "project-reports" }) %>
+              </div>
+            <% end %>
+          <% end %>
+        <% end %>
+      </details>
+    <% end %>
+
+    <%= render CardComponent.new(id: "team", variant: "outlined") do %>
+      <details open>
+        <summary class="cursor-pointer list-none text-section text-foreground"><%= t(".team.title") %></summary>
+        <% if presenter.team_members.empty? %>
+          <p class="mt-5 text-body text-muted-foreground"><%= t(".team.empty") %></p>
+        <% else %>
+          <ul class="mt-5 divide-y divide-border">
+            <% presenter.team_members.each do |member| %>
+              <li class="flex min-w-0 items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
+                <span class="min-w-0 truncate text-body text-foreground"><%= presenter.member_name(member) %></span>
+                <span class="shrink-0 text-label text-muted-foreground"><%= member.participation_role_label %></span>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+      </details>
+    <% end %>
+
+    <%= render CardComponent.new(id: "needs", variant: "outlined") do %>
+      <details open>
+        <summary class="cursor-pointer list-none text-section text-foreground"><%= t(".needs.title") %></summary>
+        <% if presenter.needs.empty? %>
+          <p class="mt-5 text-body text-muted-foreground"><%= t(".needs.empty") %></p>
+        <% else %>
+          <ul class="mt-5 space-y-4">
+            <% presenter.needs.each do |need| %>
+              <li class="min-w-0 rounded-lg border border-border bg-card p-4">
+                <div class="flex min-w-0 flex-wrap items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <h3 class="text-body font-semibold text-foreground"><%= need.title %></h3>
+                    <p class="mt-1 text-sm text-muted-foreground"><%= need.need_kind_label %></p>
+                  </div>
+                  <span class="shrink-0 rounded-full bg-primary-soft px-2 py-1 text-label text-primary">
+                    <%= t(".needs.remaining", remaining: need.remaining_quantity, total: need.quantity) %>
+                  </span>
+                </div>
+                <div class="mt-4">
+                  <%= render ButtonComponent.new(label: t(".needs.apply"), variant: :soft, size: :sm,
+                                                 href: helpers.new_need_candidacy_path(need)) %>
+                </div>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+      </details>
+    <% end %>
+
+    <%= render CardComponent.new(id: "funding", variant: "default", class: "desktop:col-span-2") do %>
+      <details open>
+        <summary class="cursor-pointer list-none text-section text-foreground"><%= t(".budget.title") %></summary>
+        <% if presenter.budget_rows.empty? %>
+          <p class="mt-5 text-body text-muted-foreground"><%= t(".budget.empty") %></p>
+        <% else %>
+          <div class="mt-5 min-w-0">
+            <%= render TableComponent.new(rows: presenter.budget_rows, caption: t(".budget.caption")) do |table| %>
+              <% table.with_column(header: t(".budget.item")) { |row| row.description } %>
+              <% table.with_column(header: t(".budget.category")) { |row| row.category } %>
+              <% table.with_column(header: t(".budget.estimated"), align: :right) do |row| %>
+                <%= number_to_currency(row.estimated_cents / 100.0, unit: presenter.funding_currency) %>
+              <% end %>
+              <% table.with_column(header: t(".budget.spent"), align: :right) do |row| %>
+                <%= number_to_currency(row.spent_cents / 100.0, unit: presenter.funding_currency) %>
+                <% if row.over_budget %>
+                  <span class="mt-1 block text-label text-destructive"><%= t(".budget.exceeded") %></span>
+                <% end %>
+              <% end %>
+            <% end %>
+          </div>
+          <p class="mt-4 text-sm text-muted-foreground">
+            <%= t(".budget.total", value: number_to_currency(presenter.budget_total_cents / 100.0,
+                                                               unit: presenter.funding_currency)) %>
+          </p>
+          <p class="mt-1 text-label text-warning"><%= t(".simulated") %></p>
+        <% end %>
+      </details>
+    <% end %>
+    </div>
+  </div>
+</div>
