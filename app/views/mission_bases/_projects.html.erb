@@ -1,0 +1,18 @@
+<%# locals: (projects:) %>
+<% if projects.any? %>
+  <%= render TableComponent.new(rows: projects, caption: t(".caption"), classes: "mt-3") do |table| %>
+    <% table.with_column(header: t(".code")) { |project| project.code } %>
+    <% table.with_column(header: t(".title")) { |project| project.title } %>
+    <% table.with_column(header: t(".status")) do |project| %>
+      <%= render StatusBadgeComponent.new(status: project.status, size: :sm) %>
+    <% end %>
+    <% table.with_column(header: t(".progress"), align: :right) do |project| %>
+      <%= render ProgressBarComponent.new(kind: "physical", value: project.physical_progress) %>
+    <% end %>
+  <% end %>
+<% else %>
+  <%# A base sem obra nenhuma é o caso que motivou separar base de obra. O
+      estado vazio é DESTA seção, e a tela segue completa e útil ao redor dele. %>
+  <%= render EmptyStateComponent.new(icon: "hard-hat", title: t(".empty_title"),
+                                     description: t(".empty_description"), classes: "mt-3") %>
+<% end %>

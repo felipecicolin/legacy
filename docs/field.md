@@ -157,6 +157,47 @@ validar, e um estado forçado por ali não teria como ser percebido depois.
 A matriz é testada inteira, 5×5, e não por amostra: é ela que pega um estado
 novo cujo grafo de transições ninguém lembrou de atualizar.
 
+## A tela da base é a prova de que a separação vale
+
+`MissionBasesController#show` existe para ser a evidência visual do que
+[a primeira seção](#base-não-é-obra) argumenta: **se a tela pudesse ser
+reduzida a "a obra da base", o modelo estava errado**.
+
+Por isso a regra que vem primeiro é a do caso vazio: **base sem obra nenhuma
+renderiza completa e útil** — descrição, necessidades, galeria. O
+`EmptyStateComponent` aparece **dentro da seção de obras**, nunca no lugar da
+página. Uma tela que caísse em estado vazio ali estaria dizendo que a base só
+existe enquanto tem obra, que é exatamente a fusão que o modelo recusa.
+
+O seed de desenvolvimento carrega uma base sem obra (`casa-do-rio`) para que a
+prova não dependa de alguém montar o caso à mão.
+
+**As necessidades da seção são as DA BASE** (`project_id: nil`). Misturar as das
+obras apagaria a distinção que a tela existe para mostrar — e tem spec para
+isso.
+
+### O que a tela não diz
+
+A granularidade da localização sai de `Sensitive#location_label(context)`: país
+sempre, região só para quem alcança o nível do registro. A coordenada não é
+"escondida" com CSS nem enviada vazia: quem não alcança **não recebe o
+elemento**, e o spec procura o nome da região no HTML inteiro.
+
+Uma base fora do alcance responde **404 com o mesmo corpo** de uma base que não
+existe — a comparação é literal no spec, porque um 403 confirmaria que a base
+existe, e a existência já é a informação que a política protege. Ver
+[Autorização](authorization.md).
+
+### Uma peça que faltava, achada pela tela
+
+`Country#name` resolvia `countries.<iso>` sem default, e a demo exibia
+"Translation missing" para os países fictícios que o seed usa. Fixture e seed
+usam a faixa de uso privado do ISO 3166-1 (XA–XZ) de propósito — **dado de
+demonstração não nomeia país-alvo real**, pela mesma razão que a política de
+sensibilidade existe. O default agora é o próprio código; todo país **curado**
+segue obrigado a ter rótulo, e quem cobra é
+`spec/models/vocabulary/catalog_spec.rb`.
+
 ## O levantamento é entregável, não só um estado
 
 `LEVANTAMENTO` é um dos cinco estados da obra, mas levantamento é **trabalho com

@@ -13,6 +13,10 @@ Rails.root.glob("db/seeds/development/*.rb").sort.each { |file| load file }
 RSpec.describe DevelopmentSeeds do
   def load_seeds = described_class.load_all!
 
+  def bases_visible_at(clearance)
+    MissionBase.visible_to(Visibility::Context.new(clearance: clearance)).count
+  end
+
   # Idempotência não é conveniência: o seed roda de novo toda vez que alguém
   # recarrega a demo, e um `create!` solto transformaria a segunda carga em
   # violação de índice único.
@@ -42,22 +46,41 @@ RSpec.describe DevelopmentSeeds do
 
   # A base confidencial existe para NÃO aparecer: é o teste visual da política
   # de sensibilidade, e sem uma base aberta ao lado não haveria contraste.
-  it "answers a different set of bases to each level of clearance" do
-    load_seeds
+  #
+  # A propriedade, e não a contagem: uma camada nova no seed muda os números e
+  # não muda o que importa.
+  describe "what each level of clearance reaches" do
+    subject(:counts) { %i[public restricted confidential].map { |level| bases_visible_at(level) } }
 
-    counts = %i[public restricted confidential].map do |clearance|
-      MissionBase.visible_to(Visibility::Context.new(clearance: clearance)).count
+    before { load_seeds }
+
+    it "never shrinks as the clearance grows" do
+      expect(counts).to eq(counts.sort)
     end
 
-    expect(counts).to eq([1, 3, 4])
+    it "answers a different set to each of the three" do
+      expect(counts.uniq.size).to eq(3)
+    end
+
+    it "shows something to an anonymous reader" do
+      expect(counts.first).to be_positive
+    end
   end
 
   # Abrir uma base passa pela porta de verdade, que exige autor e
   # justificativa — e a segunda carga não pode registrar a promoção de novo.
-  it "records the disclosure once, however many times it runs" do
-    load_seeds
-    load_seeds
+  # O que se mede é a IDEMPOTÊNCIA, não quantas bases o seed abre hoje.
+  describe "the disclosures it records" do
+    let(:first_run) { load_seeds && SensitivityChange.count }
 
-    expect(SensitivityChange.count).to eq(1)
+    it "opens at least one base" do
+      expect(first_run).to be_positive
+    end
+
+    it "records each one once, however many times it runs" do
+      first_run
+
+      expect { load_seeds }.not_to change(SensitivityChange, :count)
+    end
   end
 end

@@ -23,6 +23,11 @@ module DevelopmentSeeds
       { slug: "escola-aurora", name: "Escola Aurora", base_kind: :school, country: "XA" },
       { slug: "clinica-do-porto", name: "Clínica do Porto", base_kind: :clinic, country: "XB" },
       { slug: "casa-norte", name: "Casa Norte", base_kind: :housing, country: "XC" },
+      # Sem obra nenhuma, e aberta ao público de propósito: é o caso que
+      # motivou separar base de obra, e a tela de detalhe (#53) existe para
+      # provar que ele renderiza completo. Um seed sem ele deixaria a prova
+      # dependendo de alguém montar o caso à mão.
+      { slug: "casa-do-rio", name: "Casa do Rio", base_kind: :ngo, country: "XB", public: true },
     ].freeze
 
     # Os cinco estados aparecem, porque é a listagem com os cinco lado a lado
@@ -45,6 +50,7 @@ module DevelopmentSeeds
       { base: "escola-aurora", title: "Equipe de mutirão", need_kind: :team, quantity: 12, urgency: :normal },
       { base: "clinica-do-porto", title: "Recursos para acabamento", need_kind: :funding, quantity: 1,
         urgency: :low },
+      { base: "casa-do-rio", title: "Cimento e areia", need_kind: :material, quantity: 30, urgency: :high },
     ].freeze
 
     def load!

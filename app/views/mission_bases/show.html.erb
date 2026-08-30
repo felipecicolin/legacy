@@ -1,0 +1,26 @@
+<%= render PageHeaderComponent.new(title: mission_base.name, subtitle: presenter.location) do |header| %>
+  <% header.with_breadcrumb(label: t(".breadcrumb"), href: mission_bases_path) %>
+  <% header.with_breadcrumb(label: mission_base.name) %>
+<% end %>
+
+<section class="mt-6 grid gap-6 desktop:grid-cols-3">
+  <%= render CardComponent.new(variant: "outlined", classes: "desktop:col-span-2") do %>
+    <h2 class="text-lg font-semibold text-foreground"><%= t(".about") %></h2>
+    <%= render "mission_bases/facts", mission_base: mission_base, presenter: presenter %>
+    <div class="mt-4 text-muted-foreground"><%= mission_base.description %></div>
+  <% end %>
+
+  <%# A base tem necessidade MESMO SEM OBRA ATIVA, e é por isso que esta seção
+      vem antes do histórico: ela é o cenário que motivou separar base de obra. %>
+  <%= render CardComponent.new(variant: "outlined") do %>
+    <h2 class="text-lg font-semibold text-foreground"><%= t(".standing_needs") %></h2>
+    <%= render "mission_bases/needs", needs: presenter.standing_needs %>
+  <% end %>
+</section>
+
+<section class="mt-6">
+  <h2 class="text-lg font-semibold text-foreground"><%= t(".history") %></h2>
+  <%= render "mission_bases/projects", projects: presenter.project_history %>
+</section>
+
+<%= render "mission_bases/gallery", gallery: presenter.gallery, presenter: presenter %>
