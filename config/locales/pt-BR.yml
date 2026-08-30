@@ -1,5 +1,32 @@
 ---
 pt-BR:
+  admin:
+    dashboard:
+      show:
+        active_projects: Obras ativas
+        active_volunteers: Voluntários ativos
+        average_progress_column: Progresso médio
+        country_column: País
+        country_distribution_title: Distribuição por país
+        critical_need_alert:
+          one: "%{count} necessidade crítica vencendo"
+          other: "%{count} necessidades críticas vencendo"
+        in_progress_empty_title: Nenhuma obra em andamento
+        in_progress_title: Obras em andamento
+        paused_project_alert:
+          one: "%{count} obra parada há mais de 15 dias"
+          other: "%{count} obras paradas há mais de 15 dias"
+        people_served: Pessoas servidas
+        projects_column: Obras
+        raised_this_month: Arrecadado no mês
+        recent_activity_empty_title: Nenhum relatório aprovado ainda
+        recent_activity_title: Atividade recente
+        region_column: Região
+        region_unspecified: Sem região definida
+        title: Painel do administrador
+        urgent_project_alert:
+          one: "%{count} obra urgente"
+          other: "%{count} obras urgentes"
   app:
     name: Legacy
     preview_title: Legacy — Preview de componente

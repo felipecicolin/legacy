@@ -78,6 +78,14 @@ class ProjectPhoto < ApplicationRecord
     taken_by.to_s
   end
 
+  # Legenda "data e responsável" do design system, para o painel do
+  # administrador (#50) — onde a obra já passou por `visible_to`, então quem
+  # está vendo o card sempre alcança o registro (ver `credit_for` para o
+  # caminho que precisa checar).
+  def caption
+    [I18n.l(taken_on), taken_by&.display_name].compact.join(" · ")
+  end
+
   private
 
   # Uma checagem só, com saída na primeira recusa. Três validações separadas

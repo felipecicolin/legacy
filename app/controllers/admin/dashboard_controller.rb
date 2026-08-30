@@ -3,7 +3,7 @@
 module Admin
   class DashboardController < BaseController
     def show
-      render_placeholder
+      @dashboard = DashboardPresenter.new(pundit_user.visibility)
     end
   end
 end

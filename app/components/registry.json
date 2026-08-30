@@ -1,6 +1,44 @@
 {
   "components": [
     {
+      "name": "AlertComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "severity",
+          "kind": "keyreq"
+        },
+        {
+          "name": "title",
+          "kind": "keyreq"
+        },
+        {
+          "name": "href",
+          "kind": "key"
+        },
+        {
+          "name": "html_options",
+          "kind": "keyrest"
+        }
+      ],
+      "constants": {
+        "SEVERITIES": [
+          "warning",
+          "destructive"
+        ]
+      },
+      "slots": [],
+      "stimulus_controller": "alert-component",
+      "template": "app/components/alert_component/alert_component.html.erb",
+      "preview": "spec/components/previews/alert_component_preview.rb",
+      "examples": [
+        {
+          "name": "playground",
+          "source": "  def playground(severity: \"warning\")\n    render(AlertComponent.new(severity: severity, title: \"3 obras paradas há mais de 15 dias\", href: \"/obras\"))\n  end"
+        }
+      ]
+    },
+    {
       "name": "AppShellComponent",
       "category": "ui",
       "params": [],
@@ -396,6 +434,47 @@
         {
           "name": "default",
           "source": "  def default\n    render(InputComponent.new(form: form_builder, attribute: :email, type: \"email\",\n                              required: true, hint: \"Usaremos este endereço para falar com você.\"))\n  end"
+        }
+      ]
+    },
+    {
+      "name": "MetricTileComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "label",
+          "kind": "keyreq"
+        },
+        {
+          "name": "value",
+          "kind": "key"
+        },
+        {
+          "name": "icon",
+          "kind": "key"
+        },
+        {
+          "name": "pending",
+          "kind": "key"
+        },
+        {
+          "name": "html_options",
+          "kind": "keyrest"
+        }
+      ],
+      "constants": {},
+      "slots": [],
+      "stimulus_controller": "metric-tile-component",
+      "template": "app/components/metric_tile_component/metric_tile_component.html.erb",
+      "preview": "spec/components/previews/metric_tile_component_preview.rb",
+      "examples": [
+        {
+          "name": "pending",
+          "source": "  def pending\n    render(MetricTileComponent.new(label: \"Arrecadado no mês\", icon: \"chart-bar\", pending: true))\n  end"
+        },
+        {
+          "name": "playground",
+          "source": "  def playground\n    render(MetricTileComponent.new(label: \"Obras ativas\", value: \"42\", icon: \"hard-hat\"))\n  end"
         }
       ]
     },

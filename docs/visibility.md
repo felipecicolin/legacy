@@ -216,17 +216,40 @@ scope :hidden_from, ->(context) { where.not(sensitivity_level: context.allowed_l
 ```
 
 Os dois devolvem **relação**, não array. É isso que deixa o agregado anonimizado
-por região (trilha de dados, issue própria) sair de
+por região sair de
 
 ```ruby
-Field.hidden_from(context).group(:region_id).sum(:funded_cents)
+Project.hidden_from(context).joins(:mission_base).group("mission_bases.country_id", "mission_bases.region_id")
 ```
 
 sem um segundo caminho de SQL. Um caminho paralelo é onde a divergência mora:
 duas consultas que decidem visibilidade em lugares diferentes divergem no dia em
-que só uma é atualizada. O piso de k-anonimato (não devolver agregado de região
-com uma obra só) é da issue de dados; o que esta garante é que a pergunta é
-formulável.
+que só uma é atualizada.
+
+### `AnonymizedRollup` (#50)
+
+> [`app/queries/anonymized_rollup.rb`](../app/queries/anonymized_rollup.rb) ·
+> [`spec/queries/anonymized_rollup_spec.rb`](../spec/queries/anonymized_rollup_spec.rb)
+
+É quem implementa o piso de k-anonimato que o parágrafo acima citava como
+pendente: `MINIMUM_GROUP_SIZE = 3` — uma região com uma ou duas obras ocultas
+some do resultado em vez de aparecer com "1 obra · X% médio", que seria a
+própria obra com outro nome. A chave de agrupamento é `[country_id, region_id]`
+lido direto de `mission_bases` (não de `regions`), porque `region_id` é
+opcional e nulo não pode juntar bases de países diferentes no mesmo grupo.
+
+**O que o agregado soma hoje: contagem de obras e progresso físico médio, só.**
+A soma de dinheiro arrecadado — o "R$ 240.000" do exemplo lá em cima — espera
+`Campaign#raised_cents` (issue #39, Arrecadação, ainda não existe). Quando
+existir, entra como mais uma coluna agregada na mesma consulta; a estrutura
+(agrupar sobre `hidden_from`, suprimir grupo pequeno, resolver nome de país e
+região em duas queries à parte) não muda.
+
+A defesa contra o **ataque do complemento** — subtrair os grupos publicados do
+total geral para reconstruir o grupo suprimido — fica de fora de propósito.
+Resolver isso direito exige orçamento de privacidade formal, e a issue que
+introduziu o rollup já registrou isso como risco aceito para v2, não como
+esquecimento.
 
 `Visibility::Context` é a autorização **já resolvida** em nível, e não o
 usuário: `visible_to` não precisa conhecer papel, política nem sessão, e o

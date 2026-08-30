@@ -49,6 +49,12 @@ class ProgressReport < ApplicationRecord
     I18n.t(status, scope: :statuses)
   end
 
+  # Legenda "data e responsável" do design system, para a atividade recente
+  # do painel do administrador (#50).
+  def caption
+    [I18n.l(reported_on), reported_by.display_name].join(" · ")
+  end
+
   private
 
   # Vazio inclui `<div><br></div>`, que é o que o Trix envia quando ninguém

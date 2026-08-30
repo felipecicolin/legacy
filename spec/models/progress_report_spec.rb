@@ -158,4 +158,11 @@ RSpec.describe ProgressReport do
   it "labels the state in pt-BR" do
     expect(build(:progress_report, :approved, project: project).status_label).to eq("Aprovado")
   end
+
+  it "combines the date and the reporter's name in the caption" do
+    reporter = create(:profile, display_name: "Ana Souza")
+    report = create(:progress_report, project: project, reported_by: reporter, reported_on: Date.new(2026, 3, 12))
+
+    expect(report.caption).to eq("12/03/2026 · Ana Souza")
+  end
 end
