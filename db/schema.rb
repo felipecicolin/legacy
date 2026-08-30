@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_30_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_30_130100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -50,6 +50,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_120000) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "memberships", force: :cascade do |t|
+    t.datetime "accepted_at"
+    t.datetime "created_at", null: false
+    t.bigint "organization_id", null: false
+    t.bigint "profile_id", null: false
+    t.integer "role", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id", "role"], name: "index_memberships_on_organization_id_and_role"
+    t.index ["profile_id", "organization_id"], name: "index_memberships_on_profile_id_and_organization_id", unique: true
+  end
+
+  create_table "organizations", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "legal_document"
+    t.string "name", null: false
+    t.integer "organization_kind", null: false
+    t.integer "organization_status", default: 0, null: false
+    t.string "slug", null: false
+    t.datetime "updated_at", null: false
+    t.string "website"
+    t.index ["organization_kind", "organization_status"], name: "idx_on_organization_kind_organization_status_29282c9012"
+    t.index ["slug"], name: "index_organizations_on_slug", unique: true
   end
 
   create_table "payment_transactions", force: :cascade do |t|
@@ -283,6 +307,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_120000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "memberships", "organizations"
+  add_foreign_key "memberships", "profiles"
   add_foreign_key "profiles", "users"
   add_foreign_key "sensitivity_changes", "users", column: "author_id"
   add_foreign_key "sessions", "users"

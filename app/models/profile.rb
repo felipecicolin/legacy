@@ -26,6 +26,21 @@ class Profile < ApplicationRecord
   # resposta, e esta é a outra porta.
   self.filter_attributes |= HIDDEN_ATTRIBUTES
 
+  # Papel é contexto, e o contexto mora do outro lado: nenhuma coluna aqui diz
+  # "esta pessoa é dona de alguma coisa". Ver docs/organizations.md.
+  #
+  # `dependent: :destroy` apaga os vínculos junto com a pessoa — menos quando um
+  # deles é a última posse de uma organização que continua existindo. Aí o
+  # `Membership` recusa, e apagar a pessoa reprova em vez de deixar uma
+  # organização sem dono.
+  #
+  # A recusa é silenciosa deste lado: `destroy` volta `false` e desfaz tudo, mas
+  # os erros ficam no `Membership` que recusou e `profile.errors` volta VAZIO.
+  # Quem construir a tela de exclusão de conta precisa perguntar antes — "estas
+  # organizações ficariam sem dono" — em vez de tentar apresentar o erro depois.
+  has_many :memberships, dependent: :destroy
+  has_many :organizations, through: :memberships
+
   validates :legal_name, :display_name, presence: true
 
   # As duas colunas são NOT NULL com default, e é justamente o default que faz
