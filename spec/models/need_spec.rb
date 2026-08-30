@@ -168,7 +168,7 @@ RSpec.describe Need do
   # 400 telhas convida a um formulário que não atende o pedido.
   describe "#served_by_person?" do
     it "answers yes only for the kinds a person can be" do
-      answers = Need.need_kinds.keys.select { |kind| build(:need, need_kind: kind).served_by_person? }
+      answers = described_class.need_kinds.keys.select { |kind| build(:need, need_kind: kind).served_by_person? }
 
       expect(answers).to contain_exactly("skill", "team")
     end

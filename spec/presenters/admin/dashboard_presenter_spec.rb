@@ -4,7 +4,7 @@ require "rails_helper"
 
 RSpec.describe Admin::DashboardPresenter do
   let(:visibility) { Visibility::Context.new(clearance: :confidential) }
-  let(:mission_base) { create(:mission_base) }
+  let(:ngo) { create(:ngo) }
 
   describe "#tiles" do
     it "returns four tiles, none pending" do
@@ -20,15 +20,15 @@ RSpec.describe Admin::DashboardPresenter do
     end
 
     it "counts active work, excluding completed projects" do
-      create(:project, mission_base: mission_base, status: :in_progress)
-      create(:project, mission_base: mission_base, status: :completed)
+      create(:project, ngo: ngo, status: :in_progress)
+      create(:project, ngo: ngo, status: :completed)
 
       expect(described_class.new(visibility).tiles.first.value).to eq("1")
     end
 
     it "sums people served across mission bases" do
-      create(:mission_base, people_served: 40)
-      create(:mission_base, people_served: 60)
+      create(:ngo, people_served: 40)
+      create(:ngo, people_served: 60)
 
       expect(described_class.new(visibility).tiles.second.value).to eq("100")
     end
@@ -47,7 +47,7 @@ RSpec.describe Admin::DashboardPresenter do
     end
 
     it "flags urgent projects, with a Portuguese count" do
-      create(:project, mission_base: mission_base, status: :urgent)
+      create(:project, ngo: ngo, status: :urgent)
 
       alert = described_class.new(visibility).alerts.first
 
@@ -55,8 +55,8 @@ RSpec.describe Admin::DashboardPresenter do
     end
 
     it "flags a project paused for more than 15 days, not a recently paused one" do
-      create(:project, mission_base: mission_base, status: :paused, updated_at: 20.days.ago)
-      create(:project, mission_base: mission_base, status: :paused, updated_at: 1.day.ago)
+      create(:project, ngo: ngo, status: :paused, updated_at: 20.days.ago)
+      create(:project, ngo: ngo, status: :paused, updated_at: 1.day.ago)
 
       alert = described_class.new(visibility).alerts.find { |a| a.severity == "warning" && a.href == "/obras" }
 
@@ -64,8 +64,8 @@ RSpec.describe Admin::DashboardPresenter do
     end
 
     it "flags a critical need due soon, not a low-urgency one" do
-      create(:need, mission_base: mission_base, urgency: :critical, needed_by: 3.days.from_now)
-      create(:need, mission_base: mission_base, urgency: :low, needed_by: 3.days.from_now)
+      create(:need, ngo: ngo, urgency: :critical, needed_by: 3.days.from_now)
+      create(:need, ngo: ngo, urgency: :low, needed_by: 3.days.from_now)
 
       alert = described_class.new(visibility).alerts.find { |a| a.href == "/necessidades" }
 
@@ -73,7 +73,7 @@ RSpec.describe Admin::DashboardPresenter do
     end
 
     it "does not alert on work a lower-clearance viewer cannot see" do
-      create(:project, mission_base: mission_base, status: :urgent, sensitivity_level: :confidential)
+      create(:project, ngo: ngo, status: :urgent, sensitivity_level: :confidential)
       restricted = Visibility::Context.new(clearance: :restricted)
 
       expect(described_class.new(restricted).alerts).to be_empty
@@ -88,9 +88,9 @@ RSpec.describe Admin::DashboardPresenter do
     end
 
     it "flags a candidacy stalled in screening for more than 7 days, not a recent one" do
-      need = create(:need, mission_base: mission_base)
+      need = create(:need, ngo: ngo)
       create(:candidacy, need: need, candidacy_status: :screening, updated_at: 10.days.ago)
-      create(:candidacy, need: create(:need, mission_base: mission_base), candidacy_status: :submitted)
+      create(:candidacy, need: create(:need, ngo: ngo), candidacy_status: :submitted)
 
       alert = described_class.new(visibility).alerts.find { |a| a.title.include?("triagem") }
 
@@ -118,9 +118,9 @@ RSpec.describe Admin::DashboardPresenter do
 
   describe "#active_projects" do
     it "excludes completed work and orders by urgency" do
-      create(:project, mission_base: mission_base, status: :completed)
-      surveying = create(:project, mission_base: mission_base, status: :surveying)
-      urgent = create(:project, mission_base: mission_base, status: :urgent)
+      create(:project, ngo: ngo, status: :completed)
+      surveying = create(:project, ngo: ngo, status: :surveying)
+      urgent = create(:project, ngo: ngo, status: :urgent)
 
       expect(described_class.new(visibility).active_projects).to eq([urgent, surveying])
     end
@@ -140,7 +140,7 @@ RSpec.describe Admin::DashboardPresenter do
 
   describe "#recent_activity" do
     it "lists only approved reports, most recent first" do
-      project = create(:project, mission_base: mission_base)
+      project = create(:project, ngo: ngo)
       create(:progress_report, :approved, project: project, reported_on: 2.days.ago)
       recent = create(:progress_report, :approved, project: project, reported_on: 1.day.ago)
       create(:progress_report, :submitted, project: project)
@@ -160,14 +160,14 @@ RSpec.describe Admin::DashboardPresenter do
 
   def create_confirmed_campaigns(country:, count:, amount_cents:)
     count.times do |index|
-      campaign = create(:campaign, mission_base: create(:mission_base, :active, country: country))
+      campaign = create(:campaign, ngo: create(:ngo, :active, country: country))
       create(:contribution, :confirmed, campaign: campaign, amount_cents: amount_cents,
                                         provider_reference: "SIM-#{index}")
     end
   end
 
   def create_projects_with_photos(count)
-    count.times { create(:project_photo, project: create(:project, mission_base: mission_base)) }
+    count.times { create(:project_photo, project: create(:project, ngo: ngo)) }
   end
 
   def measure_active_projects_queries

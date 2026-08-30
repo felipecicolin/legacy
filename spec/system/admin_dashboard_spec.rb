@@ -40,8 +40,8 @@ RSpec.describe "Admin dashboard" do
   # "Obras em andamento" mostra as quatro obras ainda não concluídas — a
   # concluída fica de fora de propósito, não é a mesma coisa que "sumiu".
   it "shows the four non-completed statuses as cards, and excludes completed work" do
-    base = create(:mission_base)
-    Project::STATUSES.each_key { |status| create(:project, mission_base: base, status: status) }
+    ngo = create(:ngo)
+    Project::STATUSES.each_key { |status| create(:project, ngo: ngo, status: status) }
 
     sign_in_as_staff
     visit admin_root_path

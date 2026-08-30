@@ -60,7 +60,7 @@ module Admin
     # coincidência, é o motivo de a issue #8 ter fixado essa ordem.
     def active_projects
       @active_projects ||= Project.visible_to(@visibility).where.not(status: :completed)
-                                  .includes(:mission_base, :campaigns, project_photos: { image_attachment: :blob })
+                                  .includes(:ngo, :campaigns, project_photos: { image_attachment: :blob })
                                   .order(status: :desc)
     end
 
@@ -136,7 +136,7 @@ module Admin
     end
 
     def people_served_tile
-      served = MissionBase.visible_to(@visibility).sum(:people_served)
+      served = Ngo.visible_to(@visibility).sum(:people_served)
       Tile.new(label: I18n.t(:people_served, scope: I18N_SCOPE), value: served.to_s, icon: "users", pending: false)
     end
 

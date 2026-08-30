@@ -54,26 +54,38 @@
           <% end %>
         <% end %>
       <% end %>
-      <% if authenticated? && Current.user.profile %>
+      <% if authenticated? %>
         <% shell.with_footer do %>
-          <%# Nome, e-mail e sair na MESMA linha: `min-w-0` mais `truncate` é o
-              par que impede o e-mail longo de empurrar o botão para baixo. %>
-          <div class="flex items-center gap-2">
-            <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary
-                         text-sm font-semibold text-primary-foreground"
-                  aria-hidden="true"><%= Current.user.profile.display_name.first %></span>
-            <span class="min-w-0 flex-1">
-              <span class="block truncate font-medium"><%= Current.user.profile.display_name %></span>
-              <span class="block truncate text-sm opacity-80"><%= Current.user.email_address %></span>
-            </span>
-            <%= render ButtonComponent.new(variant: :ghost, size: :icon, href: session_path,
-                                           aria: { label: t("layouts.application.sign_out") },
-                                           classes: "shrink-0 text-accent-foreground hover:bg-accent-foreground/10",
-                                           data: { turbo_method: :delete }) do %>
-              <%= render IconComponent.new(name: "arrow-right", size: :md) %>
-              <span class="sr-only"><%= t("layouts.application.sign_out") %></span>
-            <% end %>
-          </div>
+          <% if Current.user.profile %>
+            <%# Nome, e-mail e sair na MESMA linha: `min-w-0` mais `truncate` é o
+                par que impede o e-mail longo de empurrar o botão para baixo. %>
+            <div class="flex items-center gap-2">
+              <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary
+                           text-sm font-semibold text-primary-foreground"
+                    aria-hidden="true"><%= Current.user.profile.display_name.first %></span>
+              <span class="min-w-0 flex-1">
+                <span class="block truncate font-medium"><%= Current.user.profile.display_name %></span>
+                <span class="block truncate text-sm opacity-80"><%= Current.user.email_address %></span>
+              </span>
+              <%= render ButtonComponent.new(variant: :ghost, size: :icon, href: session_path,
+                                             aria: { label: t("layouts.application.sign_out") },
+                                             classes: "shrink-0 text-accent-foreground hover:bg-accent-foreground/10",
+                                             data: { turbo_method: :delete }) do %>
+                <%= render IconComponent.new(name: "arrow-right", size: :md) %>
+                <span class="sr-only"><%= t("layouts.application.sign_out") %></span>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="flex justify-end">
+              <%= render ButtonComponent.new(variant: :ghost, size: :icon, href: session_path,
+                                             aria: { label: t("layouts.application.sign_out") },
+                                             classes: "shrink-0 text-accent-foreground hover:bg-accent-foreground/10",
+                                             data: { turbo_method: :delete }) do %>
+                <%= render IconComponent.new(name: "arrow-right", size: :md) %>
+                <span class="sr-only"><%= t("layouts.application.sign_out") %></span>
+              <% end %>
+            </div>
+          <% end %>
         <% end %>
       <% end %>
       <%= render "shared/flash" %>

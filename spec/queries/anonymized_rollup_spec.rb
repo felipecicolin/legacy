@@ -4,16 +4,16 @@ require "rails_helper"
 
 RSpec.describe AnonymizedRollup do
   let(:visibility) { Visibility::Context.anonymous }
-  let(:base) { mission_base_with_region }
+  let(:ngo) { ngo_with_region }
 
   it "suppresses a region with fewer than 3 hidden projects" do
-    create_list(:project, 2, mission_base: base)
+    create_list(:project, 2, ngo: ngo)
 
     expect(described_class.new(visibility).by_region).to be_empty
   end
 
   it "publishes a region with 3 or more hidden projects, with count and average progress" do
-    create_hidden_projects(base, progresses: [0, 30, 60])
+    create_hidden_projects(ngo, progresses: [0, 30, 60])
 
     row = described_class.new(visibility).by_region.first
 
@@ -21,11 +21,11 @@ RSpec.describe AnonymizedRollup do
   end
 
   it "never exposes an individual project's or base's identifying data" do
-    projects = create_hidden_projects(base, progresses: [0, 30, 60])
+    projects = create_hidden_projects(ngo, progresses: [0, 30, 60])
 
     payload = described_class.new(visibility).by_region.to_s
 
-    expect(payload).not_to include(base.name, *projects.map(&:code))
+    expect(payload).not_to include(ngo.name, *projects.map(&:code))
   end
 
   it "runs a constant number of queries regardless of how many regions are hidden" do
@@ -37,11 +37,11 @@ RSpec.describe AnonymizedRollup do
   end
 
   def create_hidden_projects(base, progresses:)
-    progresses.map { |value| create(:project, mission_base: base, physical_progress: value) }
+    progresses.map { |value| create(:project, ngo: base, physical_progress: value) }
   end
 
   def seed_hidden_regions(count)
-    count.times { create_hidden_projects(mission_base_with_region, progresses: [0, 30, 60]) }
+    count.times { create_hidden_projects(ngo_with_region, progresses: [0, 30, 60]) }
   end
 
   def query_count_for(region_count, rollup)
@@ -49,11 +49,11 @@ RSpec.describe AnonymizedRollup do
     count_queries { rollup.by_region }
   end
 
-  # `MissionBase` valida que sua região pertence ao mesmo país da base — a
+  # `Ngo` valida que sua região pertence ao mesmo país da ONG — a
   # fábrica de cada uma gera o país sozinha, então as duas precisam ser
   # criadas com o país em comum, não uma independente da outra.
-  def mission_base_with_region
+  def ngo_with_region
     country = create(:country)
-    create(:mission_base, country: country, region: create(:region, country: country))
+    create(:ngo, country: country, region: create(:region, country: country))
   end
 end

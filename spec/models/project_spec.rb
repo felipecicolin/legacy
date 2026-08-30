@@ -229,8 +229,8 @@ RSpec.describe Project do
   describe "#primary_campaign" do
     it "picks the most recently created active or reached campaign" do
       project = create(:project)
-      create(:campaign, :closed, project: project, mission_base: project.mission_base)
-      recent = create(:campaign, project: project, mission_base: project.mission_base)
+      create(:campaign, :closed, project: project, ngo: project.ngo)
+      recent = create(:campaign, project: project, ngo: project.ngo)
 
       expect(project.reload.primary_campaign).to eq(recent)
     end
