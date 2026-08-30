@@ -75,6 +75,41 @@ RSpec.describe Search::Filters do
     end
   end
 
+  # A mesma gramática de filtro serve a busca e o painel do voluntário: são os
+  # mesmos nomes na mesma query string, e duas gramáticas divergiriam.
+  describe "the needs of the volunteer view" do
+    def filtered_needs(**params)
+      described_class.from(params).apply_to_needs(Need.all)
+    end
+
+    it "keeps only the needs of the kind asked for" do
+      wanted = create(:need, mission_base: mission_base, need_kind: :team)
+      create(:need, mission_base: mission_base, need_kind: :material)
+
+      expect(filtered_needs(status: "team")).to contain_exactly(wanted)
+    end
+
+    it "keeps only the needs of the urgency asked for" do
+      wanted = create(:need, mission_base: mission_base, urgency: :critical)
+      create(:need, mission_base: mission_base, urgency: :low)
+
+      expect(filtered_needs(urgency: "critical")).to contain_exactly(wanted)
+    end
+
+    it "keeps only the needs whose base is in the country asked for" do
+      wanted = create(:need, mission_base: mission_base)
+      create(:need)
+
+      expect(filtered_needs(country_id: country.id)).to contain_exactly(wanted)
+    end
+
+    it "ignores a kind that is not in the vocabulary" do
+      create(:need, mission_base: mission_base)
+
+      expect(filtered_needs(status: "vontade").count).to eq(1)
+    end
+  end
+
   describe "#any?" do
     it "is false when nothing was set" do
       expect(described_class.from({})).not_to be_any

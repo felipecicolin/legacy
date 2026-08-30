@@ -1,0 +1,36 @@
+<%= render PageHeaderComponent.new(title: need.title, subtitle: need.mission_base.name) do |header| %>
+  <% header.with_breadcrumb(label: t(".breadcrumb"), href: needs_path) %>
+  <% header.with_breadcrumb(label: need.title) %>
+<% end %>
+
+<section class="mt-6 grid gap-6 desktop:grid-cols-3">
+  <%= render CardComponent.new(variant: "outlined", classes: "desktop:col-span-2") do %>
+    <dl class="grid grid-cols-2 gap-3">
+      <div>
+        <dt class="text-label text-muted-foreground"><%= t(".kind") %></dt>
+        <dd class="text-foreground"><%= need.need_kind_label %></dd>
+      </div>
+      <div>
+        <dt class="text-label text-muted-foreground"><%= t(".urgency") %></dt>
+        <dd class="text-foreground"><%= need.urgency_label %></dd>
+      </div>
+      <div>
+        <dt class="text-label text-muted-foreground"><%= t(".remaining") %></dt>
+        <dd class="font-mono text-foreground"><%= need.remaining_quantity %> / <%= need.quantity %></dd>
+      </div>
+      <% if need.needed_by %>
+        <div>
+          <dt class="text-label text-muted-foreground"><%= t(".needed_by") %></dt>
+          <dd class="text-foreground"><%= l(need.needed_by) %></dd>
+        </div>
+      <% end %>
+    </dl>
+    <div class="mt-4 text-muted-foreground"><%= need.description %></div>
+  <% end %>
+
+  <%# O formulário vive num frame próprio: candidatar-se não recarrega a
+      página, e o erro de vaga esgotada volta para dentro dele. %>
+  <%= turbo_frame_tag "candidacy" do %>
+    <%= render "candidacies/form", candidacy: candidacy, need: need %>
+  <% end %>
+</section>

@@ -205,6 +205,62 @@ não produz participação, porque quem participa da obra é pessoa.
 > pessoa que ainda não está na equipe. Com `blank?` a participação nunca era
 > criada, e nada dava erro. A guarda pergunta `unless scope`.
 
+## A visão do voluntário — a tela que fecha o produto
+
+Sem ela a plataforma mostra obras e **não conecta ninguém**. Ela responde três
+perguntas na ordem em que importam: *o que eu posso servir*, *o que eu já pedi*,
+e *o que falta em mim para poder pedir*.
+
+### O que trava a candidatura fica visível antes da tentativa
+
+Quem tem credencial pendente precisa saber que é **isso** que trava — e não
+descobrir por um erro de formulário depois de escrever a motivação. O requisito
+aparece no card da necessidade, na página dela e no perfil de voluntário, e só
+então a validação recusa.
+
+É a mesma ideia por trás do estado vazio de quem não cadastrou habilidade: uma
+lista vazia se lê como *"não há o que fazer"*, quando o que falta é um passo da
+própria pessoa.
+
+### O casamento respeita o alcance, e não diz que respeitou
+
+`matched_needs` passa pelo `visible_to` do leitor. Necessidade fora do alcance
+**não aparece nem como negada** — a mesma regra do oráculo da [Busca](search.md).
+
+Isso se estende ao envio: `Deployment` não tem nível de sensibilidade próprio, e
+listar um cujo destino é base confidencial contaria que ela existe **pelo
+destino da viagem**. A lista filtra por base alcançável.
+
+### A corrida do abatimento chegando à interface
+
+A vaga pode acabar entre a renderização do formulário e o envio. A validação
+`need_is_still_open` da `Candidacy` recusa, e a recusa vira **erro de
+formulário** — nunca 500. É o mesmo caso de concorrência que a trava de
+`Need#fulfill` resolve no banco, visto do outro lado.
+
+### Candidatura de grupo sai do coordenador
+
+`CandidacyPolicy#create?` pergunta pelo **coordenador do grupo** quando há
+grupo. Inscrever a turma inteira é decisão de quem responde por ela; um membro
+comum se candidata por si, pelo caminho individual.
+
+### O perfil é obrigatório no painel, e a decisão é do controller
+
+`VolunteerDashboard` **exige** um perfil. Um painel de voluntário sem pessoa não
+tem o que responder, e aceitar `nil` viraria quatro guardas espalhadas pelos
+métodos — o `RepeatedConditional` do reek apontou exatamente isso. Quem entrou
+sem perfil é tratado uma vez, no controller, com uma tela própria.
+
+### O que a issue pede e o domínio não tem
+
+A #55 pede *"requisito de documento; alerta quando o passaporte vence antes do
+retorno"*. **Não há `TravelDocument` neste domínio**, e isso é decisão
+registrada — ver a seção do envio acima. Implementar o alerta exigiria criar
+justamente a superfície de dado pessoal que a decisão recusa.
+
+A lista de envios mostra datas e vagas. O alerta de documento fica de fora, e
+ele só volta se a decisão sobre `TravelDocument` for revista.
+
 ## Uma armadilha de factory que custou uma volta de CI
 
 **O FactoryBot gera uma trait para cada valor de enum.** `Need#need_kind` tem o

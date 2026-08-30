@@ -1,0 +1,29 @@
+<%# locals: (dashboard:) %>
+<section class="mt-8">
+  <h2 class="text-lg font-semibold text-foreground"><%= t(".title") %></h2>
+  <% if dashboard.candidacies.any? %>
+    <%= render TableComponent.new(rows: dashboard.candidacies, caption: t(".caption"), classes: "mt-3") do |table| %>
+      <% table.with_column(header: t(".need")) { |candidacy| candidacy.need.title } %>
+      <% table.with_column(header: t(".base")) { |candidacy| candidacy.need.mission_base.name } %>
+      <% table.with_column(header: t(".status")) { |candidacy| candidacy.candidacy_status_label } %>
+      <% table.with_column(header: t(".reason")) { |candidacy| candidacy.rejection_reason_label } %>
+    <% end %>
+  <% else %>
+    <%= render EmptyStateComponent.new(icon: "clock", title: t(".empty_title"),
+                                       description: t(".empty_description"), classes: "mt-3") %>
+  <% end %>
+
+  <% if dashboard.assignments.any? %>
+    <h3 class="mt-6 text-label text-muted-foreground"><%= t(".assignments") %></h3>
+    <ul class="mt-2 space-y-2">
+      <% dashboard.assignments.each do |assignment| %>
+        <li class="text-foreground">
+          <%= assignment.need.title %> ·
+          <span class="text-label text-muted-foreground">
+            <%= assignment.assignment_status_label %> · <%= l(assignment.starts_on) %>
+          </span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>

@@ -56,19 +56,20 @@ RSpec.describe "Platform routes" do
       [:get, "/progress_reports/1"],
       [:get, "/campanhas"],
       [:get, "/campanhas/1"],
-      [:get, "/necessidades"],
-      [:get, "/necessidades/1"],
-      [:get, "/necessidades/1/candidacy/new"],
       [:get, "/search?query=obra"],
     ]
 
     requests.each { |method, path| public_send(method, path) }
 
     post "/obras/OB-0247/progress_reports", params: { progress_report: { body: "Atualização" } }
-    post "/necessidades/1/candidacy", params: { candidacy: { message: "Posso ajudar" } }
 
     expect(response).to have_http_status(:ok)
   end
+
+  # `/necessidades` saiu da lista acima quando deixou de ser placeholder: as
+  # actions de verdade procuram registro, e um id inventado responde 404 — que
+  # é o certo, e não o que uma lista de placeholders mede. Quem cobra essas
+  # rotas agora é `spec/requests/volunteer_view_spec.rb`.
 
   it "expects declared parameters for write actions" do
     sign_in(create(:user))

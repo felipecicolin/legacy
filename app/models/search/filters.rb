@@ -25,6 +25,14 @@ module Search
            .then { |relation| by_progress(relation) }
     end
 
+    # A mesma gramática de filtro serve a busca e o painel do voluntário: são
+    # os mesmos nomes na mesma query string, e duas gramáticas divergiriam.
+    def apply_to_needs(scope)
+      scope.then { |relation| by_need_kind(relation) }
+           .then { |relation| by_urgency(relation) }
+           .then { |relation| by_country_of_base(relation) }
+    end
+
     def apply_to_mission_bases(scope)
       scope.then { |relation| relation.where(country_id: country_id) if country_id }
            .then { |relation| by_base_kind(relation || scope) }
@@ -48,6 +56,20 @@ module Search
       return scope if min_progress.blank?
 
       scope.where(physical_progress: Integer(min_progress, exception: false).to_i..)
+    end
+
+    def by_need_kind(scope)
+      Need.need_kinds.key?(status) ? scope.where(need_kind: status) : scope
+    end
+
+    def by_urgency(scope)
+      Need.urgencies.key?(urgency) ? scope.where(urgency: urgency) : scope
+    end
+
+    def by_country_of_base(scope)
+      return scope if country_id.blank?
+
+      scope.where(mission_base: MissionBase.where(country_id: country_id))
     end
 
     def by_base_kind(scope)

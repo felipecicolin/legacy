@@ -1,0 +1,41 @@
+<%= render PageHeaderComponent.new(title: t(".title"), subtitle: t(".subtitle")) %>
+
+<section class="mt-6">
+  <h2 class="text-lg font-semibold text-foreground"><%= t(".for_me") %></h2>
+  <% if dashboard.skills_registered? %>
+    <%= render "needs/need_cards", needs: dashboard.matched_needs, visibility: dashboard.visibility,
+                                   empty_title: t(".no_match_title"),
+                                   empty_description: t(".no_match_description") %>
+  <% else %>
+    <%# Sem habilidade cadastrada não há casamento possível, e dizer isso é
+        diferente de mostrar lista vazia. %>
+    <%= render EmptyStateComponent.new(icon: "users", title: t(".no_skills_title"),
+                                       description: t(".no_skills_description"), classes: "mt-3") %>
+  <% end %>
+</section>
+
+<%= render "needs/profile_card", dashboard: dashboard %>
+
+<section class="mt-8">
+  <h2 class="text-lg font-semibold text-foreground"><%= t(".all_needs") %></h2>
+  <%= form_with url: needs_path, method: :get, data: { controller: "search-form",
+                                                       action: "change->search-form#submit" } do %>
+    <div class="mt-3 grid gap-3 tablet:grid-cols-3">
+      <%= render SelectComponent.new(name: :status, label: t(".kind"), include_blank: t(".any"),
+                                     selected: filters.status,
+                                     choices: Need.need_kinds.keys.map { |v| [t(v, scope: :need_kinds), v] }) %>
+      <%= render SelectComponent.new(name: :urgency, label: t(".urgency"), include_blank: t(".any"),
+                                     selected: filters.urgency,
+                                     choices: Need.urgencies.keys.map { |v| [t(v, scope: :urgencies), v] }) %>
+      <%= render SelectComponent.new(name: :country_id, label: t(".country"), include_blank: t(".any"),
+                                     selected: filters.country_id,
+                                     choices: Country.where(id: MissionBase.select(:country_id)).map { |c| [c.name, c.id] }) %>
+    </div>
+  <% end %>
+  <%= render "needs/need_cards", needs: dashboard.open_needs(filters), visibility: dashboard.visibility,
+                                 empty_title: t(".none_open_title"),
+                                 empty_description: t(".none_open_description") %>
+</section>
+
+<%= render "needs/my_candidacies", dashboard: dashboard %>
+<%= render "needs/deployments", deployments: dashboard.open_deployments %>
