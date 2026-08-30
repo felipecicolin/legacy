@@ -29,14 +29,16 @@ RSpec.describe IconComponent, type: :component do
   end
 
   it "keeps every SVG normalized for currentColor" do
-    svg_paths.each do |path|
-      svg = path.read
+    svg_paths.each { |path| expect_normalized_svg(path) }
+  end
 
-      aggregate_failures(path.basename.to_s) do
-        expect(svg).to include(*NORMALIZED_ICON_MARKERS)
-        expect(svg).not_to match(FORBIDDEN_ICON_ATTRIBUTES)
-        expect(svg).not_to match(ICON_HEX_COLOR)
-      end
+  def expect_normalized_svg(path)
+    svg = path.read
+
+    aggregate_failures(path.basename.to_s) do
+      expect(svg).to include(*NORMALIZED_ICON_MARKERS)
+      expect(svg).not_to match(FORBIDDEN_ICON_ATTRIBUTES)
+      expect(svg).not_to match(ICON_HEX_COLOR)
     end
   end
 end
