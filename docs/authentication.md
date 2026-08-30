@@ -60,6 +60,23 @@ pede login.
 > é o leitor sem sessão, com teto no nível `public`. O que ela **não** decidiu
 > é quais controllers abrem — ver [Visibilidade](visibility.md).
 
+## A porta da demonstração
+
+`DEMO_USER_EMAIL` liga um login automático: sem cookie de sessão, a aplicação
+abre uma sessão para aquela conta e o visitante entra sem digitar nada. Fora
+dessa variável o comportamento é exatamente o de antes — é isso que impede
+teste e desenvolvimento de herdarem a porta aberta por acidente.
+
+**O que ela custa, escrito por extenso.** Enquanto a variável existir, a
+aplicação INTEIRA responde como aquela pessoa para qualquer um que tenha a URL.
+Não é "a home fica pública": é a sessão inteira, com o alcance de visibilidade
+que a conta tiver. Uma conta com `StaffRole` de nível `admin` alcança
+`confidential` — apontar a variável para ela publica exatamente o que a
+política de sensibilidade existe para esconder.
+
+Aponte-a para uma conta **sem `StaffRole`**. E lembre que a aplicação já manda
+`X-Robots-Tag: noindex`, o que impede indexação mas não impede acesso.
+
 ## Sessão é linha no banco
 
 O cookie guarda o id de uma linha em `sessions`, e **não** o id do usuário

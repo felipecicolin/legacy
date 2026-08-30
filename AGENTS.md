@@ -337,6 +337,10 @@ Autenticação nativa do Rails 8.1, sem gem. Três regras valem daqui para frent
   explícito, com `allow_unauthenticated_access` — e a decisão vai comentada.
 - **`User` guarda credencial e sessão, nada de pessoa.** Nome, país e foto são
   do `Profile` (#18); papel é contexto (#20, #21, #31), nunca coluna em `users`.
+- **`DEMO_USER_EMAIL` abre a aplicação INTEIRA como aquela conta.** Não é a
+  home ficando pública: é a sessão, com o alcance de visibilidade que a pessoa
+  tiver. Aponte para conta sem `StaffRole` — ver
+  [`docs/authentication.md`](docs/authentication.md).
 - **Login e recuperação não dizem se a conta existe.** Mesma mensagem, mesma
   rota, mesmo status para senha errada e e-mail inexistente. Use
   `User.authenticate_by` — é ele que iguala também o tempo de resposta.

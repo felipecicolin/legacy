@@ -36,4 +36,30 @@ RSpec.describe "Home" do
 
     expect(response).to redirect_to(team_path)
   end
+
+  # A porta aberta da demonstração. Ela é sério: enquanto a variável existe, a
+  # aplicação inteira responde como aquela pessoa para qualquer visitante.
+  describe "demo auto-login" do
+    it "signs an anonymous visitor in as the demo user when one is configured" do
+      demo = create(:user, email_address: "demo@exemplo.dev")
+      create(:profile, user: demo)
+      allow(ENV).to receive(:fetch).and_call_original
+      allow(ENV).to receive(:fetch).with("DEMO_USER_EMAIL", nil).and_return(demo.email_address)
+
+      get root_path
+
+      expect(response).to redirect_to(investor_path)
+    end
+
+    # Configurar um e-mail que não existe não pode abrir a porta pela metade:
+    # sem usuário, o comportamento tem de voltar a ser o de sempre.
+    it "still asks for a password when the configured demo user is missing" do
+      allow(ENV).to receive(:fetch).and_call_original
+      allow(ENV).to receive(:fetch).with("DEMO_USER_EMAIL", nil).and_return("ninguem@exemplo.dev")
+
+      get root_path
+
+      expect(response).to redirect_to(new_session_path)
+    end
+  end
 end
