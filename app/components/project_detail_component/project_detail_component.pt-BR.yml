@@ -1,0 +1,53 @@
+---
+pt-BR:
+  admin_action: Administrar obra
+  breadcrumb: Obras
+  budget:
+    caption: Orçamento e despesas da obra
+    category: Categoria
+    empty: Ainda não há orçamento publicado para esta obra.
+    estimated: Orçado
+    exceeded: Linha estourada
+    item: Item
+    spent: Gasto
+    title: Prestação de contas
+    total: 'Total orçado: %{value}'
+  code: Obra
+  navigation:
+    funding: Prestação de contas
+    needs: Necessidades
+    phases: Etapas
+    progress: Avanço
+    reports: Relatórios
+    team: Equipe
+  needs:
+    apply: Quero ajudar
+    empty: Não há necessidades abertas neste momento.
+    remaining: "%{remaining} de %{total} ainda necessário"
+    title: Necessidades abertas
+  phases:
+    direct: 'Avanço direto registrado: %{value}.'
+    title: Etapas
+    weight: Peso %{weight} · contribuição de %{contribution}
+    weighted: 'Total ponderado: %{value}.'
+  progress:
+    direct: Avanço informado diretamente, sem relatório aprovado.
+    funding: Recursos
+    goal: Meta de %{value}
+    physical: Avanço físico
+    reported: "%{date}, por %{author}"
+    title: Avanço e recursos
+  reports:
+    blockers: 'Bloqueios:'
+    by: por %{name}
+    empty: Ainda não há relatório aprovado para esta obra.
+    load_more: Carregar mais relatórios
+    no_summary: Relatório sem resumo.
+    photo_alt: Foto do andamento da obra
+    reporter: Responsável pelo relatório
+    title: Linha do tempo de relatórios
+  section_navigation: Navegação da obra
+  simulated: DADO SIMULADO — sem valor financeiro real
+  team:
+    empty: Ainda não há participações ativas registradas.
+    title: Equipe

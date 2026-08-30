@@ -518,6 +518,27 @@
       ]
     },
     {
+      "name": "ProjectDetailComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "presenter",
+          "kind": "keyreq"
+        }
+      ],
+      "constants": {},
+      "slots": [],
+      "stimulus_controller": "project-detail-component",
+      "template": "app/components/project_detail_component/project_detail_component.html.erb",
+      "preview": "spec/components/previews/project_detail_component_preview.rb",
+      "examples": [
+        {
+          "name": "default",
+          "source": "  def default\n    render(ProjectDetailComponent.new(presenter: Presenter.new))\n  end"
+        }
+      ]
+    },
+    {
       "name": "SearchFieldComponent",
       "category": "ui",
       "params": [

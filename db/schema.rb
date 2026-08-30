@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_30_210000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_30_220000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "unaccent"
@@ -460,6 +460,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_210000) do
     t.check_constraint "ended_on IS NULL OR ended_on >= started_on", name: "project_participations_ends_after_it_starts"
   end
 
+  create_table "project_phases", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.integer "physical_progress", default: 0, null: false
+    t.integer "position", default: 0, null: false
+    t.bigint "project_id", null: false
+    t.datetime "updated_at", null: false
+    t.integer "weight", default: 0, null: false
+    t.index ["project_id", "position"], name: "index_project_phases_on_project_id_and_position"
+    t.check_constraint "\"position\" >= 0", name: "project_phases_position_not_negative"
+    t.check_constraint "physical_progress >= 0 AND physical_progress <= 100", name: "project_phases_progress_within_range"
+    t.check_constraint "weight >= 0", name: "project_phases_weight_not_negative"
+  end
+
   create_table "project_photos", force: :cascade do |t|
     t.string "caption"
     t.datetime "created_at", null: false
@@ -849,6 +863,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_210000) do
   add_foreign_key "assignments", "candidacies"
   add_foreign_key "assignments", "needs"
   add_foreign_key "budget_lines", "budgets"
+  add_foreign_key "budget_lines", "project_phases", on_delete: :nullify
   add_foreign_key "budgets", "projects"
   add_foreign_key "campaigns", "ngos"
   add_foreign_key "campaigns", "projects"
@@ -890,6 +905,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_210000) do
   add_foreign_key "progress_reports", "projects"
   add_foreign_key "project_participations", "profiles"
   add_foreign_key "project_participations", "projects"
+  add_foreign_key "project_phases", "projects"
   add_foreign_key "project_photos", "profiles", column: "taken_by_id", on_delete: :nullify
   add_foreign_key "project_photos", "progress_reports", on_delete: :nullify
   add_foreign_key "project_photos", "projects"

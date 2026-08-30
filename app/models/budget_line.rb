@@ -4,6 +4,7 @@ class BudgetLine < ApplicationRecord
   CATEGORIES = { material: 0, labor: 1, equipment: 2, logistics: 3, permits: 4, contingency: 5 }.freeze
 
   belongs_to :budget
+  belongs_to :project_phase, optional: true, inverse_of: :budget_lines
   has_many :expenses, dependent: :nullify
 
   enum :category, CATEGORIES, validate: true
