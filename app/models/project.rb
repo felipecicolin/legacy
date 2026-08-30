@@ -87,7 +87,6 @@ class Project < ApplicationRecord
 
   def to_s = code
 
-
   private
 
   def allowed_next_states = TRANSITIONS.fetch(status_was, [])

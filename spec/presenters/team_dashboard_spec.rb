@@ -31,7 +31,7 @@ RSpec.describe TeamDashboard do
   it "lists the project of an active participation with the role that was played" do
     join(role: :coordinator)
 
-    expect(dashboard.boards.map(&:role)).to eq([I18n.t(:coordinator, scope: :participation_roles)])
+    expect(dashboard.boards.map(&:role)).to eq([I18n.t("participation_roles.coordinator")])
   end
 
   # O nível da obra vale inclusive para quem está nela: o vínculo não é chave
