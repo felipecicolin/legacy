@@ -31,6 +31,13 @@ gem "inline_svg"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
 
+# Autorização por policy [https://github.com/varvet/pundit]. Escolhida em #21
+# por ser objeto Ruby comum — cabe nos limites de tamanho deste repositório e
+# é testável sem controller. O que ela traz de fato e que importa aqui é o
+# `verify_authorized`: sem um guarda que reprove a AUSÊNCIA de autorização,
+# esquecer de autorizar uma action erra calado.
+gem "pundit"
+
 # Traduções do próprio Rails para pt-BR: mensagem de validação, nome de mês,
 # formato de moeda e de número, `distance_of_time_in_words`. Sem a gem esse
 # miolo sai em inglês na tela, e nenhum dos três linters de i18n pega — eles

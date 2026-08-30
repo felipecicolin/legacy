@@ -485,6 +485,31 @@ não num módulo. O writer do `has_one_attached` mora em
 incluído depois perde a disputa **sem erro nenhum**, com a foto subindo com o
 GPS dentro.
 
+## Autorização — fechada por padrão
+
+> Vocabulário, matriz de papéis e o raciocínio de cada decisão:
+> [`docs/authorization.md`](docs/authorization.md).
+
+A pergunta nunca é "que tipo de usuário é este", e sim **"esta pessoa pode fazer
+isto neste objeto"**. Papel não é coluna em `User`: é `StaffRole` para a
+plataforma, `Membership#role` para organização, `ProjectParticipation#role` para
+obra.
+
+- **Policy por recurso, em `app/policies/`**, herdando de `ApplicationPolicy`,
+  que **recusa tudo** por padrão. Nada de `if current_user.admin?` em controller.
+- **A policy recebe `Authorization::Context`, não `User`.** Ele traz perfil,
+  papel de plataforma e os vínculos **aceitos**, carregados uma vez por request
+  — perguntar ao contexto não vai ao banco.
+- **`after_action :verify_authorized` vale para toda action.** Quem não tem
+  registro para autorizar declara `skip_authorization_for` com o motivo escrito
+  ao lado. Não é atalho: hoje são só as actions de sessão e de senha.
+- **404 e 403 respondem igual.** `Pundit::NotAuthorizedError` e
+  `ActiveRecord::RecordNotFound` caem no mesmo handler e devolvem 404 — se as
+  duas fossem distinguíveis, varrer ids enumeraria o que a sensibilidade
+  esconde.
+- **Só o nível `admin` alcança `confidential`.** `support` e `curator` param em
+  `restricted`, de propósito: alcance que ninguém usa é alcance que vaza.
+
 ## Banco de dados
 
 - `bundle exec database_consistency` cobra FK sem índice, `NOT NULL` faltando,

@@ -9,6 +9,11 @@ class User < ApplicationRecord
   # acontecer no lugar em que dá para explicá-la.
   has_one :profile, dependent: :destroy
 
+  # Mesma razão do perfil: `staff_roles.user_id` é NOT NULL. E a direção é
+  # segura — quem sai da equipe perde o alcance junto com a conta, em vez de
+  # deixar uma linha de papel apontando para ninguém.
+  has_one :staff_role, dependent: :destroy
+
   # `restrict_with_error`, e não `destroy`: a linha de auditoria existe para
   # responder "quem abriu esta obra". Apagá-la junto com a conta transformaria
   # remover um usuário no jeito de apagar o próprio rastro.

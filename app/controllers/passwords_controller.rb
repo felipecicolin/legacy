@@ -3,6 +3,10 @@
 class PasswordsController < ApplicationController
   allow_unauthenticated_access
 
+  # Recuperação de senha é para quem não conseguiu entrar — não há contexto
+  # autenticado, e o token no lugar do id é o que faz as vezes de autorização.
+  skip_authorization_for
+
   rate_limit to: 10, within: 3.minutes, only: :create,
              with: -> { redirect_to new_password_path, alert: t("passwords.rate_limited") }
 
