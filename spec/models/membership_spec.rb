@@ -75,10 +75,15 @@ RSpec.describe Membership do
     # A pessoa continua, mas a organização perde o dono do mesmo jeito — e este
     # caminho não passa por `role`: com o papel intacto, `role_changed?` é
     # falso e uma guarda que só perguntasse por ele deixaria a gravação passar.
+    # A asserção é pelo TIPO do erro, e não por `update` ter voltado `false`:
+    # um `false` sozinho passaria igual se quem recusasse fosse outra validação
+    # qualquer, e a guarda do owner tivesse parado de disparar em silêncio.
     it "cannot be moved to another organization" do
       owner = create(:membership, role: :owner)
+      owner.organization = create(:organization)
+      owner.validate
 
-      expect(owner.update(organization: create(:organization))).to be(false)
+      expect(owner.errors).to be_of_kind(:base, :last_owner)
     end
 
     # E a contagem tem de sair da organização de ORIGEM: saindo de

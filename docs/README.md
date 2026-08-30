@@ -40,8 +40,9 @@ acrescenta nada. Então:
 
 - [Organizações e vínculos](organizations.md) — por que dois enums fogem do
   nome que a issue pedia, por que o slug é imutável e ganha sufixo de
-  desempate, as três camadas que garantem que toda organização tenha um dono, e
-  o que a remoção em massa ainda alcança.
+  desempate, as três camadas que impedem uma organização de perder o dono que
+  tem — inclusive quando o vínculo é movido para outra —, e o que a remoção em
+  massa ainda alcança.
 
 - [Pagamentos](payments.md) — a fronteira que isola o provedor, por que o
   simulador é determinístico e configurável, por que a marca de origem é
