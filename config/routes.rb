@@ -7,6 +7,28 @@ Rails.application.routes.draw do
   resource :session
   resources :passwords, param: :token
 
+  # Entrega de arquivo passa por autorização. Estes padrões são os mesmos que o
+  # engine do Active Storage declara, e é justamente esse o mecanismo: as rotas
+  # da aplicação são desenhadas ANTES das do engine, o roteador casa na ordem em
+  # que foram declaradas, e o engine continua definindo os NOMES
+  # (`rails_blob_path`, `rails_representation_url`) — que geram estas mesmas
+  # URLs. Nada no resto do código muda de forma; muda quem atende.
+  #
+  # Sem `as:` de propósito: repetir um nome que o engine também declara levanta
+  # `Invalid route name, already in use` no boot. Ver docs/photo-policy.md.
+  scope ActiveStorage.routes_prefix do
+    get "/blobs/redirect/:signed_id/*filename" => "authorized_blobs#show"
+    get "/blobs/proxy/:signed_id/*filename" => "authorized_blobs#show"
+    get "/blobs/:signed_id/*filename" => "authorized_blobs#show"
+
+    get "/representations/redirect/:signed_blob_id/:variation_key/*filename" =>
+          "authorized_representations#show"
+    get "/representations/proxy/:signed_blob_id/:variation_key/*filename" =>
+          "authorized_representations#show"
+    get "/representations/:signed_blob_id/:variation_key/*filename" =>
+          "authorized_representations#show"
+  end
+
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check

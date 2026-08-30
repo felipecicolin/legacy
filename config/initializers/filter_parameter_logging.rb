@@ -18,3 +18,12 @@ Rails.application.config.filter_parameters += %i[
 # initializer roda antes do autoload, e referenciar a constante aqui derruba o
 # boot com `uninitialized constant`. Mexeu numa lista, mexa na outra.
 Rails.application.config.filter_parameters += %i[address latitude longitude]
+
+# Nome do documento de quem trabalha em campo. `Profile#serializable_hash` já o
+# tira de toda resposta e `Profile.filter_attributes` o tira do `inspect`; esta
+# é a terceira porta, a do formulário — o `Parameters: {…}` do log de
+# requisição não passa por modelo nenhum. Ver docs/identity.md.
+#
+# `display_name` NÃO entra: é o nome que a UI mostra, e filtrá-lo do log
+# esconderia justamente o campo que ajuda a depurar a tela.
+Rails.application.config.filter_parameters += %i[legal_name]
