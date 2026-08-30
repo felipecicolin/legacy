@@ -137,11 +137,19 @@
           "kind": "key"
         },
         {
+          "name": "padding",
+          "kind": "key"
+        },
+        {
           "name": "html_options",
           "kind": "keyrest"
         }
       ],
       "constants": {
+        "PADDINGS": [
+          "default",
+          "roomy"
+        ],
         "VARIANTS": [
           "default",
           "elevated",
@@ -158,7 +166,7 @@
       "examples": [
         {
           "name": "playground",
-          "source": "  def playground(variant: \"default\")\n    render(CardComponent.new(variant: variant)) do |card|\n      card.with_header { \"Resumo da obra\" }\n      \"O conteúdo do cartão respeita os tokens do design system.\"\n    end\n  end\nend"
+          "source": "  def playground(variant: \"default\", padding: \"default\")\n    render(CardComponent.new(variant: variant, padding: padding)) do |card|\n      card.with_header { \"Resumo da obra\" }\n      \"O conteúdo do cartão respeita os tokens do design system.\"\n    end\n  end\nend"
         }
       ]
     },

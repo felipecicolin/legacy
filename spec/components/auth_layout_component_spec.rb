@@ -5,11 +5,20 @@ require "rails_helper"
 RSpec.describe AuthLayoutComponent, type: :component do
   let(:placeholder) { "Espaço reservado para a imagem da tela de acesso" }
 
-  it "renders the form column with the main landmark and the brand" do
+  it "renders the form column with the main landmark" do
     render_inline(described_class.new) { "Formulário" }
 
     expect(page).to have_css("main#main-content", text: "Formulário")
-    expect(page).to have_css("header img[alt='Legacy']")
+  end
+
+  # Duas cópias da marca, e cada uma existe numa faixa só: a do painel some
+  # com o painel abaixo de 1024px, e sem a do cabeçalho a tela de acesso no
+  # telefone ficaria sem marca nenhuma.
+  it "carries the wordmark over the panel and again in the phone header" do
+    render_inline(described_class.new) { "Formulário" }
+
+    expect(page).to have_css("header.desktop\\:hidden img[alt='Legacy']")
+    expect(page).to have_css("aside img[alt='Legacy'].drop-shadow-lg")
   end
 
   # O formulário vem antes do painel no DOM justamente para que teclado e

@@ -108,6 +108,31 @@ a foto para `background-image` num CSS escrito à mão esbarra na reescrita de
 URL do Propshaft — que é exatamente o que já quebra as fontes hoje. O atributo
 saiu, e fica registrado que o custo é conhecido e aceito, não esquecido.
 
+## A marca aparece duas vezes, e cada uma numa faixa só
+
+No desktop o logotipo fica sobre a foto, no canto superior esquerdo, com
+`drop-shadow-lg`. A sombra não é enfeite: o canto superior esquerdo de uma
+fotografia muda de claridade a cada troca de imagem, e sem ela a legibilidade
+da marca passa a depender do que está atrás.
+
+Abaixo de 1024px o painel não existe — e com ele sumiria a marca. Por isso há
+uma segunda cópia no cabeçalho da coluna do formulário, marcada
+`desktop:hidden`. As duas carregam o mesmo `alt`, e isso é seguro porque
+`display: none` tira o elemento da árvore de acessibilidade: em nenhuma largura
+o leitor de tela anuncia a marca duas vezes.
+
+## O formulário vive num card
+
+O conteúdo das três telas fica dentro de um `CardComponent` `elevated` com
+`padding: "roomy"` e `max-w-xl`. A largura não é arbitrária: com `max-w-md`, o
+`text-display` do `<h1>` (que chega a 2.75rem) quebrava "Acessar a plataforma"
+em duas linhas no meio da frase. Alargar o card manteve o token tipográfico —
+a alternativa seria inventar um tamanho de texto fora do vocabulário para uma
+tela só.
+
+O `padding` vai por nome, e não como classe: o porquê está em
+[`components.md`](components.md).
+
 ## Por que o painel some abaixo de 1024px
 
 `hidden desktop:block`. Um decorativo espremido em 380px não mostra imagem

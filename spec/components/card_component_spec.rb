@@ -34,6 +34,26 @@ RSpec.describe CardComponent, type: :component do
     end
   end
 
+  describe "padding" do
+    it "uses the default padding when none is asked for" do
+      render_inline(described_class.new) { "Conteúdo" }
+
+      expect(page).to have_css("div.p-4")
+    end
+
+    it "renders the roomy padding" do
+      render_inline(described_class.new(padding: "roomy")) { "Conteúdo" }
+
+      expect(page).to have_css("div.p-8")
+      expect(page).to have_no_css("div.p-4")
+    end
+
+    it "rejects an invalid padding during construction" do
+      expect { described_class.new(padding: "enormous") }
+        .to raise_error(ArgumentError, /invalid padding/)
+    end
+  end
+
   it "rejects an invalid variant during construction" do
     expect { described_class.new(variant: "floating") }
       .to raise_error(ArgumentError, /invalid variant/)
