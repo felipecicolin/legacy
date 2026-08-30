@@ -18,6 +18,9 @@ class Need < ApplicationRecord
   belongs_to :mission_base
   belongs_to :project, optional: true
   belongs_to :skill, optional: true
+  has_many :candidacies, dependent: :destroy
+  has_many :assignments, dependent: :destroy
+  has_many :need_fulfillments, dependent: :destroy
 
   enum :need_kind, { skill: 0, material: 1, funding: 2, team: 3, equipment: 4 },
        validate: true, prefix: true
@@ -62,6 +65,43 @@ class Need < ApplicationRecord
   end
 
   def remaining_quantity = quantity - fulfilled_quantity
+
+  # A porta ÚNICA do abatimento, e a trava mora aqui.
+  #
+  # Sem `!` mesmo levantando: o `MissingSafeMethod` do reek exige uma
+  # contraparte segura para todo método com `!` numa classe, e a contraparte
+  # aqui não existe — abater "sem levantar" seria devolver `false` e deixar o
+  # chamador decidir se conferiu. Mesma escolha de
+  # `Project#recalculate_physical_progress`.
+  #
+  # `with_lock` faz `SELECT ... FOR UPDATE` e recarrega: duas alocações
+  # simultâneas na última vaga viram duas transações em fila, e a segunda só lê
+  # a quantidade depois de a primeira ter gravado — então ela vê zero vagas e
+  # reprova na validação, em vez de as duas lerem o mesmo número antigo e
+  # passarem. Ver docs/mobilization.md.
+  def fulfill(source:, quantity: 1, fulfilled_at: Time.current)
+    with_lock do
+      fulfillment = need_fulfillments.create!(source: source, quantity: quantity, fulfilled_at: fulfilled_at)
+      recount_fulfilled
+      fulfillment
+    end
+  end
+
+  # Cancelar estorna e reabre. Sem isto a necessidade fica fechada para sempre
+  # e a plataforma mente sobre o que ainda falta.
+  def release(source:)
+    with_lock do
+      need_fulfillments.where(source: source).destroy_all
+      recount_fulfilled
+    end
+  end
+
+  # `fulfilled_quantity` é DERIVADO da soma dos abatimentos, e este é o único
+  # escritor dele — nunca um controller. `update!` e não `update_column` porque
+  # é o `before_save` que faz o status seguir a quantidade.
+  def recount_fulfilled
+    update!(fulfilled_quantity: need_fulfillments.sum(:quantity))
+  end
 
   def to_s = title
 

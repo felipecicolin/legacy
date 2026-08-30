@@ -34,12 +34,17 @@ pt-BR:
         approved_report_is_immutable: Relatório aprovado não é editado. A correção é um relatório novo.
         before_start: não pode ser anterior à data de início.
         below_mission_base: A obra não pode ser menos restrita que a base a que pertence.
+        closed: já foi atendida e não recebe candidatura.
         confidential_precise_location: Registro confidencial não guarda coordenada nem endereço.
         exceeded: não comporta mais gente do que isso.
+        exceeds_what_is_left: passa do que ainda falta nesta necessidade.
         in_progress_without_coordinator: Uma obra não entra em execução sem coordenação.
         last_owner: A organização precisa de pelo menos um proprietário.
+        missing_credential: precisa de registro profissional verificado para esta necessidade.
+        one_candidate_only: A candidatura é de uma pessoa ou de um grupo, nunca dos dois.
         other_country: precisa pertencer ao mesmo país da base.
         other_mission_base: precisa pertencer à mesma base desta necessidade.
+        other_need: precisa ser de uma candidatura à mesma necessidade.
         promotion_requires_justification: Reduzir a restrição exige autor e justificativa registrados.
         too_large: não pode passar de %{limit} MB.
         transition_not_allowed: Esta obra não pode passar do estado atual para esse.

@@ -118,6 +118,93 @@ pessoal sensível — com retenção, acesso restrito e LGPD junto — para uma
 demonstração que **não vai enviar ninguém a lugar nenhum**. É custo sem retorno,
 e na direção errada: uma demo deve carregar *menos* dado sensível, não mais.
 
+## A candidatura, e o oráculo que ela não pode virar
+
+`Candidacy`, e não `Application`: dentro de `module Legacy` um `Application`
+pelado resolve para `Legacy::Application` — a própria classe da aplicação Rails
+— antes de chegar no modelo. É colisão de constante esperando um job
+namespaced para acontecer.
+
+**Exatamente um candidato**, pessoa **ou** grupo, com `CHECK` no banco além da
+validação. E os índices únicos são **parciais** (`where: "profile_id is not
+null"`): um índice sobre as duas colunas juntas deixaria passar duas
+candidaturas de grupo à mesma necessidade, porque `profile_id` seria nulo nas
+duas e o par ficaria distinto.
+
+**O gate de registro profissional é da NECESSIDADE**, não do papel: quem decide
+se aquela vaga exige CREA é quem a abriu (`Need#requires_professional_registration`).
+Candidatura de grupo não é gateada — quem responde pelo registro é a pessoa
+alocada, e a alocação é individual.
+
+**Recandidatar depois de desistir reabre o mesmo registro.** O índice único
+garante um por par, e `reapply` limpa a decisão anterior. A alternativa — uma
+segunda linha — produziria duas candidaturas da mesma pessoa à mesma
+necessidade, discordando sobre o estado.
+
+## O abatimento: uma origem, uma trava
+
+`NeedFulfillment` é polimórfico, e é **a única vez que este repositório escolhe
+polimorfismo**. A diferença para o caso que `Need` recusou está em quantos
+donos existem: lá havia um dono real (a base) com um qualificador opcional (a
+obra); aqui são três tipos genuinamente distintos — alocação, doação em
+espécie, contribuição — e **nenhum deles é "o" dono**. Três origens com um
+mecanismo só, senão cada espécie de necessidade ganha a sua própria
+contabilidade e elas divergem.
+
+`Need#fulfill` é a porta única, e a trava mora nela:
+
+```ruby
+def fulfill(source:, quantity: 1, fulfilled_at: Time.current)
+  with_lock do
+    fulfillment = need_fulfillments.create!(...)
+    recount_fulfilled
+    fulfillment
+  end
+end
+```
+
+`with_lock` faz `SELECT ... FOR UPDATE` **e recarrega**. Duas alocações
+simultâneas na última vaga viram duas transações em fila: a segunda só lê a
+quantidade depois de a primeira ter gravado, então enxerga zero vagas e reprova
+— em vez de as duas lerem o mesmo número antigo e passarem, que é o bug
+clássico.
+
+`fulfilled_quantity` é **derivado** da soma, e `recount_fulfilled` é o único
+escritor dele. O `CHECK` `fulfilled_quantity between 0 and quantity` é a rede
+para quem abater sem passar pela porta.
+
+### Como a corrida é testada sem `Thread.new`
+
+A issue pedia um spec com duas threads. O `ThreadSafety/NewThread` reprova
+`Thread.new` neste repositório, e um teste de corrida que depende de
+escalonamento é **intermitente por construção**: ele passa quando o
+escalonador coopera, e um dia falha sem que nada tenha mudado.
+
+O que se testa no lugar é o **mecanismo**, de forma determinística: uma
+assinatura em `sql.active_record` confirma que a leitura da quantidade acontece
+com a linha travada (`FOR UPDATE` presente), na alocação **e** no estorno. Mais
+os dois efeitos observáveis em sequência — a segunda alocação enxerga o que a
+primeira gravou, e o `CHECK` reprova um abatimento escrito por SQL cru.
+
+É uma troca explícita: perde-se a demonstração da corrida, ganha-se um teste
+que não mente quando passa.
+
+### Um caminho só até a equipe
+
+Alocar abate a necessidade **e** põe a pessoa na equipe da obra, no mesmo
+callback. Dois caminhos separados produziriam voluntário alocado que não
+aparece na equipe — e ninguém descobriria até a obra começar. Cancelar desfaz
+os dois.
+
+Necessidade de base não tem obra, e aí não há equipe em que entrar: é o caso
+normal da necessidade que existe sem obra ativa. Candidatura de grupo também
+não produz participação, porque quem participa da obra é pessoa.
+
+> **A armadilha que quase passou:** `participation_scope.blank?` é `true` para
+> uma relation **vazia** — e a relation é vazia exatamente no caso comum, o da
+> pessoa que ainda não está na equipe. Com `blank?` a participação nunca era
+> criada, e nada dava erro. A guarda pergunta `unless scope`.
+
 ## Uma armadilha de factory que custou uma volta de CI
 
 **O FactoryBot gera uma trait para cada valor de enum.** `Need#need_kind` tem o
@@ -150,10 +237,3 @@ o id reprova um registro perfeitamente válido, com uma mensagem sobre um campo
 que quem preencheu o formulário preencheu. `Need` e `VolunteerEngagement`
 perguntam pelo objeto.
 
-## O que falta desta issue
-
-Entregues: `Need`, `VolunteerGroup`, `VolunteerEngagement`, `Deployment` e
-`DeploymentMember`. Faltam `Candidacy` e o par
-`Assignment`/`NeedFulfillment` — a candidatura e o abatimento com trava de
-concorrência, que vão num PR próprio porque a trava é a única parte
-genuinamente difícil de #33 e merece revisão dedicada.

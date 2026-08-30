@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_30_170200) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_30_180100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -50,6 +50,38 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_170200) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "assignments", force: :cascade do |t|
+    t.integer "assignment_status", default: 0, null: false
+    t.bigint "candidacy_id", null: false
+    t.datetime "created_at", null: false
+    t.date "ends_on"
+    t.bigint "need_id", null: false
+    t.integer "quantity", default: 1, null: false
+    t.date "starts_on", null: false
+    t.datetime "updated_at", null: false
+    t.index ["candidacy_id"], name: "index_assignments_on_candidacy_id", unique: true
+    t.index ["need_id", "assignment_status"], name: "index_assignments_on_need_id_and_assignment_status"
+    t.check_constraint "ends_on IS NULL OR ends_on >= starts_on", name: "assignments_ends_after_it_starts"
+    t.check_constraint "quantity > 0", name: "assignments_quantity_is_positive"
+  end
+
+  create_table "candidacies", force: :cascade do |t|
+    t.integer "candidacy_status", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "decided_at"
+    t.bigint "decided_by_id"
+    t.bigint "need_id", null: false
+    t.bigint "profile_id"
+    t.integer "rejection_reason"
+    t.datetime "updated_at", null: false
+    t.bigint "volunteer_group_id"
+    t.index ["decided_by_id"], name: "index_candidacies_on_decided_by_id"
+    t.index ["need_id", "candidacy_status"], name: "index_candidacies_on_need_id_and_candidacy_status"
+    t.index ["profile_id", "need_id"], name: "index_candidacies_on_profile_id_and_need_id", unique: true, where: "(profile_id IS NOT NULL)"
+    t.index ["volunteer_group_id", "need_id"], name: "index_candidacies_on_volunteer_group_id_and_need_id", unique: true, where: "(volunteer_group_id IS NOT NULL)"
+    t.check_constraint "(profile_id IS NULL) <> (volunteer_group_id IS NULL)", name: "candidacies_have_exactly_one_candidate"
   end
 
   create_table "countries", force: :cascade do |t|
@@ -144,6 +176,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_170200) do
     t.check_constraint "sensitivity_level <> 2 OR NULLIF(btrim(address::text), ''::text) IS NULL AND NULLIF(btrim(latitude::text), ''::text) IS NULL AND NULLIF(btrim(longitude::text), ''::text) IS NULL", name: "mission_bases_confidential_has_no_location"
   end
 
+  create_table "need_fulfillments", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "fulfilled_at", null: false
+    t.bigint "need_id", null: false
+    t.integer "quantity", null: false
+    t.bigint "source_id", null: false
+    t.string "source_type", null: false
+    t.datetime "updated_at", null: false
+    t.index ["need_id", "source_type", "source_id"], name: "idx_on_need_id_source_type_source_id_53b8be6096", unique: true
+    t.index ["source_type", "source_id"], name: "index_need_fulfillments_on_source_type_and_source_id"
+    t.check_constraint "quantity > 0", name: "need_fulfillments_quantity_is_positive"
+  end
+
   create_table "needs", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "currency", limit: 3, default: "BRL", null: false
@@ -155,6 +200,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_170200) do
     t.date "needed_by"
     t.bigint "project_id"
     t.integer "quantity", default: 1, null: false
+    t.boolean "requires_professional_registration", default: false, null: false
     t.integer "sensitivity_level", default: 1, null: false
     t.bigint "skill_id"
     t.string "title", null: false
@@ -574,6 +620,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_170200) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "assignments", "candidacies"
+  add_foreign_key "assignments", "needs"
+  add_foreign_key "candidacies", "needs"
+  add_foreign_key "candidacies", "profiles"
+  add_foreign_key "candidacies", "profiles", column: "decided_by_id"
+  add_foreign_key "candidacies", "volunteer_groups"
   add_foreign_key "credentials", "profiles"
   add_foreign_key "deployment_members", "deployments"
   add_foreign_key "deployment_members", "profiles"
@@ -584,6 +636,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_170200) do
   add_foreign_key "mission_bases", "countries"
   add_foreign_key "mission_bases", "organizations", on_delete: :nullify
   add_foreign_key "mission_bases", "regions"
+  add_foreign_key "need_fulfillments", "needs"
   add_foreign_key "needs", "mission_bases"
   add_foreign_key "needs", "projects"
   add_foreign_key "needs", "skills"
