@@ -9,9 +9,13 @@
       lados. A largura de leitura é do conteúdo, não do shell. %>
   <div class="relative flex min-h-screen w-full">
     <aside id="app-shell-drawer"
-           class="fixed inset-y-0 left-0 z-40 flex w-72 -translate-x-full flex-col bg-accent text-accent-foreground
-                  p-5 shadow-lg transition-transform duration-200 ease-out desktop:static desktop:translate-x-0
-                  desktop:shrink-0 desktop:shadow-none"
+           <%# `sticky` com altura de viewport, e não `static`: como filha de um
+               container que cresce com a página, a coluna esticava junto e o
+               rodapé dela ia parar no fim do DOCUMENTO, fora da tela. Aqui ela
+               fica presa ao topo e rola por dentro quando não couber. %>
+           class="fixed inset-y-0 left-0 z-40 flex h-dvh w-72 -translate-x-full flex-col overflow-y-auto
+                  bg-accent text-accent-foreground p-5 shadow-lg transition-transform duration-200 ease-out
+                  desktop:sticky desktop:top-0 desktop:translate-x-0 desktop:shrink-0 desktop:shadow-none"
            data-app-shell-target="drawer"
            aria-label="<%= t(".navigation") %>">
       <%# O logotipo é imagem, e o nome acessível vem do `alt` — o mesmo

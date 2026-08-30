@@ -15,7 +15,9 @@ class AppShellComponent < ApplicationComponent
   end
 
   def computed_classes
-    class_merge("min-h-screen overflow-x-hidden bg-background text-foreground", html_options[:class])
+    # `clip` e não `hidden`: os dois recortam igual, mas `hidden` cria um
+    # contexto de rolagem e isso desliga o `sticky` da coluna de navegação.
+    class_merge("min-h-screen overflow-x-clip bg-background text-foreground", html_options[:class])
   end
 
   def controller_data
