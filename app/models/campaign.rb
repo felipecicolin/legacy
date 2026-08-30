@@ -14,6 +14,7 @@ class Campaign < ApplicationRecord
   belongs_to :ngo
   belongs_to :project, optional: true
   has_many :contributions, dependent: :restrict_with_error
+  has_many :disbursements, dependent: :nullify
   has_many :subscriptions, dependent: :nullify
   has_many :in_kind_donations, dependent: :nullify
   has_many :events, dependent: :nullify

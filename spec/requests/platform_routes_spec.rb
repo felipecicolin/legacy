@@ -42,6 +42,12 @@ RSpec.describe "Platform routes" do
     )
   end
 
+  it "exposes fundraising as a namespaced admin screen" do
+    expect(Rails.application.routes.recognize_path("/admin/arrecadacao", method: :get)).to eq(
+      controller: "admin/fundraising", action: "show",
+    )
+  end
+
   it "authorizes every resource action before rendering its placeholder" do
     user = create(:user)
     sign_in(user)
@@ -92,6 +98,14 @@ RSpec.describe "Platform routes" do
     sign_in(create(:user))
 
     get admin_root_path
+
+    expect(response).to have_http_status(:forbidden)
+  end
+
+  it "keeps the fundraising dashboard closed to non-staff users" do
+    sign_in(create(:user))
+
+    get admin_fundraising_path
 
     expect(response).to have_http_status(:forbidden)
   end

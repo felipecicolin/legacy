@@ -15,12 +15,7 @@ class HomeController < ApplicationController
   def show
     authorize_page
 
-    redirect_to on_a_team? ? team_path : investor_path
-  end
-
-  private
-
-  def on_a_team?
-    Current.user.profile&.project_participations&.effective&.exists?
+    destination = HomeDestination.new(Current.user)
+    redirect_to destination.on_a_team? ? team_path : investor_path
   end
 end

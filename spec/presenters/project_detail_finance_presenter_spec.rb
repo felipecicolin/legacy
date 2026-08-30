@@ -14,6 +14,13 @@ RSpec.describe ProjectDetailFinancePresenter do
     expect(presenter.budget_total_cents).to eq(0)
   end
 
+  it "falls back to the project currency without a visible campaign" do
+    project = create(:project, currency: "BRL")
+    presenter = described_class.new(project, Visibility::Context.new(clearance: :restricted))
+
+    expect(presenter.funding_currency).to eq("BRL")
+  end
+
   private
 
   def campaign_values

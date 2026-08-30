@@ -44,6 +44,7 @@
       "params": [],
       "constants": {},
       "slots": [
+        "footer",
         "navigation"
       ],
       "stimulus_controller": "app-shell",
@@ -290,6 +291,87 @@
           "source": "  def unprocessable_entity\n    render ErrorPageComponent.new(status: :unprocessable_entity)\n  end"
         }
       ]
+    },
+    {
+      "name": "FundraisingDashboardComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "presenter",
+          "kind": "keyreq"
+        }
+      ],
+      "constants": {
+        "CHANNEL_LABEL_KEYS": [
+          "one_off",
+          "recurring",
+          "in_kind",
+          "event_store"
+        ],
+        "STATUS_CLASSES": [
+          "active",
+          "accepted",
+          "cancelled",
+          "closed",
+          "declined",
+          "delivered",
+          "draft",
+          "executed",
+          "failed",
+          "in_transit",
+          "offered",
+          "paused",
+          "past_due",
+          "pending",
+          "reached",
+          "scheduled"
+        ]
+      },
+      "slots": [],
+      "stimulus_controller": "fundraising-dashboard-component",
+      "template": "app/components/fundraising_dashboard_component/fundraising_dashboard_component.html.erb",
+      "preview": "spec/components/previews/fundraising_dashboard_component_preview.rb",
+      "examples": [
+        {
+          "name": "default",
+          "source": "  def default\n    render(FundraisingDashboardComponent.new(presenter: presenter))\n  end"
+        }
+      ]
+    },
+    {
+      "name": "FundraisingTrendChartComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "points",
+          "kind": "keyreq"
+        }
+      ],
+      "constants": {
+        "CHANNEL_CLASSES": [
+          "one_off",
+          "recurring",
+          "in_kind",
+          "event_store"
+        ],
+        "CHANNEL_KEYS": [
+          "one_off",
+          "recurring",
+          "in_kind",
+          "event_store"
+        ],
+        "CHANNEL_LABEL_KEYS": [
+          "one_off",
+          "recurring",
+          "in_kind",
+          "event_store"
+        ]
+      },
+      "slots": [],
+      "stimulus_controller": "fundraising-trend-chart-component",
+      "template": null,
+      "preview": null,
+      "examples": []
     },
     {
       "name": "IconComponent",

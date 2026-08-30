@@ -65,7 +65,7 @@ RSpec.describe TableComponent, type: :component do
   end
 
   def expect_table_cell_content
-    expect(page).to have_css("tbody td.font-mono.text-right", text: "OB-001")
+    expect(page).to have_css("tbody td.tabular-nums.text-right", text: "OB-001")
     expect(page).to have_css("tbody td", text: "Em obra")
   end
 

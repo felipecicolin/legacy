@@ -90,12 +90,18 @@ ignore_unused:
 
   # Namespaces de enum específicos da arrecadação também são resolvidos em
   # tempo de execução e auditados pelos specs dos respectivos modelos.
-  - "{budget_categories,categories,campaign_statuses,event_kinds,event_statuses,in_kind_categories,intervals,origins,partnership_kinds,partnership_statuses,partnership_tiers,tiers,subscription_intervals}.*"
+  - "{budget_categories,categories,campaign_statuses,disbursement_statuses,event_kinds,event_statuses,in_kind_categories,intervals,origins,partnership_kinds,partnership_statuses,partnership_tiers,tiers,subscription_intervals}.*"
 
   # StatusBadgeComponent não depende de um modelo ainda existente: ele recebe
   # o enum de obra em tempo de execução, e o scanner não resolve essa chave.
   # O spec do componente percorre os cinco valores e exige cada rótulo.
   - "project_statuses.*"
+
+  # Os rótulos dos quatro canais são escolhidos por uma tabela de chaves em
+  # tempo de execução; o scanner não segue o `fetch` dessa tabela. O spec do
+  # componente percorre todos os canais e garante que cada rótulo seja exibido.
+  - "fundraising_dashboard_component.channels.*"
+  - "fundraising_trend_chart_component.legend.*"
 
   # Vocabulário curado em db/vocabulary/. Mesma mecânica do enum: a chave é
   # montada em tempo de execução (`I18n.t(iso_code.downcase, scope: :countries)`)

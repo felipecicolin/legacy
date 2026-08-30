@@ -30,6 +30,7 @@ class Ngo < ApplicationRecord
   # resposta para "onde foi parar o dinheiro".
   has_many :projects, dependent: :restrict_with_error
   has_many :campaigns, dependent: :restrict_with_error
+  has_many :disbursements, dependent: :restrict_with_error
   has_many :deployments, dependent: :restrict_with_error
   has_many :volunteer_groups, dependent: :restrict_with_error
   has_many :partnerships, dependent: :restrict_with_error

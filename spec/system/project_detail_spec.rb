@@ -26,11 +26,11 @@ RSpec.describe "Project detail" do
     page.current_window.resize_to(1400, 1400)
   end
 
-  it "exposes the navigation anchors and the Turbo report frame" do
+  it "exposes the grouped tabs and the Turbo report frame" do
     page.current_window.resize_to(1440, 900)
     visit project_path(project.code)
 
-    expect(page).to have_css("nav a[href='#reports']")
+    expect(page).to have_css("[role='tablist'] [role='tab']", count: 3)
     expect(page).to have_css("turbo-frame#project-reports")
   end
 end

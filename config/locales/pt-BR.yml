@@ -100,6 +100,10 @@ pt-BR:
     open: Aberto
     planning: Em planejamento
     travelling: Em viagem
+  disbursement_statuses:
+    cancelled: Cancelado
+    executed: Executado
+    scheduled: Agendado
   engagement_areas:
     communication: Divulgação
     construction: Obra
@@ -502,6 +506,7 @@ pt-BR:
     delivered: Entregue
     draft: Rascunho
     ended: Encerrada
+    executed: Executado
     failed: Falhou
     held: Realizado
     in_progress: Em obra
@@ -522,6 +527,7 @@ pt-BR:
     registered: Inscrita
     rejected: Rejeitada
     revised: Revisado
+    scheduled: Agendado
     semiannual_gift: Presente semestral
     skipped: Ignorada
     submitted: Enviado
