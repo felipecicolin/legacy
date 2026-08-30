@@ -40,6 +40,15 @@ pt-BR:
     draft: Rascunho
     paused: Pausada
     reached: Atingida
+  candidacies:
+    create:
+      submitted: Candidatura enviada. A equipe responde por aqui.
+    form:
+      documents: Anexos (portfólio, ART, currículo)
+      motivation: Por que você quer servir nesta necessidade
+      requires_credential: Esta necessidade exige registro profissional verificado.
+      submit: Enviar candidatura
+      title: Candidatar-se
   candidacy_statuses:
     approved: Aprovada
     rejected: Recusada
@@ -198,6 +207,56 @@ pt-BR:
     fulfilled: Atendida
     open: Aberta
     partially_fulfilled: Parcialmente atendida
+  needs:
+    deployments:
+      seats_left:
+        one: 1 vaga
+        other: "%{count} vagas"
+      title: Envios abertos
+    index:
+      all_needs: Todas as necessidades
+      any: Qualquer
+      country: País
+      for_me: Necessidades para você
+      kind: Tipo
+      no_match_description: Nada casa com suas habilidades agora. Volte depois — necessidade nova aparece aqui.
+      no_match_title: Nenhuma necessidade casou com suas habilidades
+      no_skills_description: Sem habilidade cadastrada não há como casar você com uma necessidade.
+      no_skills_title: Cadastre suas habilidades primeiro
+      none_open_description: Ajuste os filtros ou volte depois.
+      none_open_title: Nenhuma necessidade aberta com esses filtros
+      subtitle: O que falta em campo, e onde você entra.
+      title: Onde servir
+      urgency: Urgência
+    my_candidacies:
+      assignments: Suas alocações
+      base: Base
+      caption: Suas candidaturas, da mais recente para a mais antiga
+      empty_description: Quando você se candidatar a uma necessidade, ela aparece aqui.
+      empty_title: Você ainda não se candidatou a nada
+      need: Necessidade
+      reason: Motivo
+      status: Situação
+      title: Suas candidaturas
+    need_cards:
+      by_date: até %{date}
+      remaining: "%{done} de %{total} atendido"
+      requires_credential: Exige registro profissional verificado
+    no_profile:
+      empty_description: Complete seu perfil para que possamos casar você com as necessidades em campo.
+      empty_title: Seu perfil ainda não existe
+      title: Onde servir
+    profile_card:
+      no_engagement: Você ainda não declarou um modelo de voluntariado.
+      pending_credentials: Credenciais aguardando verificação
+      registration_verified: Registro profissional verificado
+      title: Seu perfil de voluntário
+    show:
+      breadcrumb: Necessidades
+      kind: Tipo
+      needed_by: Necessário até
+      remaining: Ainda falta
+      urgency: Urgência
   organization_kinds:
     church: Igreja
     company: Empresa

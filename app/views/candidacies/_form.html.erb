@@ -1,0 +1,33 @@
+<%# locals: (candidacy:, need:) %>
+<%= render CardComponent.new(variant: "outlined") do %>
+  <h2 class="text-lg font-semibold text-foreground"><%= t(".title") %></h2>
+
+  <%# O requisito antes da tentativa, sempre. Quem não tem registro verificado
+      lê isso em vez de escrever a motivação e levar erro no fim. %>
+  <% if need.requires_professional_registration? %>
+    <p class="mt-2 text-label text-warning"><%= t(".requires_credential") %></p>
+  <% end %>
+
+  <% if candidacy.errors.any? %>
+    <p role="alert" class="mt-2 text-label text-destructive"><%= candidacy.errors.full_messages.to_sentence %></p>
+  <% end %>
+
+  <%= form_with model: candidacy, url: need_candidacy_path(need), data: { turbo_frame: "candidacy" } do |form| %>
+    <div class="mt-3">
+      <label class="text-label text-muted-foreground" for="candidacy_motivation">
+        <%= t(".motivation") %>
+      </label>
+      <%= form.rich_textarea :motivation, id: "candidacy_motivation", class: "mt-1 block w-full" %>
+    </div>
+    <div class="mt-3">
+      <label class="text-label text-muted-foreground" for="candidacy_documents">
+        <%= t(".documents") %>
+      </label>
+      <%= form.file_field :documents, multiple: true, id: "candidacy_documents",
+                          class: "mt-1 block w-full text-body text-foreground" %>
+    </div>
+    <div class="mt-4">
+      <%= render ButtonComponent.new(label: t(".submit"), type: :submit) %>
+    </div>
+  <% end %>
+<% end %>

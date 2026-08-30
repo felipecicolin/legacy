@@ -564,6 +564,10 @@ GPS dentro.
   origens genuinamente distintas, nenhuma delas "a" dona.
 - **Alocar põe a pessoa na equipe da obra no mesmo callback.** Dois caminhos
   produziriam voluntário alocado que não aparece na equipe.
+- **O que trava uma ação aparece ANTES da tentativa**, não como erro depois:
+  credencial pendente, habilidade não cadastrada, perfil inexistente.
+- **Matching respeita o alcance e não diz que respeitou** — nem "negado", nem
+  contagem. Vale também para o envio, que herda o alcance da base de destino.
 - **`relation.blank?` é `true` para relation vazia.** Para perguntar "existe
   escopo?", use `unless scope` — `blank?` erra calado no caso comum.
 

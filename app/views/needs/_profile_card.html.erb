@@ -1,0 +1,32 @@
+<%# locals: (dashboard:) %>
+<section class="mt-8">
+  <h2 class="text-lg font-semibold text-foreground"><%= t(".title") %></h2>
+  <%= render CardComponent.new(variant: "outlined", classes: "mt-3") do %>
+    <% if dashboard.engagements.any? %>
+      <ul class="space-y-2">
+        <% dashboard.engagements.each do |engagement| %>
+          <li class="text-foreground">
+            <%= engagement.engagement_model_label %> · <%= engagement.engagement_area_label %>
+            <span class="text-label text-muted-foreground">(<%= engagement.engagement_status_label %>)</span>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="text-muted-foreground"><%= t(".no_engagement") %></p>
+    <% end %>
+
+    <%# O que trava a candidatura fica visível aqui, e não como erro depois. %>
+    <% if dashboard.pending_credentials.any? %>
+      <p class="mt-4 text-label text-warning"><%= t(".pending_credentials") %></p>
+      <ul class="mt-1 space-y-1">
+        <% dashboard.pending_credentials.each do |credential| %>
+          <li class="text-label text-muted-foreground">
+            <%= credential.issuing_body %> · <%= t(credential.verification_status, scope: :verification_statuses) %>
+          </li>
+        <% end %>
+      </ul>
+    <% elsif dashboard.professional_registration? %>
+      <p class="mt-4 text-label text-success"><%= t(".registration_verified") %></p>
+    <% end %>
+  <% end %>
+</section>
