@@ -59,6 +59,31 @@ O `ImageFrameComponent` (#74) já recebe a legenda por slot, e o comentário
 dele já dizia por quê: "a política de nome público pode proibir mostrar o
 responsável, e a moldura não tem como saber disso". Nada no componente muda.
 
+## O cabeçalho de cache que o proxy herda
+
+`AuthorizedBlobsController` herda de `ActiveStorage::Blobs::ProxyController`, e
+ele chama `http_cache_forever public: true` — `Cache-Control: public,
+immutable`, validade de cem anos.
+
+É o desenho certo lá: entrega sem autorização, conteúdo igual para todo mundo, e
+a única proteção é a URL ser difícil de adivinhar. Herdado aqui, é errado do
+jeito pior: **a mesma URL devolve os bytes ou 404 conforme quem pergunta.** Um
+cache compartilhado — CDN, proxy de empresa — guardaria a resposta de quem tinha
+direito e passaria a servi-la para quem não tem, sem nunca mais consultar este
+controller. A autorização por requisição, que foi a razão de escolher proxy em
+vez de redirect, seria desfeita pela camada de cache.
+
+`forbid_shared_caching` reescreve para `private` e acrescenta `Vary: Cookie`. O
+`private` mantém o cache do navegador de quem já viu, que é legítimo, e tira o
+compartilhado; o `Vary` diz que é a sessão que muda a resposta.
+
+Vale reparar em como isso passou despercebido: o cabeçalho não vem de código
+escrito aqui, vem da superclasse. Nenhum spec do PR original olhava para
+cabeçalho de cache, e os que existiam passavam — a negação funcionava, o 404
+saía. Herdar comportamento de um controller desenhado para o caso oposto é o
+tipo de coisa que só aparece quando alguém pergunta pelo que **não** está no
+diff.
+
 ## 2. EXIF: destruição na ingestão
 
 EXIF carrega coordenada GPS. Uma foto de base publicada com o EXIF intacto
