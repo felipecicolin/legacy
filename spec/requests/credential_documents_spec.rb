@@ -71,4 +71,29 @@ RSpec.describe "Credential documents" do
 
     expect(response).to have_http_status(:not_found)
   end
+
+  # Quem verifica registro profissional precisa LER o documento — é a própria
+  # verificação. O controller busca a credencial sem filtro e deixa a policy
+  # decidir; quem entrega este alcance é o nível `curator`.
+  it "serves the document to who verifies professional registration" do
+    curator = create(:user, password: password)
+    create(:staff_role, :curator, user: curator)
+    sign_in(curator, password: password)
+
+    get document_credential_path(credential)
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to eq("documento reservado")
+  end
+
+  # `support` é da equipe e mesmo assim não alcança: ser staff não é o critério.
+  it "returns not found to a support staff" do
+    support = create(:user, password: password)
+    create(:staff_role, user: support)
+    sign_in(support, password: password)
+
+    get document_credential_path(credential)
+
+    expect(response).to have_http_status(:not_found)
+  end
 end

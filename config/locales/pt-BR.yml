@@ -81,6 +81,10 @@ pt-BR:
       submit: Entrar
       title: Acessar a plataforma
     rate_limited: Muitas tentativas de acesso. Tente de novo em alguns minutos.
+  staff_levels:
+    admin: Administração da plataforma
+    curator: Curadoria
+    support: Suporte
   statuses:
     failed: Falhou
     pending: Pendente

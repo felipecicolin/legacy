@@ -14,8 +14,7 @@ RSpec.describe "Authorized blobs" do
                        .tap { |record| record.photo.attach(GeotaggedPhoto.upload) }
   end
 
-  def sign_in
-    user = create(:user)
+  def sign_in(user = create(:user))
     post session_path, params: { email_address: user.email_address, password: password }
   end
 
@@ -44,14 +43,38 @@ RSpec.describe "Authorized blobs" do
       expect(response).to have_http_status(:not_found)
     end
 
-    # O limite, escrito como exemplo: `confidential` não é alcançável por
-    # sessão nenhuma até os papéis chegarem (#20, #21, #31).
+    # O limite, escrito como exemplo: entrar não é alcançar. O teto de quem tem
+    # sessão e não é da equipe segue `restricted`.
     it "hides the photo from someone who is merely signed in" do
       sign_in
 
       get_blob(record)
 
       expect(response).to have_http_status(:not_found)
+    end
+
+    it "hides the photo from the staff levels that do not reach it" do
+      statuses = %i[support curator].map do |staff_level|
+        user = create(:user).tap { |record_owner| create(:staff_role, user: record_owner, staff_level: staff_level) }
+        sign_in(user)
+        get_blob(record)
+        response.status
+      end
+
+      expect(statuses).to eq([404, 404])
+    end
+
+    # A única sessão que alcança `confidential`. Ela existe a partir de #21, e
+    # o alcance está escrito em docs/authorization.md — não é efeito colateral
+    # de ser da equipe, é decisão do nível `admin`.
+    it "serves the photo to the platform admin" do
+      admin = create(:user)
+      create(:staff_role, :admin, user: admin)
+      sign_in(admin)
+
+      get_blob(record)
+
+      expect(response).to have_http_status(:ok)
     end
   end
 

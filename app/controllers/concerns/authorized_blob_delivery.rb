@@ -9,12 +9,6 @@
 module AuthorizedBlobDelivery
   extend ActiveSupport::Concern
 
-  # Sessão aberta ainda não diz QUANTO a pessoa alcança: papel é contexto, e as
-  # tabelas que o guardam chegam em #20, #21 e #31. Até lá o teto de quem
-  # entrou é `restricted`, e `confidential` não é alcançável por esta porta —
-  # o que é o lado seguro do erro.
-  SIGNED_IN_CLEARANCE = :restricted
-
   included do
     before_action :require_visible_blob
     after_action :forbid_shared_caching
@@ -22,10 +16,12 @@ module AuthorizedBlobDelivery
 
   private
 
+  # Quanto esta pessoa alcança sai do papel dela, e não mais de uma constante
+  # local: era o `SIGNED_IN_CLEARANCE` que esperava por #21. O teto de quem
+  # entrou e não é da equipe continua `restricted` — o que mudou é que agora
+  # existe quem esteja acima dele.
   def visibility_context
-    return Visibility::Context.anonymous unless authenticated?
-
-    Visibility::Context.new(clearance: SIGNED_IN_CLEARANCE)
+    Authorization::Context.for(authenticated? ? Current.user : nil).visibility
   end
 
   # 404, e não 403: um 403 confirma que o arquivo existe, e a existência de uma
