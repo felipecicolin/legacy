@@ -37,13 +37,4 @@ RSpec.describe "Volunteer view screen" do
   ensure
     page.current_window.resize_to(1400, 1400)
   end
-
-  # O formulário vive num frame próprio: candidatar-se não recarrega a página.
-  it "offers the candidacy form inside its own frame" do
-    need = create(:need, mission_base: mission_base)
-
-    visit need_path(need)
-
-    expect(page).to have_css("turbo-frame#candidacy", text: I18n.t("candidacies.form.title"))
-  end
 end

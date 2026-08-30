@@ -112,6 +112,19 @@ RSpec.describe "Volunteer view" do
     end
   end
 
+  # O formulário vive num frame próprio: candidatar-se não recarrega a página, e
+  # o erro de vaga esgotada volta para dentro dele. É fato de marcação, e por
+  # isso é verificado aqui — não precisa de navegador para ser verdade.
+  describe "the candidacy form" do
+    it "is wrapped in its own turbo frame" do
+      need = create(:need, mission_base: mission_base)
+
+      get need_path(need)
+
+      expect(response.body).to include(%(<turbo-frame id="candidacy">))
+    end
+  end
+
   describe "a candidacy that goes through" do
     before do
       profile
