@@ -8,12 +8,6 @@
   <%= render PageHeaderComponent.new(title: presenter.title, subtitle: presenter.location) do |header| %>
     <% header.with_breadcrumb(label: t(".breadcrumb"), href: projects_path) %>
     <% header.with_breadcrumb(label: presenter.code) %>
-    <% header.with_actions do %>
-      <% if presenter.admin? %>
-        <%= render ButtonComponent.new(label: t(".admin_action"), variant: :outline, size: :sm,
-                                       href: admin_root_path) %>
-      <% end %>
-    <% end %>
   <% end %>
 
   <%# Três abas, não cinco: com uma seção por aba a maioria delas cabia

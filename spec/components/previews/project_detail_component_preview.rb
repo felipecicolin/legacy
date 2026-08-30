@@ -8,7 +8,6 @@ class ProjectDetailComponentPreview < ViewComponent::Preview
     def code = "OB-0247"
     def status = "in_progress"
     def location = "Vale do Paraíba · Brasil"
-    def admin? = false
     def physical_progress = 62
     def progress_report = nil
     def funding_value = 62_000

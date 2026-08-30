@@ -20,7 +20,6 @@ class ProjectDetailPresenter
 
   delegate :visibility, to: :context
   def location = project.ngo.location_label(visibility)
-  def admin? = context.platform_admin?
 
   def physical_progress = weighted_progress || project.physical_progress
 
