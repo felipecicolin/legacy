@@ -1,0 +1,17 @@
+<%# locals: (form:, search:) %>
+<div class="mt-4 grid gap-3 tablet:grid-cols-2 desktop:grid-cols-4">
+  <%= render SelectComponent.new(name: :status, label: t(".status"), include_blank: t(".any"),
+                                 selected: search.filters.status,
+                                 choices: Project.statuses.keys.map { |v| [t(v, scope: :statuses), v] }) %>
+  <%= render SelectComponent.new(name: :base_kind, label: t(".base_kind"), include_blank: t(".any"),
+                                 selected: search.filters.base_kind,
+                                 choices: MissionBase.base_kinds.keys.map { |v| [t(v, scope: :base_kinds), v] }) %>
+  <%= render SelectComponent.new(name: :country_id, label: t(".country"), include_blank: t(".any"),
+                                 selected: search.filters.country_id,
+                                 choices: search.filterable_countries.map { |c| [c.name, c.id] }) %>
+  <label class="block">
+    <span class="text-label text-muted-foreground"><%= t(".min_progress") %></span>
+    <%= form.number_field :min_progress, in: 0..100, step: 10, value: search.filters.min_progress,
+                          class: SelectComponent::SELECT_CLASSES %>
+  </label>
+</div>

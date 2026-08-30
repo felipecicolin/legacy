@@ -1,0 +1,12 @@
+<%# locals: (search:, view_mode:) %>
+<div class="mt-6 flex items-center justify-between gap-4">
+  <p class="text-label text-muted-foreground"><%= t(".count", count: search.total) %></p>
+  <div class="flex items-center gap-2">
+    <% SearchesController::VIEW_MODES.each do |mode| %>
+      <%= render ButtonComponent.new(label: t(".#{mode}"), size: :sm,
+                                     variant: mode == view_mode ? :default : :ghost,
+                                     href: search_path(search.to_query.merge(view: mode)),
+                                     data: { turbo_frame: "search_results" }) %>
+    <% end %>
+  </div>
+</div>

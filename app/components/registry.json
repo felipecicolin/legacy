@@ -519,6 +519,55 @@
       ]
     },
     {
+      "name": "SelectComponent",
+      "category": "ui",
+      "params": [
+        {
+          "name": "name",
+          "kind": "keyreq"
+        },
+        {
+          "name": "label",
+          "kind": "keyreq"
+        },
+        {
+          "name": "choices",
+          "kind": "keyreq"
+        },
+        {
+          "name": "selected",
+          "kind": "key"
+        },
+        {
+          "name": "include_blank",
+          "kind": "key"
+        },
+        {
+          "name": "html_options",
+          "kind": "keyrest"
+        }
+      ],
+      "constants": {},
+      "slots": [],
+      "stimulus_controller": "select-component",
+      "template": "app/components/select_component/select_component.html.erb",
+      "preview": "spec/components/previews/select_component_preview.rb",
+      "examples": [
+        {
+          "name": "default",
+          "source": "  def default\n    render(SelectComponent.new(name: :status, label: \"Situação\", choices: STATUSES,\n                               include_blank: \"Qualquer uma\"))\n  end"
+        },
+        {
+          "name": "with_a_choice_already_made",
+          "source": "  def with_a_choice_already_made\n    render(SelectComponent.new(name: :status, label: \"Situação\", choices: STATUSES,\n                               selected: \"in_progress\", include_blank: \"Qualquer uma\"))\n  end"
+        },
+        {
+          "name": "without_a_blank_option",
+          "source": "  def without_a_blank_option\n    render(SelectComponent.new(name: :status, label: \"Situação\", choices: STATUSES))\n  end"
+        }
+      ]
+    },
+    {
       "name": "SimulatedDataBannerComponent",
       "category": "ui",
       "params": [

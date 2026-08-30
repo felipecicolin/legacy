@@ -1,0 +1,24 @@
+<%= render PageHeaderComponent.new(title: t(".title"), subtitle: t(".subtitle")) %>
+
+<%# O formulário inteiro dentro do frame: filtro e termo viajam juntos, e
+    recarregar a página reproduz o estado porque tudo está na query string. %>
+<%= turbo_frame_tag "search_results" do %>
+  <%= form_with url: search_path, method: :get, data: {
+        turbo_frame: "search_results", controller: "search-form",
+        action: "input->search-form#submit change->search-form#submit",
+      } do |form| %>
+    <%= render SearchFieldComponent.new(url: search_path, frame: "search_results", value: search.term) %>
+    <%= render "searches/filters", form: form, search: search %>
+    <%= hidden_field_tag :view, view_mode %>
+  <% end %>
+
+  <%= render "searches/view_toggle", search: search, view_mode: view_mode %>
+
+  <% if search.any_result? %>
+    <%= render "searches/projects", records: search.groups.fetch(:projects), view_mode: view_mode %>
+    <%= render "searches/mission_bases", records: search.groups.fetch(:mission_bases), view_mode: view_mode %>
+    <%= render "searches/countries", countries: search.groups.fetch(:countries), search: search %>
+  <% else %>
+    <%= render "searches/empty", search: search %>
+  <% end %>
+<% end %>
