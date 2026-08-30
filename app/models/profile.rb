@@ -31,6 +31,16 @@ class Profile < ApplicationRecord
                               dependent: :restrict_with_error
   has_many :approved_progress_reports, class_name: "ProgressReport", foreign_key: :approved_by_id,
                                        inverse_of: :approved_by, dependent: :restrict_with_error
+  has_many :site_surveys, foreign_key: :surveyed_by_id, inverse_of: :surveyed_by,
+                          dependent: :restrict_with_error
+  has_many :project_photos, foreign_key: :taken_by_id, inverse_of: :taken_by, dependent: :nullify
+
+  # `destroy`: a participação é o vínculo da pessoa com a obra, e sem a pessoa
+  # ele não descreve nada. O que NÃO some é o que ela produziu — relatório,
+  # levantamento e crédito de foto ficam, por isso os três acima são
+  # `restrict_with_error` ou `nullify`.
+  has_many :project_participations, dependent: :destroy, inverse_of: :profile
+  has_many :projects, through: :project_participations
 
   # `legal_name` fora do `inspect`, que é o que vai para a linha de log de
   # exceção e para o rastreador de erros. Espelha o que `Sensitive` faz com a
@@ -69,6 +79,14 @@ class Profile < ApplicationRecord
   validates :user_id, uniqueness: true
 
   before_validation :default_display_name, on: :create
+
+  # Participação em obra confidencial NÃO aparece no perfil público, e este é o
+  # caminho lateral que se esquece: a obra está protegida por `Sensitive`, mas
+  # o CV do voluntário contaria onde ele esteve. Quem filtra é a obra, não a
+  # participação — ela não tem nível próprio.
+  def visible_participations(context)
+    project_participations.joins(:project).merge(Project.visible_to(context))
+  end
 
   # Interpolar um perfil numa view tem de sair o nome público. Se `to_s`
   # devolvesse `legal_name`, bastaria um `"#{profile}"` esquecido numa

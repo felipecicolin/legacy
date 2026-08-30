@@ -183,4 +183,29 @@ RSpec.describe Profile do
       expect(profile.inspect).not_to include("Maria Documento")
     end
   end
+
+  # A obra confidencial está protegida por `Sensitive`, mas o CV do voluntário
+  # contaria onde ele esteve — é o caminho lateral que se esquece.
+  describe "#visible_participations" do
+    let(:profile) { create(:profile) }
+    let(:risky_base) { create(:mission_base, country: create(:country, high_risk: true)) }
+    let(:confidential) { create(:project, mission_base: risky_base) }
+
+    before do
+      create(:project_participation, profile: profile, project: create(:project))
+      create(:project_participation, profile: profile, project: confidential)
+    end
+
+    it "leaves out a participation whose project the reader does not reach" do
+      visible = profile.visible_participations(Visibility::Context.new(clearance: :restricted))
+
+      expect(visible.map(&:project_id)).not_to include(confidential.id)
+    end
+
+    it "shows every participation to a reader who reaches them all" do
+      visible = profile.visible_participations(Visibility::Context.new(clearance: :confidential))
+
+      expect(visible.count).to eq(2)
+    end
+  end
 end

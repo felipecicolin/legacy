@@ -157,7 +157,117 @@ validar, e um estado forçado por ali não teria como ser percebido depois.
 A matriz é testada inteira, 5×5, e não por amostra: é ela que pega um estado
 novo cujo grafo de transições ninguém lembrou de atualizar.
 
-## O que ainda falta desta issue
+## O levantamento é entregável, não só um estado
 
-Entregues: `MissionBase`, `Project`, `ProgressReport`. Faltam `SiteSurvey`,
-`ProjectParticipation`, `ProjectPhoto` e os seeds mínimos — ver #26.
+`LEVANTAMENTO` é um dos cinco estados da obra, mas levantamento é **trabalho com
+produto**: visita, medição, diagnóstico, estimativa. Modelar só como enum jogaria
+fora justamente o que o engenheiro voluntário produz remotamente, antes de
+qualquer equipe viajar — que é a metade diferenciada deste produto.
+
+Por isso `SiteSurvey` existe, com `findings` e `recommendations` em Action Text
+e as plantas e laudos em `has_many_attached :documents`.
+
+**Obra em levantamento com zero `SiteSurvey` é estado legítimo.** A obra entra no
+estado antes de alguém visitar — exigir o contrário obrigaria a inventar um
+levantamento vazio para poder abrir a obra.
+
+O ciclo é `draft` → `submitted` e para aí. Workflow de aprovação com revisor e
+recusa é v2: um fluxo que ninguém opera é estado morto no banco.
+
+## Papel na obra é contexto, e a coordenação é invariante
+
+`ProjectParticipation` é onde "papel é contexto, não tipo de usuário" fica
+concreto: a mesma pessoa é coordenadora numa obra, voluntária em outra e
+anfitriã local na terceira.
+
+**O índice único é `[project, profile, role]`, e o `role` está lá de propósito.**
+A mesma pessoa pode ser `technical_lead` **e** `local_host` na mesma obra;
+deixar o papel fora do índice proibiria um caso real.
+
+**Toda obra em execução tem coordenação**, e a regra é cobrada **na transição
+para `in_progress`**, não na criação — obra em levantamento ainda não tem
+equipe. Ela vive no `Project`, ao lado da validação de transição, porque é lá
+que a mudança de estado é visível.
+
+Diferente da transição, esta regra **não** tem guarda que levanta: um
+`save(validate: false)` aqui não abre porta de segurança nenhuma, só deixa a
+obra sem quem responda por ela — problema de processo, que aparece na primeira
+tela.
+
+`invited` não concede nada. É a mesma decisão do `accepted_at` de `Membership`:
+convite não é vínculo. Quem pergunta é `may_report?`, não `role` solto.
+
+### O vazamento pelo perfil
+
+A obra confidencial está protegida por `Sensitive`. Mas **o CV do voluntário
+contaria onde ele esteve** — e esse é o caminho lateral que se esquece, porque a
+proteção parece completa do lado da obra.
+
+`Profile#visible_participations(context)` filtra pela sensibilidade **da obra**,
+não da participação: a participação não tem nível próprio, e dar um a ela
+criaria uma segunda verdade para divergir da primeira.
+
+> O que falta aqui é a metade de resposta: a issue pede um spec que **greppe a
+> resposta HTTP** procurando o código e o nome da obra. Isso é devido a quem
+> construir a tela de perfil — hoje não existe resposta para greppar. O que
+> está entregue é a garantia no nível da consulta.
+
+## A foto: EXIF sempre, bytes conferidos, crédito condicional
+
+`ProjectPhoto` usa `attaches_scrubbed_photo :image`, e portanto **o EXIF é
+destruído na ingestão sempre** — não só em obra confidencial. Regra única é
+regra que não se esquece, e a obra pode ser promovida a confidencial depois de
+a foto já estar guardada. Ver [Política de foto](photo-policy.md).
+
+**A validação de formato olha os bytes, não o content-type declarado.** Um
+arquivo renomeado para `.jpg` chega ao servidor com `image/jpeg` no formulário;
+confiar nisso é confiar no cliente. A whitelist de content-type é a primeira
+peneira, e a segunda é a libvips recusar abrir o que não é imagem. Whitelist e
+não blacklist, pelo motivo de sempre: o formato desconhecido fica de fora por
+default, em vez de o próximo formato ruim passar.
+
+O limite de tamanho é 12 MB — foto de celular cabe, PDF de planta e vídeo não, e
+é o upload acidental desses que enche o storage sem ninguém ver.
+
+As variantes não são declaradas aqui: as três larguras do `srcset` vivem em
+`ImageFrameComponent::WIDTHS` (480/960/1440), e é o componente que as monta. O
+modelo só garante que o arquivo é processável.
+
+**O crédito da foto some quando o leitor não alcança a obra.** `credit_for` pede
+o contexto e responde `nil` fora de alcance: nomear quem tirou a foto ao lado de
+uma obra confidencial é exatamente o que a política de identidade evita — e
+quem decide é o recurso, não o perfil.
+
+## Seed mínimo — o que ele é e o que ele não é
+
+`db/seeds/development/` carrega em qualquer ambiente que não seja produção
+(**teste incluído**, e é lá que o seed prova que roda). Ele **não** é a
+demonstração: #48 é a demonstração completa e só fecha no fim, quando todos os
+modelos existirem. Este é o mínimo, e ele **cresce em camadas** — cada issue de
+modelo acrescenta a sua.
+
+Cada arquivo do diretório apenas **define** um módulo com `load!`; quem invoca é
+o `db/seeds.rb`, via `DevelopmentSeeds.load_all!`. A separação não é cerimônia:
+com a chamada dentro do arquivo, carregá-lo para inspecionar — num spec, no
+console — já gravaria no banco.
+
+Três propriedades, e as três são cobradas por spec:
+
+- **Idempotente.** Roda de novo toda vez que alguém recarrega a demo. Chave
+  natural (`slug` da base, `title` da obra dentro dela), nunca `create!` solto.
+- **Determinístico.** Sem `rand` sem semente. Demo que muda a cada carga é demo
+  que não dá para ensaiar.
+- **Datas relativas a hoje.** Fixas envelhecem, e em um mês toda obra está no
+  passado.
+
+Duas escolhas que valem explicar:
+
+**A obra chega ao estado por transição**, não por atribuição direta. É o caminho
+que a aplicação usa, e um seed que o contornasse deixaria de exercitar a matriz.
+Como quase toda rota passa por `in_progress`, a coordenação entra antes de
+qualquer transição.
+
+**Uma base é aberta ao público por `promote_visibility!`**, com autor e
+justificativa — e não por `update`. Sem uma base aberta, o visitante anônimo
+enxerga zero e a listagem não prova nada; e abrindo pela porta de verdade, o
+seed exercita a auditoria em vez de contorná-la.

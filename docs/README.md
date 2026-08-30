@@ -42,8 +42,9 @@ acrescenta nada. Então:
   convenção de rótulo de enum e o guarda que a cobra.
 - [Campo — base, obra e avanço](field.md) — por que base e obra são coisas
   diferentes e o que a fusão quebraria, como a sensibilidade desce sem nunca
-  afrouxar, por que o código da obra é coluna gerada, e por que o avanço é log
-  de eventos com a coluna servindo só de cache.
+  afrouxar, por que o código da obra é coluna gerada, por que o avanço é log de
+  eventos com a coluna servindo só de cache, o vazamento pelo perfil de quem
+  participou, e o que o seed mínimo é e não é.
 - [Autorização](authorization.md) — por que a pergunta é "pode fazer isto neste
   objeto" e nunca "que tipo de usuário é este", onde cada papel mora, por que a
   autorização é fechada por padrão nas duas pontas, e por que 404 e 403

@@ -54,6 +54,14 @@ RSpec.describe Project do
       expect(described_class.statuses.keys).to eq(%w[surveying in_progress paused urgent completed])
     end
 
+    # As duas listas são a mesma constante escrita duas vezes, em issues
+    # diferentes (#26 e #8). Este exemplo é o que impede um estado novo de
+    # entrar de um lado só — a obra ganharia um status que o badge recusa no
+    # construtor, e a tela quebraria só quando essa obra aparecesse nela.
+    it "declares the same states that the status badge knows how to draw" do
+      expect(described_class.statuses.keys).to eq(StatusBadgeComponent::STATUSES.keys)
+    end
+
     it "labels the state in pt-BR" do
       expect(build(:project, status: :in_progress).status_label).to eq("Em obra")
     end
@@ -66,8 +74,12 @@ RSpec.describe Project do
   end
 
   describe "transitions" do
+    # A coordenação entra em toda obra da matriz porque a passagem para
+    # execução a exige, e o que esta matriz mede é o GRAFO de transições — não
+    # o invariante de equipe, que tem exemplos próprios logo abaixo.
     def transition(from, to)
       project = create(:project)
+      create(:project_participation, :coordinator, project: project)
       project.update_column(:status, described_class.statuses.fetch(from))
       project.reload.update(status: to)
     end
@@ -84,6 +96,29 @@ RSpec.describe Project do
 
     # Reabrir obra é criar obra nova: senão o mesmo código responde por dois
     # ciclos com orçamentos diferentes, e a prestação de contas fica ambígua.
+    # A obra entra em levantamento sem equipe; é a passagem para execução que
+    # exige alguém que responda por ela.
+    it "refuses to start the work without a coordinator" do
+      project = create(:project)
+
+      expect(project.update(status: :in_progress)).to be(false)
+    end
+
+    it "starts the work once a coordinator is in place" do
+      project = create(:project)
+      create(:project_participation, :coordinator, project: project)
+
+      expect(project.update(status: :in_progress)).to be(true)
+    end
+
+    # Convite pendente não conta como coordenação.
+    it "refuses a coordinator who was only invited" do
+      project = create(:project)
+      create(:project_participation, project: project, role: :coordinator, status: :invited)
+
+      expect(project.update(status: :in_progress)).to be(false)
+    end
+
     it "makes completed terminal" do
       expect(described_class::TRANSITIONS.fetch("completed")).to be_empty
     end

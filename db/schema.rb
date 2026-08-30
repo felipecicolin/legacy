@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_30_150200) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_30_160200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -185,6 +185,36 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_150200) do
     t.check_constraint "workers_on_site IS NULL OR workers_on_site >= 0", name: "progress_reports_workers_not_negative"
   end
 
+  create_table "project_participations", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.date "ended_on"
+    t.bigint "profile_id", null: false
+    t.bigint "project_id", null: false
+    t.integer "role", null: false
+    t.date "started_on", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["profile_id", "status"], name: "index_project_participations_on_profile_id_and_status"
+    t.index ["project_id", "profile_id", "role"], name: "idx_on_project_id_profile_id_role_9c778fc32b", unique: true
+    t.check_constraint "ended_on IS NULL OR ended_on >= started_on", name: "project_participations_ends_after_it_starts"
+  end
+
+  create_table "project_photos", force: :cascade do |t|
+    t.string "caption"
+    t.integer "category", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.integer "position", default: 0, null: false
+    t.bigint "progress_report_id"
+    t.bigint "project_id", null: false
+    t.bigint "taken_by_id"
+    t.date "taken_on", null: false
+    t.datetime "updated_at", null: false
+    t.index ["progress_report_id"], name: "index_project_photos_on_progress_report_id"
+    t.index ["project_id", "category", "position"], name: "index_project_photos_on_project_id_and_category_and_position"
+    t.index ["taken_by_id"], name: "index_project_photos_on_taken_by_id"
+    t.check_constraint "\"position\" >= 0", name: "project_photos_position_not_negative"
+  end
+
   create_table "projects", force: :cascade do |t|
     t.date "actual_end_on"
     t.date "actual_start_on"
@@ -237,6 +267,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_150200) do
     t.string "user_agent"
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_sessions_on_user_id"
+  end
+
+  create_table "site_surveys", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "currency", limit: 3, default: "BRL", null: false
+    t.bigint "estimated_cost_cents"
+    t.bigint "project_id", null: false
+    t.integer "status", default: 0, null: false
+    t.bigint "surveyed_by_id", null: false
+    t.date "surveyed_on", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id", "surveyed_on"], name: "index_site_surveys_on_project_id_and_surveyed_on"
+    t.index ["surveyed_by_id"], name: "index_site_surveys_on_surveyed_by_id"
+    t.check_constraint "estimated_cost_cents IS NULL OR estimated_cost_cents >= 0", name: "site_surveys_estimated_cost_not_negative"
   end
 
   create_table "skills", force: :cascade do |t|
@@ -451,10 +495,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_150200) do
   add_foreign_key "progress_reports", "profiles", column: "approved_by_id"
   add_foreign_key "progress_reports", "profiles", column: "reported_by_id"
   add_foreign_key "progress_reports", "projects"
+  add_foreign_key "project_participations", "profiles"
+  add_foreign_key "project_participations", "projects"
+  add_foreign_key "project_photos", "profiles", column: "taken_by_id", on_delete: :nullify
+  add_foreign_key "project_photos", "progress_reports", on_delete: :nullify
+  add_foreign_key "project_photos", "projects"
   add_foreign_key "projects", "mission_bases"
   add_foreign_key "regions", "countries"
   add_foreign_key "sensitivity_changes", "users", column: "author_id"
   add_foreign_key "sessions", "users"
+  add_foreign_key "site_surveys", "profiles", column: "surveyed_by_id"
+  add_foreign_key "site_surveys", "projects"
   add_foreign_key "solid_queue_batch_executions", "solid_queue_batches", column: "batch_id", on_delete: :cascade
   add_foreign_key "solid_queue_batch_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
