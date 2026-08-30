@@ -15,4 +15,14 @@ module ApplicationHelper
   def auth_field_classes
     AUTH_FIELD_CLASSES
   end
+
+  # Dinheiro é `bigint` de centavos, e a divisão por 100 tem de acontecer num
+  # lugar só: espalhada pelas views, a próxima tela erra a escala em cem vezes
+  # e ninguém percebe até alguém conferir um extrato. Ver docs/payments.md.
+  #
+  # A unidade sai do locale, e não de uma string aqui: hoje toda coluna de
+  # moeda deste repositório nasce `BRL`.
+  def money_from_cents(cents)
+    number_to_currency(cents.to_i / 100.0)
+  end
 end

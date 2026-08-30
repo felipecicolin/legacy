@@ -1,0 +1,86 @@
+<%= render PageHeaderComponent.new(title: t(".title"), subtitle: t(".subtitle")) %>
+
+<% if dashboard.investor? %>
+  <dl class="mt-6 grid gap-3 tablet:grid-cols-2 desktop:grid-cols-4">
+    <%= render CardComponent.new do %>
+      <dt class="text-label text-muted-foreground"><%= t(".invested") %></dt>
+      <dd class="mt-1 font-mono text-2xl text-foreground">
+        <%= money_from_cents(dashboard.invested_cents) %>
+      </dd>
+    <% end %>
+
+    <%= render CardComponent.new do %>
+      <dt class="text-label text-muted-foreground"><%= t(".active_projects") %></dt>
+      <dd class="mt-1 font-mono text-2xl text-foreground">
+        <%= number_with_delimiter(dashboard.active_count) %>
+      </dd>
+    <% end %>
+
+    <%= render CardComponent.new do %>
+      <dt class="text-label text-muted-foreground"><%= t(".people_reached") %></dt>
+      <dd class="mt-1 font-mono text-2xl text-foreground">
+        <%= number_with_delimiter(dashboard.people_reached) %>
+      </dd>
+      <dd class="text-label text-muted-foreground"><%= t(".per_year") %></dd>
+    <% end %>
+
+    <%= render CardComponent.new do %>
+      <dt class="text-label text-muted-foreground"><%= t(".multiplier") %></dt>
+      <dd class="mt-1 font-mono text-2xl text-foreground">
+        <%# Sem obra com meta e estimativa não há multiplicador, e um zero
+            mentiria dizendo que o dinheiro não alcança ninguém. %>
+        <%= dashboard.people_per_base ? number_with_delimiter(dashboard.people_per_base) : t(".no_multiplier") %>
+      </dd>
+      <dd class="text-label text-muted-foreground">
+        <%= t(".per_base", amount: money_from_cents(InvestorDashboard::MULTIPLIER_BASE_CENTS)) %>
+      </dd>
+    <% end %>
+  </dl>
+
+  <section class="mt-8">
+    <h2 class="text-lg font-semibold text-foreground"><%= t(".projects_title") %></h2>
+
+    <% if dashboard.active_stakes.any? %>
+      <%= render TableComponent.new(rows: dashboard.active_stakes, caption: t(".projects_caption"),
+                                    classes: "mt-3") do |table| %>
+        <% table.with_column(header: t(".code")) { |stake| stake.project.code } %>
+        <% table.with_column(header: t(".project")) { |stake| stake.project.title } %>
+        <% table.with_column(header: t(".ngo")) { |stake| stake.project.ngo.name } %>
+        <% table.with_column(header: t(".status")) do |stake| %>
+          <%= render StatusBadgeComponent.new(status: stake.project.status, size: :sm) %>
+        <% end %>
+        <% table.with_column(header: t(".contributed")) { |stake| money_from_cents(stake.contributed_cents) } %>
+        <% table.with_column(header: t(".reach")) { |stake| number_with_delimiter(stake.attributed_reach) } %>
+      <% end %>
+    <% else %>
+      <%= render EmptyStateComponent.new(icon: "hard-hat", title: t(".no_projects_title"),
+                                         description: t(".no_projects_description"), classes: "mt-3") %>
+    <% end %>
+
+    <%# O agregado anonimizado que substitui a obra que este leitor não alcança:
+        a prestação de contas continua, e a obra não vira alvo. %>
+    <% if dashboard.hidden_disclosable? %>
+      <p class="mt-3 text-body text-muted-foreground">
+        <%= t(".hidden_aggregate", count: dashboard.hidden.project_count,
+                                   amount: money_from_cents(dashboard.hidden.contributed_cents),
+                                   reach: number_with_delimiter(dashboard.hidden.attributed_reach)) %>
+      </p>
+    <% end %>
+
+    <%# Número menor sem explicação se lê como número errado. %>
+    <% if dashboard.hidden_withheld? %>
+      <p class="mt-3 text-body text-muted-foreground"><%= t(".hidden_withheld") %></p>
+    <% end %>
+
+    <% if dashboard.unlinked_cents.positive? %>
+      <p class="mt-3 text-body text-muted-foreground">
+        <%= t(".unlinked", amount: money_from_cents(dashboard.unlinked_cents)) %>
+      </p>
+    <% end %>
+  </section>
+<% else %>
+  <%# Quem entrou e ainda não aportou não tem painel para ver. Uma tela de
+      zeros se lê como erro de cálculo; dizer que ainda não há aporte, não. %>
+  <%= render EmptyStateComponent.new(icon: "wallet", title: t(".empty_title"),
+                                     description: t(".empty_description"), classes: "mt-6") %>
+<% end %>

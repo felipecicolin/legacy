@@ -1,10 +1,15 @@
 # frozen_string_literal: true
 
 class ProgressBarComponent < ApplicationComponent
-  KINDS = %w[physical funding].freeze
+  KINDS = %w[physical funding spending].freeze
+
+  # `spending` reaproveita a razão e o valor de `funding` — a matemática de
+  # "quanto de um alvo" é a mesma — e muda só a cor e o rótulo: gasto contra
+  # orçamento é leitura de atenção, não de conquista.
   KIND_CONFIG = {
     "physical" => { classes: "bg-primary", ratio: :physical_ratio, value: :physical_label },
     "funding" => { classes: "bg-accent", ratio: :funding_ratio, value: :funding_label },
+    "spending" => { classes: "bg-warning", ratio: :funding_ratio, value: :funding_label },
   }.freeze
 
   Attrs = Data.define(:kind, :value, :target)
@@ -35,8 +40,12 @@ class ProgressBarComponent < ApplicationComponent
     send(kind_config.fetch(:value))
   end
 
+  # As três chaves escritas por extenso: `Rails/DotSeparatedKeys` recusa a
+  # opção `scope:`, o cop de i18n recusa a chave montada por interpolação, e o
+  # scanner de chave órfã só enxerga literal.
   def aria_label
     return t("progress_bar_component.physical_label") if @attrs.kind == "physical"
+    return t("progress_bar_component.spending_label") if @attrs.kind == "spending"
 
     t("progress_bar_component.funding_label")
   end

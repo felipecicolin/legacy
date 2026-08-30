@@ -3,4 +3,5 @@ pt-BR:
   funding_label: Recursos arrecadados
   funding_value: "%{value} de %{target}"
   physical_label: Avanço físico da obra
+  spending_label: Orçamento executado
   without_target: Sem meta definida

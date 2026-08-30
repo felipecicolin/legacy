@@ -35,6 +35,13 @@ acrescenta nada. Então:
 
 ### Plataforma
 
+- [Dash do investidor](investor-dashboard.md) — por que o alcance é coluna nova
+  em vez de `ngos.people_served`, por que a atribuição é proporcional e sobre a
+  meta, e o que a visibilidade faz de diferente com o dinheiro, com a lista de
+  obras e com o alcance.
+- [Dash do time da obra](team-dashboard.md) — por que o vínculo com a obra não
+  abre o que a sensibilidade fechou, por que o orçamento cai no rascunho quando
+  não há aprovado, e por que a barra de gasto ganhou cor de atenção.
 - [Autenticação](authentication.md) — para quem ela é, por que o app nasce
   fechado, por que sessão é linha no banco, e as duas decisões de segurança
   (não vazar quem tem conta, derrubar sessões na troca de senha).

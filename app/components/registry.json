@@ -489,11 +489,13 @@
       "constants": {
         "KINDS": [
           "physical",
-          "funding"
+          "funding",
+          "spending"
         ],
         "KIND_CONFIG": [
           "physical",
-          "funding"
+          "funding",
+          "spending"
         ]
       },
       "slots": [],
@@ -508,6 +510,10 @@
         {
           "name": "physical",
           "source": "  def physical\n    render(ProgressBarComponent.new(kind: \"physical\", value: 62))\n  end"
+        },
+        {
+          "name": "spending",
+          "source": "  def spending\n    render(ProgressBarComponent.new(kind: \"spending\", value: 233_000, target: 385_000))\n  end"
         }
       ]
     },

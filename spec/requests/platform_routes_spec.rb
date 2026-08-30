@@ -48,8 +48,8 @@ RSpec.describe "Platform routes" do
 
     requests = [
       [:get, "/ongs"],
-      [:get, "/bases/1"],
-      [:get, "/bases/1/needs"],
+      [:get, "/ongs/1"],
+      [:get, "/ongs/1/needs"],
       [:get, "/obras"],
       [:get, "/obras/OB-0247"],
       [:get, "/obras/OB-0247/progress_reports"],
