@@ -218,11 +218,10 @@ pt-BR:
     application:
       nav:
         campaigns: Campanhas
-        investor: Seus aportes
+        investor: Investimentos
         ngos: ONGs
-        projects: Obras
         search: Buscar
-        team: Suas obras
+        team: Obras
       sign_out: Sair
   member_roles:
     lead: Liderança

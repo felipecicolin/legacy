@@ -42,7 +42,7 @@
     <div class="mt-8 min-w-0">
     <section role="tabpanel" data-project-tabs-target="panel" hidden
              aria-label="<%= t(".navigation.progress") %>" class="min-w-0 space-y-8">
-      <section class="min-w-0">
+      <section class="min-w-0 rounded-lg border border-border bg-card p-5 tablet:p-6">
         <h2 class="mb-4 text-section text-foreground"><%= t(".progress.title") %></h2>
         <div class="mt-5 grid gap-6 tablet:grid-cols-2">
           <div class="min-w-0">
@@ -115,7 +115,7 @@
           barra diz onde está, série diz como chegou — se estagnou, se andou em
           degraus, se regrediu. %>
       <% if presenter.progress_series.length > 1 %>
-        <section class="min-w-0 border-t border-border pt-8">
+        <section class="min-w-0 rounded-lg border border-border bg-card p-5 tablet:p-6">
           <h2 class="mb-4 text-section text-foreground"><%= t(".progress.over_time") %></h2>
           <div data-controller="chart"
                data-chart-options-value="<%= {
@@ -128,12 +128,12 @@
                  xaxis: { type: "datetime", labels: { datetimeUTC: false } },
                  yaxis: { min: 0, max: 100, tickAmount: 4 },
                  tooltip: { x: { format: "dd/MM/yyyy" } },
-                 grid: { borderColor: "#00000014", strokeDashArray: 4 },
+                 grid: { borderColor: "#0000001f", strokeDashArray: 4 },
                }.to_json %>"></div>
         </section>
       <% end %>
 
-      <section class="min-w-0 border-t border-border pt-8">
+      <section class="min-w-0 rounded-lg border border-border bg-card p-5 tablet:p-6">
         <h2 class="mb-4 text-section text-foreground"><%= t(".reports.title") %></h2>
         <%= helpers.turbo_frame_tag "project-reports" do %>
           <% if presenter.reports.empty? %>
@@ -209,7 +209,7 @@
 
     <section role="tabpanel" data-project-tabs-target="panel" hidden
              aria-label="<%= t(".navigation.people") %>" class="min-w-0 space-y-8">
-      <section class="min-w-0">
+      <section class="min-w-0 rounded-lg border border-border bg-card p-5 tablet:p-6">
         <h2 class="mb-4 text-section text-foreground"><%= t(".team.title") %></h2>
         <% if presenter.team_members.empty? %>
           <p class="text-body text-muted-foreground"><%= t(".team.empty") %></p>
@@ -237,7 +237,7 @@
         <% end %>
       </section>
 
-      <section class="min-w-0 border-t border-border pt-8">
+      <section class="min-w-0 rounded-lg border border-border bg-card p-5 tablet:p-6">
         <h2 class="mb-4 text-section text-foreground"><%= t(".needs.title") %></h2>
         <% if presenter.needs.empty? %>
           <p class="text-body text-muted-foreground"><%= t(".needs.empty") %></p>
@@ -277,7 +277,7 @@
 
     <section role="tabpanel" data-project-tabs-target="panel" hidden
              aria-label="<%= t(".navigation.funding") %>" class="min-w-0 space-y-8">
-      <section class="min-w-0">
+      <section class="min-w-0 rounded-lg border border-border bg-card p-5 tablet:p-6">
         <h2 class="mb-4 text-section text-foreground"><%= t(".budget.title") %></h2>
         <% if presenter.budget_rows.empty? %>
           <p class="mt-5 text-body text-muted-foreground"><%= t(".budget.empty") %></p>

@@ -39,16 +39,16 @@
           <% end %>
           <%= render ButtonComponent.new(variant: :ghost, size: :md, href: "#",
                                          classes: "w-full justify-start gap-3 text-base text-accent-foreground/75") do %>
-            <%= render IconComponent.new(name: "blueprint", size: :md) %>
-            <span><%= t("layouts.application.nav.projects") %></span>
-          <% end %>
-          <%= render ButtonComponent.new(variant: :ghost, size: :md, href: "#",
-                                         classes: "w-full justify-start gap-3 text-base text-accent-foreground/75") do %>
             <%= render IconComponent.new(name: "hand-heart", size: :md) %>
             <span><%= t("layouts.application.nav.campaigns") %></span>
           <% end %>
-          <%= render ButtonComponent.new(variant: :ghost, size: :md, href: "#",
-                                         classes: "w-full justify-start gap-3 text-base text-accent-foreground/75") do %>
+          <% here = current_page?(search_path) %>
+          <%= render ButtonComponent.new(variant: :ghost, size: :md, href: search_path,
+                                         aria: { current: ("page" if here) },
+                                         classes: class_names(
+                                           "w-full justify-start gap-3 text-base text-accent-foreground hover:bg-accent-foreground/10",
+                                           "bg-accent-foreground/15 font-semibold" => here,
+                                         )) do %>
             <%= render IconComponent.new(name: "search", size: :md) %>
             <span><%= t("layouts.application.nav.search") %></span>
           <% end %>
